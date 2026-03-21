@@ -103,6 +103,42 @@
   transform: scale(1.1);
 }
 
+.auth-btn {
+  text-decoration: none;
+  padding: 0.65rem 1.25rem;
+  border-radius: 0.5rem;
+  font-weight: 500;
+  transition: all 0.3s ease;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  white-space: nowrap;
+  cursor: pointer;
+  border: none;
+}
+
+.login-btn {
+  color: #32d7ff;
+  background: transparent;
+  border: 2px solid #32d7ff;
+}
+
+.login-btn:hover {
+  background: rgba(50, 215, 255, 0.12);
+  color: #9fe9ff;
+  border-color: #9fe9ff;
+}
+
+.register-btn {
+  background: linear-gradient(135deg, #ff7b55 0%, #ff4da6 100%);
+  color: white;
+}
+
+.register-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 20px rgba(255, 101, 125, 0.45);
+}
+
 .hamburger {
   display: none;
   flex-direction: column;
@@ -170,6 +206,14 @@
     border-radius: 0;
     display: block;
     border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  }
+
+  .header-actions {
+    gap: 0.5rem;
+  }
+
+  .auth-btn {
+    display: none;
   }
 
   .hamburger {

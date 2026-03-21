@@ -1,5 +1,6 @@
 import './Header.css'
 import { useState } from 'react'
+import { Link } from 'react-router-dom'
 
 function Header() {
   const [isMenuOpen, setIsMenuOpen] = useState(false)
@@ -13,12 +14,14 @@ function Header() {
       <div className="header-container">
         <div className="header-logo">
           <span className="logo-icon">🌐</span>
-          <h1>Community Hub</h1>
+          <Link to="/" style={{ textDecoration: 'none' }}>
+            <h1>Community Hub</h1>
+          </Link>
         </div>
         
         <nav className={`header-nav ${isMenuOpen ? 'active' : ''}`}>
           <ul>
-            <li><a href="#home" className="nav-link">Home</a></li>
+            <li><Link to="/" className="nav-link">Home</Link></li>
             <li><a href="#about" className="nav-link">About</a></li>
             <li><a href="#services" className="nav-link">Services</a></li>
             <li><a href="#contact" className="nav-link">Contact</a></li>
@@ -29,6 +32,12 @@ function Header() {
           <button className="search-btn" aria-label="Search">
             🔍
           </button>
+          <Link to="/login" className="auth-btn login-btn">
+            Sign In
+          </Link>
+          <Link to="/register" className="auth-btn register-btn">
+            Sign Up
+          </Link>
           <button 
             className={`hamburger ${isMenuOpen ? 'active' : ''}`}
             onClick={toggleMenu}
