@@ -27,6 +27,14 @@ const studentSchema = new mongoose.Schema({
     profilePicture: {
         type: String, // URL of the profile image
         default: ""
+    },
+    favoriteCommunity: {
+        type: String,
+        default: ""
+    },
+    bio: {
+        type: String,
+        default: ""
     }
 }, {
     timestamps: true // Automatically adds createdAt and updatedAt fields

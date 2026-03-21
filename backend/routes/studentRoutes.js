@@ -3,6 +3,8 @@ import {
     getAllStudents,
     getStudentById,
     createStudent,
+    loginStudent,
+    forgotPassword,
     updateStudent,
     deleteStudent
 } from '../controllers/studentController.js';
@@ -17,6 +19,12 @@ router.get('/:id', getStudentById);
 
 // POST create new student
 router.post('/', createStudent);
+
+// POST student login
+router.post('/login', loginStudent);
+
+// POST forgot password
+router.post('/forgot-password', forgotPassword);
 
 // PUT update student
 router.put('/:id', updateStudent);

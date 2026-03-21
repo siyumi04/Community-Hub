@@ -53,6 +53,15 @@
   gap: 1.5rem; /* Rows අතර පරතරය */
 }
 
+.error-message {
+  padding: 0.85rem 1rem;
+  border-radius: 0.8rem;
+  color: #ffc3d0;
+  background: rgba(255, 83, 125, 0.14);
+  border: 1px solid rgba(255, 111, 146, 0.35);
+  font-size: 0.9rem;
+}
+
 .form-row {
   display: grid;
   grid-template-columns: 1fr 1fr; /* Side by side fields */
@@ -87,6 +96,18 @@
   border-color: #667eea;
   background: rgba(102, 126, 234, 0.1);
   box-shadow: 0 0 15px rgba(102, 126, 234, 0.2);
+}
+
+.form-group input.input-error {
+  border-color: #ff7b9b;
+  box-shadow: 0 0 0 3px rgba(255, 123, 155, 0.14);
+}
+
+.field-error {
+  margin: 0;
+  color: #ffb6c8;
+  font-size: 0.8rem;
+  line-height: 1.3;
 }
 
 .form-footer-actions {

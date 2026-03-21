@@ -1,35 +1,88 @@
 import { useState } from 'react'
 import { useNavigate, Link } from 'react-router-dom'
 import './Login.css'
+import { showPopup } from '../../utils/popup'
+
+const EMAIL_PATTERN = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
 
 function Login() {
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
-  const [error, setError] = useState('')
+  const [fieldErrors, setFieldErrors] = useState({ email: '', password: '' })
+  const [touched, setTouched] = useState({ email: false, password: false })
   const [loading, setLoading] = useState(false)
   const navigate = useNavigate()
 
+  const validateLoginField = (name, value) => {
+    if (name === 'email') {
+      const normalizedEmail = value.trim().toLowerCase()
+      if (!normalizedEmail) return 'Email is required.'
+      if (!EMAIL_PATTERN.test(normalizedEmail)) return 'Please enter a valid email address.'
+      return ''
+    }
+
+    if (name === 'password') {
+      const normalizedPassword = value.trim()
+      if (!normalizedPassword) return 'Password is required.'
+      if (normalizedPassword.length < 8) return 'Password must be at least 8 characters.'
+      return ''
+    }
+
+    return ''
+  }
+
+  const validateAll = () => {
+    const nextErrors = {
+      email: validateLoginField('email', email),
+      password: validateLoginField('password', password),
+    }
+    setFieldErrors(nextErrors)
+    return Object.values(nextErrors).every((value) => !value)
+  }
+
   const handleSubmit = async (e) => {
     e.preventDefault()
-    setError('')
+    setTouched({ email: true, password: true })
+
+    const normalizedEmail = email.trim().toLowerCase()
+    const normalizedPassword = password.trim()
+
+    if (!validateAll()) {
+      showPopup('Please fix the highlighted login fields.', 'error')
+      return
+    }
+
     setLoading(true)
 
     try {
-      // TODO: Replace with your actual API endpoint
-      const response = await fetch('http://localhost:5000/api/students', {
-        method: 'GET',
+      const response = await fetch('http://localhost:5000/api/students/login', {
+        method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
+        body: JSON.stringify({
+          email: normalizedEmail,
+          password: normalizedPassword,
+        }),
       })
 
+      const result = await response.json()
       if (!response.ok) {
-        throw new Error('Login failed')
+        throw new Error(result?.message || 'Invalid email or password')
       }
+
+      const student = result?.data
+      if (!student || !(student._id || student.id)) {
+        throw new Error('Login failed. Invalid server response.')
+      }
+
+      localStorage.setItem('currentStudent', JSON.stringify(student))
+      window.dispatchEvent(new Event('student-profile-updated'))
+      showPopup('Login successful. Welcome back!', 'success')
 
       navigate('/dashboard')
     } catch (err) {
-      setError(err.message || 'Login failed. Please try again.')
+      showPopup(err.message || 'Login failed. Please try again.', 'error')
     } finally {
       setLoading(false)
     }
@@ -45,8 +98,6 @@ function Login() {
           </div>
 
           <form onSubmit={handleSubmit} className="login-form">
-            {error && <div className="error-message">{error}</div>}
-
             <div className="form-group">
               <label htmlFor="email">Email Address</label>
               <input
@@ -54,9 +105,22 @@ function Login() {
                 id="email"
                 placeholder="your@email.com"
                 value={email}
-                onChange={(e) => setEmail(e.target.value)}
+                onChange={(e) => {
+                  const value = e.target.value
+                  setEmail(value)
+                  if (touched.email) {
+                    setFieldErrors((prev) => ({ ...prev, email: validateLoginField('email', value) }))
+                  }
+                }}
+                onBlur={() => {
+                  setTouched((prev) => ({ ...prev, email: true }))
+                  setFieldErrors((prev) => ({ ...prev, email: validateLoginField('email', email) }))
+                }}
+                className={fieldErrors.email && touched.email ? 'input-error' : ''}
+                autoComplete="email"
                 required
               />
+              {fieldErrors.email && touched.email && <p className="field-error">{fieldErrors.email}</p>}
             </div>
 
             <div className="form-group">
@@ -66,9 +130,23 @@ function Login() {
                 id="password"
                 placeholder="Enter your password"
                 value={password}
-                onChange={(e) => setPassword(e.target.value)}
+                onChange={(e) => {
+                  const value = e.target.value
+                  setPassword(value)
+                  if (touched.password) {
+                    setFieldErrors((prev) => ({ ...prev, password: validateLoginField('password', value) }))
+                  }
+                }}
+                onBlur={() => {
+                  setTouched((prev) => ({ ...prev, password: true }))
+                  setFieldErrors((prev) => ({ ...prev, password: validateLoginField('password', password) }))
+                }}
+                className={fieldErrors.password && touched.password ? 'input-error' : ''}
+                minLength={8}
+                autoComplete="current-password"
                 required
               />
+              {fieldErrors.password && touched.password && <p className="field-error">{fieldErrors.password}</p>}
             </div>
 
             <div className="login-options">
@@ -76,9 +154,9 @@ function Login() {
                 <input type="checkbox" />
                 Remember me
               </label>
-              <a href="#forgot" className="forgot-password">
+              <Link to="/forgot-password" className="forgot-password">
                 Forgot password?
-              </a>
+              </Link>
             </div>
 
             <button
