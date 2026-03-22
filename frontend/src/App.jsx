@@ -1,4 +1,4 @@
-import { BrowserRouter as Router, Routes, Route } from 'react-router-dom'
+import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom'
 import Header from './components/Header/Header'
 import Footer from './components/Footer/Footer'
 import HomePage from './components/HomePage/HomePage'
@@ -8,6 +8,18 @@ import Login from './components/Login/Login'
 import Register from './components/Register/Register'
 import PopupMessage from './components/PopupMessage/PopupMessage'
 import ForgotPassword from './components/ForgotPassword/ForgotPassword'
+import { getAuthToken } from './services/apiClient'
+
+function ProtectedRoute({ children }) {
+  const hasStudent = !!localStorage.getItem('currentStudent')
+  const hasToken = !!getAuthToken()
+
+  if (!hasStudent || !hasToken) {
+    return <Navigate to="/login" replace />
+  }
+
+  return children
+}
 
 function App() {
   return (
@@ -16,8 +28,22 @@ function App() {
       <Header />
       <Routes>
         <Route path="/" element={<HomePage />} />
-        <Route path="/dashboard" element={<Dashboard />} />
-        <Route path="/edit-profile" element={<EditProfile />} />
+        <Route
+          path="/dashboard"
+          element={(
+            <ProtectedRoute>
+              <Dashboard />
+            </ProtectedRoute>
+          )}
+        />
+        <Route
+          path="/edit-profile"
+          element={(
+            <ProtectedRoute>
+              <EditProfile />
+            </ProtectedRoute>
+          )}
+        />
         <Route path="/login" element={<Login />} />
         <Route path="/register" element={<Register />} />
         <Route path="/forgot-password" element={<ForgotPassword />} />

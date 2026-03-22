@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import './EditProfile.css'
 import { showPopup } from '../../utils/popup'
+import { apiFetch, clearAuthData } from '../../services/apiClient'
 
 const IT_NUMBER_PATTERN = /^IT\d{2}[A-Za-z0-9]{6}$/
 const EMAIL_PATTERN = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
@@ -93,14 +94,22 @@ function EditProfile() {
   useEffect(() => {
     const loadStudentProfile = async () => {
       const storedStudent = localStorage.getItem('currentStudent')
-      if (!storedStudent) return
+      if (!storedStudent) {
+        navigate('/login')
+        return
+      }
 
       try {
         const parsed = JSON.parse(storedStudent)
         const studentId = parsed._id || parsed.id || ''
         if (!studentId) return
 
-        const response = await fetch(`http://localhost:5000/api/students/${studentId}`)
+        const response = await apiFetch(`/students/${studentId}`)
+        if (response.status === 401) {
+          showPopup('Your session has expired. Please sign in again.', 'error')
+          navigate('/login')
+          return
+        }
         if (!response.ok) {
           throw new Error('Could not retrieve profile from database')
         }
@@ -206,11 +215,16 @@ function EditProfile() {
       }
 
       if (profile.id) {
-        const response = await fetch(`http://localhost:5000/api/students/${profile.id}`, {
+        const response = await apiFetch(`/students/${profile.id}`, {
           method: 'PUT',
-          headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify(payload),
         })
+
+        if (response.status === 401) {
+          showPopup('Your session has expired. Please sign in again.', 'error')
+          navigate('/login')
+          return
+        }
 
         if (!response.ok) {
           const errorData = await response.json().catch(() => ({}))
@@ -248,17 +262,22 @@ function EditProfile() {
     setDeleting(true)
 
     try {
-      const response = await fetch(`http://localhost:5000/api/students/${profile.id}`, {
+      const response = await apiFetch(`/students/${profile.id}`, {
         method: 'DELETE',
       })
+
+      if (response.status === 401) {
+        showPopup('Your session has expired. Please sign in again.', 'error')
+        navigate('/login')
+        return
+      }
 
       if (!response.ok) {
         const errorData = await response.json().catch(() => ({}))
         throw new Error(errorData.message || 'Failed to delete account')
       }
 
-      localStorage.removeItem('currentStudent')
-      window.dispatchEvent(new Event('student-profile-updated'))
+      clearAuthData()
       showPopup('Account deleted successfully.', 'success')
       navigate('/')
     } catch (err) {

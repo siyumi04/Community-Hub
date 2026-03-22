@@ -8,14 +8,15 @@ import {
     updateStudent,
     deleteStudent
 } from '../controllers/studentController.js';
+import { protect, requireSameStudent } from '../middleware/authMiddleware.js';
 
 const router = express.Router();
 
 // GET all students
-router.get('/', getAllStudents);
+router.get('/', protect, getAllStudents);
 
 // GET student by ID
-router.get('/:id', getStudentById);
+router.get('/:id', protect, requireSameStudent, getStudentById);
 
 // POST create new student
 router.post('/', createStudent);
@@ -27,9 +28,9 @@ router.post('/login', loginStudent);
 router.post('/forgot-password', forgotPassword);
 
 // PUT update student
-router.put('/:id', updateStudent);
+router.put('/:id', protect, requireSameStudent, updateStudent);
 
 // DELETE student
-router.delete('/:id', deleteStudent);
+router.delete('/:id', protect, requireSameStudent, deleteStudent);
 
 export default router;

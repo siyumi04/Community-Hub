@@ -2,6 +2,7 @@ import './Header.css'
 import { useEffect, useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { showPopup } from '../../utils/popup'
+import { clearAuthData } from '../../services/apiClient'
 
 function Header() {
   const [isMenuOpen, setIsMenuOpen] = useState(false)
@@ -43,10 +44,9 @@ function Header() {
   }, [])
 
   const handleLogout = () => {
-    localStorage.removeItem('currentStudent')
+    clearAuthData()
     setProfilePicture('')
     setIsLoggedIn(false)
-    window.dispatchEvent(new Event('student-profile-updated'))
     showPopup('Logged out successfully.', 'info')
     navigate('/login')
   }

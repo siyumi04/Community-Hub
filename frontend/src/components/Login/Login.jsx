@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { useNavigate, Link } from 'react-router-dom'
 import './Login.css'
 import { showPopup } from '../../utils/popup'
+import { apiFetch, setAuthToken } from '../../services/apiClient'
 
 const EMAIL_PATTERN = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
 
@@ -55,11 +56,8 @@ function Login() {
     setLoading(true)
 
     try {
-      const response = await fetch('http://localhost:5000/api/students/login', {
+      const response = await apiFetch('/students/login', {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
         body: JSON.stringify({
           email: normalizedEmail,
           password: normalizedPassword,
@@ -72,10 +70,15 @@ function Login() {
       }
 
       const student = result?.data
+      const token = result?.token
       if (!student || !(student._id || student.id)) {
         throw new Error('Login failed. Invalid server response.')
       }
+      if (!token) {
+        throw new Error('Login failed. Missing authentication token.')
+      }
 
+      setAuthToken(token)
       localStorage.setItem('currentStudent', JSON.stringify(student))
       window.dispatchEvent(new Event('student-profile-updated'))
       showPopup('Login successful. Welcome back!', 'success')

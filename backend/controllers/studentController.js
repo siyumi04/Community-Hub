@@ -1,14 +1,32 @@
 import Student from '../models/Student.js';
 import bcrypt from 'bcryptjs';
+import jwt from 'jsonwebtoken';
 
 const SALT_ROUNDS = 10;
 const BCRYPT_HASH_PATTERN = /^\$2[aby]\$\d{2}\$[./A-Za-z0-9]{53}$/;
+const JWT_EXPIRES_IN = process.env.JWT_EXPIRES_IN || '7d';
 
 const sanitizeStudent = (studentDoc) => {
   if (!studentDoc) return null;
   const student = typeof studentDoc.toObject === 'function' ? studentDoc.toObject() : { ...studentDoc };
   delete student.password;
   return student;
+};
+
+const generateAccessToken = (studentDoc) => {
+  const jwtSecret = process.env.JWT_SECRET;
+  if (!jwtSecret) {
+    throw new Error('JWT secret is not configured');
+  }
+
+  return jwt.sign(
+    {
+      studentId: String(studentDoc._id),
+      email: studentDoc.email,
+    },
+    jwtSecret,
+    { expiresIn: JWT_EXPIRES_IN },
+  );
 };
 
 // Get all students
@@ -150,9 +168,12 @@ export const loginStudent = async (req, res) => {
       });
     }
 
+    const token = generateAccessToken(student);
+
     return res.status(200).json({
       success: true,
       data: sanitizeStudent(student),
+      token,
       message: 'Login successful',
     });
   } catch (error) {

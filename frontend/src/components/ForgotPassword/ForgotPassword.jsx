@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { showPopup } from '../../utils/popup'
 import './ForgotPassword.css'
+import { apiFetch } from '../../services/apiClient'
 
 const EMAIL_PATTERN = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
 const IT_NUMBER_PATTERN = /^IT\d{2}[A-Za-z0-9]{6}$/
@@ -112,9 +113,8 @@ function ForgotPassword() {
     setLoading(true)
 
     try {
-      const response = await fetch('http://localhost:5000/api/students/forgot-password', {
+      const response = await apiFetch('/students/forgot-password', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           email: form.email.trim().toLowerCase(),
           itNumber: form.itNumber.trim().toUpperCase(),

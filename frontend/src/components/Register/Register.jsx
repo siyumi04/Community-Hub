@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { useNavigate, Link } from 'react-router-dom'
 import './Register.css'
 import { showPopup } from '../../utils/popup'
+import { apiFetch } from '../../services/apiClient'
 
 const NAME_PATTERN = /^[A-Za-z][A-Za-z' -]{1,29}$/
 const IT_NUMBER_PATTERN = /^IT\d{2}[A-Za-z0-9]{6}$/
@@ -165,9 +166,8 @@ function Register() {
     setLoading(true)
 
     try {
-      const response = await fetch('http://localhost:5000/api/students', {
+      const response = await apiFetch('/students', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           name: `${firstName} ${lastName}`,
           itNumber,
