@@ -138,85 +138,97 @@ function ForgotPassword() {
 
   return (
     <div className="forgot-password-container">
-      <div className="forgot-password-card">
-        <h2>Forgot Password</h2>
-        <p>Reset your password using your email and IT number.</p>
-
-        <form onSubmit={handleSubmit} className="forgot-password-form">
-          <div className="form-group">
-            <label htmlFor="email">Email</label>
-            <input
-              id="email"
-              name="email"
-              type="email"
-              value={form.email}
-              onChange={handleChange}
-              onBlur={() => markFieldTouched('email')}
-              className={fieldErrors.email && touched.email ? 'input-error' : ''}
-              placeholder="student@email.com"
-              required
-            />
-            {fieldErrors.email && touched.email && <p className="field-error">{fieldErrors.email}</p>}
+      <div className="forgot-password-wrapper">
+        <div className="forgot-password-card">
+          <div className="forgot-password-header">
+            <h2>Forgot Password</h2>
+            <p>Reset your password using your email and IT number.</p>
           </div>
 
-          <div className="form-group">
-            <label htmlFor="itNumber">IT Number</label>
-            <input
-              id="itNumber"
-              name="itNumber"
-              type="text"
-              value={form.itNumber}
-              onChange={handleChange}
-              onBlur={() => markFieldTouched('itNumber')}
-              className={fieldErrors.itNumber && touched.itNumber ? 'input-error' : ''}
-              placeholder="IT21ABC123"
-              required
-            />
-            {fieldErrors.itNumber && touched.itNumber && <p className="field-error">{fieldErrors.itNumber}</p>}
-          </div>
+          <form onSubmit={handleSubmit} className="forgot-password-form">
+            <div className="form-group">
+              <label htmlFor="email">Email</label>
+              <input
+                id="email"
+                name="email"
+                type="email"
+                value={form.email}
+                onChange={handleChange}
+                onBlur={() => markFieldTouched('email')}
+                className={fieldErrors.email && touched.email ? 'input-error' : ''}
+                placeholder="student@email.com"
+                autoComplete="email"
+                required
+              />
+              {fieldErrors.email && touched.email && <p className="field-error">{fieldErrors.email}</p>}
+            </div>
 
-          <div className="form-group">
-            <label htmlFor="newPassword">New Password</label>
-            <input
-              id="newPassword"
-              name="newPassword"
-              type="password"
-              value={form.newPassword}
-              onChange={handleChange}
-              onBlur={() => markFieldTouched('newPassword')}
-              className={fieldErrors.newPassword && touched.newPassword ? 'input-error' : ''}
-              placeholder="New secure password"
-              required
-            />
-            {fieldErrors.newPassword && touched.newPassword && <p className="field-error">{fieldErrors.newPassword}</p>}
-          </div>
+            <div className="form-group">
+              <label htmlFor="itNumber">IT Number</label>
+              <input
+                id="itNumber"
+                name="itNumber"
+                type="text"
+                value={form.itNumber}
+                onChange={handleChange}
+                onBlur={() => markFieldTouched('itNumber')}
+                className={fieldErrors.itNumber && touched.itNumber ? 'input-error' : ''}
+                placeholder="IT21ABC123"
+                required
+              />
+              {fieldErrors.itNumber && touched.itNumber && <p className="field-error">{fieldErrors.itNumber}</p>}
+            </div>
 
-          <div className="form-group">
-            <label htmlFor="confirmPassword">Confirm Password</label>
-            <input
-              id="confirmPassword"
-              name="confirmPassword"
-              type="password"
-              value={form.confirmPassword}
-              onChange={handleChange}
-              onBlur={() => markFieldTouched('confirmPassword')}
-              className={fieldErrors.confirmPassword && touched.confirmPassword ? 'input-error' : ''}
-              placeholder="Confirm new password"
-              required
-            />
-            {fieldErrors.confirmPassword && touched.confirmPassword && (
-              <p className="field-error">{fieldErrors.confirmPassword}</p>
-            )}
-          </div>
+            <div className="form-group">
+              <label htmlFor="newPassword">New Password</label>
+              <input
+                id="newPassword"
+                name="newPassword"
+                type="password"
+                value={form.newPassword}
+                onChange={handleChange}
+                onBlur={() => markFieldTouched('newPassword')}
+                className={fieldErrors.newPassword && touched.newPassword ? 'input-error' : ''}
+                placeholder="New secure password"
+                autoComplete="new-password"
+                required
+              />
+              {fieldErrors.newPassword && touched.newPassword && <p className="field-error">{fieldErrors.newPassword}</p>}
+            </div>
 
-          <button type="submit" className="reset-btn" disabled={loading}>
-            {loading ? 'Resetting...' : 'Reset Password'}
-          </button>
-        </form>
+            <div className="form-group">
+              <label htmlFor="confirmPassword">Confirm Password</label>
+              <input
+                id="confirmPassword"
+                name="confirmPassword"
+                type="password"
+                value={form.confirmPassword}
+                onChange={handleChange}
+                onBlur={() => markFieldTouched('confirmPassword')}
+                className={fieldErrors.confirmPassword && touched.confirmPassword ? 'input-error' : ''}
+                placeholder="Confirm new password"
+                autoComplete="new-password"
+                required
+              />
+              {fieldErrors.confirmPassword && touched.confirmPassword && (
+                <p className="field-error">{fieldErrors.confirmPassword}</p>
+              )}
+            </div>
 
-        <p className="back-to-login">
-          Remembered your password? <Link to="/login">Back to Sign In</Link>
-        </p>
+            <button type="submit" className="reset-btn" disabled={loading}>
+              {loading ? 'Resetting...' : 'Reset Password'}
+            </button>
+          </form>
+
+          <p className="back-to-login">
+            Remembered your password? <Link to="/login">Back to Sign In</Link>
+          </p>
+        </div>
+
+        <div className="forgot-password-background">
+          <div className="gradient-orb top"></div>
+          <div className="gradient-orb bottom"></div>
+        </div>
       </div>
     </div>
   )

@@ -167,7 +167,6 @@ function Dashboard() {
               <span className="community-tag">{community.tag}</span>
               <h2>{community.name}</h2>
               <p>{community.description}</p>
-              <button type="button" className="join-btn">Join Community</button>
             </article>
           ))}
         </div>
