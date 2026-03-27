@@ -223,130 +223,27 @@
   }
 }
 
-[data-theme='light'] .edit-profile-page {
-  color: var(--text-main);
-  background:
-    radial-gradient(circle at 6% 12%, rgba(255, 181, 113, 0.32), transparent 30%),
-    radial-gradient(circle at 92% 14%, rgba(96, 201, 187, 0.24), transparent 35%),
-    linear-gradient(180deg, #fff8ee 0%, #fff2e2 54%, #f6fffa 100%);
-}
 
-[data-theme='light'] .edit-profile-card {
-  border: 1px solid rgba(216, 146, 89, 0.35);
-  background: linear-gradient(180deg, rgba(255, 251, 244, 0.96), rgba(255, 244, 232, 0.94));
-  box-shadow: 0 20px 36px rgba(147, 95, 49, 0.14);
-}
 
-[data-theme='light'] .edit-profile-header p {
-  color: #cb6f34;
-}
 
-[data-theme='light'] .edit-profile-header h1 {
-  color: #2f231b;
-}
 
-[data-theme='light'] .edit-profile-header span,
-[data-theme='light'] .image-name,
-[data-theme='light'] .edit-group label {
-  color: rgba(75, 57, 45, 0.84);
-}
 
-[data-theme='light'] .profile-preview {
-  border: 2px solid rgba(207, 139, 84, 0.52);
-  background: rgba(255, 255, 255, 0.85);
-}
 
-[data-theme='light'] .profile-placeholder {
-  color: #6a442f;
-}
 
-[data-theme='light'] .upload-photo-btn {
-  color: #6a442f;
-  border: 1px solid rgba(209, 140, 85, 0.5);
-  background: rgba(244, 139, 71, 0.13);
-}
 
-[data-theme='light'] .edit-group input,
-[data-theme='light'] .edit-group textarea {
-  border: 1px solid rgba(213, 146, 89, 0.34);
-  background: rgba(255, 248, 240, 0.92);
-  color: #3a2e27;
-}
 
-[data-theme='light'] .edit-group input:focus,
-[data-theme='light'] .edit-group textarea:focus {
-  border-color: #f48b47;
-  box-shadow: 0 0 0 3px rgba(244, 139, 71, 0.16);
-}
 
-[data-theme='light'] .edit-group input.input-error,
-[data-theme='light'] .edit-group textarea.input-error {
-  border-color: #c14d5f;
-  box-shadow: 0 0 0 3px rgba(193, 77, 95, 0.14);
-}
 
-[data-theme='light'] .save-profile-btn {
-  color: #fff;
-  background: linear-gradient(135deg, #f48b47 0%, #2f9c90 100%);
-}
 
-[data-theme='light'] .delete-account-btn {
-  border: 1px solid rgba(187, 81, 98, 0.55);
-  color: #9a3547;
-  background: rgba(193, 77, 95, 0.12);
-}
 
-[data-theme='light'] .delete-account-btn:hover:not(:disabled) {
-  background: rgba(193, 77, 95, 0.2);
-}
 
-[data-theme='light'] .saved-message {
-  color: #2f8b66;
-}
 
-[data-theme='light'] .saved-message.error-message,
-[data-theme='light'] .field-error {
-  color: #a63f54;
-}
 
-[data-theme='light'] .edit-profile-page {
-  padding-top: 3.4rem;
-}
 
-[data-theme='light'] .edit-profile-card {
-  width: min(980px, 100% - 2.6rem);
-  border-radius: 0.65rem;
-  padding: 2.3rem;
-}
 
-[data-theme='light'] .edit-profile-header {
-  text-align: center;
-}
 
-[data-theme='light'] .edit-profile-header span {
-  display: block;
-  max-width: 620px;
-  margin: 0 auto;
-}
 
-[data-theme='light'] .profile-picture-editor {
-  justify-content: center;
-}
 
-[data-theme='light'] .edit-profile-form {
-  gap: 1.15rem;
-}
 
-[data-theme='light'] .edit-group input,
-[data-theme='light'] .edit-group textarea,
-[data-theme='light'] .save-profile-btn,
-[data-theme='light'] .delete-account-btn {
-  border-radius: 0.55rem;
-}
 
-@media (max-width: 760px) {
-  [data-theme='light'] .edit-profile-card {
-    width: min(980px, 100% - 1.4rem);
-    padding: 1.5rem;
-  }
-}
+

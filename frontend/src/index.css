@@ -25,30 +25,6 @@
   --shadow-lg: 0 22px 40px rgba(6, 10, 36, 0.35);
 }
 
-[data-theme='light'] {
-  --font-base: 'M PLUS Rounded 1c', 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-  --font-display: 'Outfit', 'Arial Rounded MT Bold', sans-serif;
-  --font-mono: 'Cascadia Code', Consolas, 'Courier New', monospace;
-
-  --app-bg:
-    radial-gradient(circle at 0% 0%, rgba(255, 157, 115, 0.34), transparent 35%),
-    radial-gradient(circle at 100% 2%, rgba(89, 208, 194, 0.26), transparent 32%),
-    linear-gradient(180deg, #fff8ef 0%, #fff3de 50%, #f8fffd 100%);
-  --surface-1: rgba(255, 255, 255, 0.9);
-  --surface-2: rgba(255, 250, 241, 0.92);
-  --surface-border: rgba(224, 156, 92, 0.3);
-  --text-main: #3a2e27;
-  --text-muted: rgba(74, 56, 45, 0.72);
-  --heading: #281d17;
-  --accent-1: #f48b47;
-  --accent-2: #2f9c90;
-  --accent-soft: rgba(244, 139, 71, 0.12);
-  --danger: #c14d5f;
-  --success: #2f8b66;
-  --input-bg: rgba(255, 255, 255, 0.9);
-  --input-border: rgba(211, 146, 89, 0.35);
-  --shadow-lg: 0 16px 36px rgba(136, 85, 42, 0.14);
-}
 
 body {
   margin: 0;

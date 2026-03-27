@@ -1,6 +1,6 @@
 import './Header.css'
 import { useEffect, useState } from 'react'
-import { Link, useNavigate } from 'react-router-dom'
+import { Link, NavLink, useNavigate } from 'react-router-dom'
 import { showPopup } from '../../utils/popup'
 import { clearAuthData } from '../../services/apiClient'
 
@@ -9,7 +9,7 @@ function Header() {
   const [profilePicture, setProfilePicture] = useState('')
   const [isLoggedIn, setIsLoggedIn] = useState(false)
   const [isDropdownOpen, setIsDropdownOpen] = useState(false)
-  const [theme, setTheme] = useState('dark')
+  const [isScrolled, setIsScrolled] = useState(false)
   const navigate = useNavigate()
 
   const toggleMenu = () => {
@@ -18,13 +18,6 @@ function Header() {
 
   const toggleDropdown = () => {
     setIsDropdownOpen(!isDropdownOpen)
-  }
-
-  const toggleTheme = () => {
-    const newTheme = theme === 'dark' ? 'light' : 'dark'
-    setTheme(newTheme)
-    localStorage.setItem('theme', newTheme)
-    document.documentElement.setAttribute('data-theme', newTheme)
   }
 
   // Close dropdown when clicking outside
@@ -38,11 +31,10 @@ function Header() {
     return () => document.removeEventListener('mousedown', handleClickOutside)
   }, [])
 
-  // Initialize Theme
+  // Force dark mode globally
   useEffect(() => {
-    const savedTheme = localStorage.getItem('theme') || 'dark'
-    setTheme(savedTheme)
-    document.documentElement.setAttribute('data-theme', savedTheme)
+    localStorage.setItem('theme', 'dark')
+    document.documentElement.setAttribute('data-theme', 'dark')
   }, [])
 
   useEffect(() => {
@@ -74,6 +66,19 @@ function Header() {
     }
   }, [])
 
+  useEffect(() => {
+    const handleScroll = () => {
+      setIsScrolled(window.scrollY > 12)
+    }
+
+    handleScroll()
+    window.addEventListener('scroll', handleScroll, { passive: true })
+
+    return () => {
+      window.removeEventListener('scroll', handleScroll)
+    }
+  }, [])
+
   const handleLogout = () => {
     clearAuthData()
     setProfilePicture('')
@@ -83,7 +88,7 @@ function Header() {
   }
 
   return (
-    <header className="header">
+    <header className={`header ${isScrolled ? 'scrolled' : ''}`}>
       <div className="header-container">
         <div className="header-logo">
           <span className="logo-icon">🌐</span>
@@ -94,8 +99,18 @@ function Header() {
         
         <nav className={`header-nav ${isMenuOpen ? 'active' : ''}`}>
           <ul>
-            <li><Link to="/" className="nav-link">Home</Link></li>
-            {isLoggedIn && <li><Link to="/dashboard" className="nav-link">Communities</Link></li>}
+            <li>
+              <NavLink to="/" end className={({ isActive }) => `nav-link${isActive ? ' active' : ''}`}>
+                Home
+              </NavLink>
+            </li>
+            {isLoggedIn && (
+              <li>
+                <NavLink to="/dashboard" className={({ isActive }) => `nav-link${isActive ? ' active' : ''}`}>
+                  Communities
+                </NavLink>
+              </li>
+            )}
             <li><a href="#about" className="nav-link">About</a></li>
             <li><a href="#services" className="nav-link">Services</a></li>
             <li><a href="#contact" className="nav-link">Contact</a></li>
@@ -103,15 +118,6 @@ function Header() {
         </nav>
 
         <div className="header-actions">
-          <button 
-            className="theme-toggle" 
-            onClick={toggleTheme} 
-            aria-label="Toggle Theme"
-            title={`Switch to ${theme === 'dark' ? 'Light' : 'Dark'} Mode`}
-          >
-            {theme === 'dark' ? '☀️' : '🌙'}
-          </button>
-
           {isLoggedIn ? (
             <div className="profile-dropdown-container">
               <button

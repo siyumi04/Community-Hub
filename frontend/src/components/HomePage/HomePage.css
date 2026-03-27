@@ -1,10 +1,33 @@
 .home-page {
+  position: relative;
+  isolation: isolate;
+  overflow: hidden;
   width: 100%;
   color: #f7f8ff;
   background:
     radial-gradient(circle at 10% 15%, rgba(125, 91, 255, 0.25), transparent 35%),
     radial-gradient(circle at 85% 20%, rgba(64, 190, 255, 0.2), transparent 30%),
     linear-gradient(180deg, #0a0820 0%, #11163a 46%, #141a46 100%);
+}
+
+.home-page::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  background: url('../../assets/ITPM images/home.jpg') center center / cover no-repeat;
+  opacity: 0.42;
+  z-index: -2;
+  pointer-events: none;
+  transform: scale(1.03);
+}
+
+.home-page::after {
+  content: '';
+  position: fixed;
+  inset: 0;
+  background: linear-gradient(160deg, rgba(8, 11, 36, 0.62), rgba(11, 16, 50, 0.45) 45%, rgba(16, 22, 60, 0.52));
+  z-index: -1;
+  pointer-events: none;
 }
 
 .hero-section,
@@ -237,139 +260,28 @@
   }
 }
 
-[data-theme='light'] .home-page {
-  color: var(--text-main);
-  background:
-    radial-gradient(circle at 12% 10%, rgba(255, 184, 118, 0.35), transparent 34%),
-    radial-gradient(circle at 88% 18%, rgba(84, 192, 178, 0.24), transparent 30%),
-    linear-gradient(180deg, #fff8ef 0%, #fff2df 55%, #f4fff9 100%);
-}
 
-[data-theme='light'] .eyebrow {
-  color: #cb6f34;
-}
 
-[data-theme='light'] .hero-content h1,
-[data-theme='light'] .section-title h2,
-[data-theme='light'] .about-content h2,
-[data-theme='light'] .contact-section h2 {
-  color: #2f231b;
-}
 
-[data-theme='light'] .hero-subtext,
-[data-theme='light'] .section-title p,
-[data-theme='light'] .about-content p,
-[data-theme='light'] .contact-section p {
-  color: rgba(74, 56, 45, 0.84);
-}
 
-[data-theme='light'] .primary-cta {
-  color: #fff;
-  background: linear-gradient(135deg, #f48b47 0%, #2f9c90 100%);
-  box-shadow: 0 10px 24px rgba(138, 88, 38, 0.22);
-}
 
-[data-theme='light'] .secondary-cta {
-  color: #5a3f30;
-  border: 1px solid rgba(212, 137, 78, 0.45);
-  background: rgba(255, 228, 198, 0.76);
-}
 
-[data-theme='light'] .feature-card {
-  background:
-    linear-gradient(160deg, rgba(255, 231, 208, 0.92), rgba(255, 214, 180, 0.82) 55%, rgba(219, 247, 239, 0.82));
-  border: 1px solid rgba(199, 114, 58, 0.42);
-  box-shadow: 0 18px 30px rgba(146, 86, 43, 0.2);
-}
 
-[data-theme='light'] .feature-card h3 {
-  color: #2f231b;
-}
 
-[data-theme='light'] .feature-card p {
-  color: rgba(72, 55, 44, 0.82);
-}
 
-[data-theme='light'] .about-tags span {
-  border: 1px solid rgba(215, 145, 90, 0.45);
-  background: rgba(244, 139, 71, 0.12);
-  color: #6a442f;
-}
 
-[data-theme='light'] .contact-section {
-  border: 1px solid rgba(210, 142, 87, 0.38);
-  background: linear-gradient(130deg, rgba(255, 206, 173, 0.48), rgba(177, 233, 223, 0.4));
-  box-shadow: 0 20px 36px rgba(128, 83, 44, 0.12);
-}
 
-[data-theme='light'] .hero-section,
-[data-theme='light'] .features-section,
-[data-theme='light'] .about-section,
-[data-theme='light'] .contact-section {
-  width: min(1220px, 100% - 4rem);
-}
 
-[data-theme='light'] .hero-section {
-  min-height: calc(100vh - 250px);
-  align-items: flex-end;
-  padding: 5.5rem 0 5rem;
-}
 
-[data-theme='light'] .hero-content {
-  max-width: 760px;
-}
 
-[data-theme='light'] .features-section {
-  padding-top: 2.8rem;
-}
 
-[data-theme='light'] .features-grid {
-  grid-template-columns: repeat(6, minmax(0, 1fr));
-  gap: 1.1rem;
-}
 
-[data-theme='light'] .feature-card {
-  border-radius: 0.55rem;
-}
 
-[data-theme='light'] .feature-card:nth-child(1) {
-  grid-column: span 4;
-}
 
-[data-theme='light'] .feature-card:nth-child(2),
-[data-theme='light'] .feature-card:nth-child(3) {
-  grid-column: span 2;
-}
 
-[data-theme='light'] .about-section {
-  align-items: center;
-  gap: 2.2rem;
-}
 
-[data-theme='light'] .about-tags {
-  justify-content: center;
-}
 
-[data-theme='light'] .contact-section {
-  padding: 2.4rem 2rem;
-  border-radius: 0.7rem;
-}
 
-@media (max-width: 980px) {
-  [data-theme='light'] .hero-section,
-  [data-theme='light'] .features-section,
-  [data-theme='light'] .about-section,
-  [data-theme='light'] .contact-section {
-    width: min(1200px, 100% - 2.2rem);
-  }
 
-  [data-theme='light'] .features-grid {
-    grid-template-columns: 1fr;
-  }
 
-  [data-theme='light'] .feature-card:nth-child(1),
-  [data-theme='light'] .feature-card:nth-child(2),
-  [data-theme='light'] .feature-card:nth-child(3) {
-    grid-column: span 1;
-  }
-}
+
