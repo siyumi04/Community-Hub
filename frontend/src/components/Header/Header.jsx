@@ -8,11 +8,42 @@ function Header() {
   const [isMenuOpen, setIsMenuOpen] = useState(false)
   const [profilePicture, setProfilePicture] = useState('')
   const [isLoggedIn, setIsLoggedIn] = useState(false)
+  const [isDropdownOpen, setIsDropdownOpen] = useState(false)
+  const [theme, setTheme] = useState('dark')
   const navigate = useNavigate()
 
   const toggleMenu = () => {
     setIsMenuOpen(!isMenuOpen)
   }
+
+  const toggleDropdown = () => {
+    setIsDropdownOpen(!isDropdownOpen)
+  }
+
+  const toggleTheme = () => {
+    const newTheme = theme === 'dark' ? 'light' : 'dark'
+    setTheme(newTheme)
+    localStorage.setItem('theme', newTheme)
+    document.documentElement.setAttribute('data-theme', newTheme)
+  }
+
+  // Close dropdown when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (!event.target.closest('.profile-dropdown-container')) {
+        setIsDropdownOpen(false)
+      }
+    }
+    document.addEventListener('mousedown', handleClickOutside)
+    return () => document.removeEventListener('mousedown', handleClickOutside)
+  }, [])
+
+  // Initialize Theme
+  useEffect(() => {
+    const savedTheme = localStorage.getItem('theme') || 'dark'
+    setTheme(savedTheme)
+    document.documentElement.setAttribute('data-theme', savedTheme)
+  }, [])
 
   useEffect(() => {
     const syncProfilePicture = () => {
@@ -72,31 +103,61 @@ function Header() {
         </nav>
 
         <div className="header-actions">
-          <Link
-            to={isLoggedIn ? '/edit-profile' : '/login'}
-            className="profile-link"
-            aria-label={isLoggedIn ? 'Edit Profile' : 'Go to Login'}
+          <button 
+            className="theme-toggle" 
+            onClick={toggleTheme} 
+            aria-label="Toggle Theme"
+            title={`Switch to ${theme === 'dark' ? 'Light' : 'Dark'} Mode`}
           >
-            {profilePicture ? (
-              <img src={profilePicture} alt="Profile" className="profile-avatar" />
-            ) : (
-              <span>👤</span>
-            )}
-          </Link>
+            {theme === 'dark' ? '☀️' : '🌙'}
+          </button>
+
           {isLoggedIn ? (
-            <button type="button" className="auth-btn logout-btn" onClick={handleLogout}>
-              Logout
-            </button>
+            <div className="profile-dropdown-container">
+              <button
+                className="profile-link"
+                onClick={toggleDropdown}
+                aria-label="Profile Menu"
+              >
+                {profilePicture ? (
+                  <img src={profilePicture} alt="Profile" className="profile-avatar" />
+                ) : (
+                  <span>👤</span>
+                )}
+              </button>
+              {isDropdownOpen && (
+                <div className="profile-dropdown-menu">
+                  <button 
+                    className="dropdown-item"
+                    onClick={() => {
+                      setIsDropdownOpen(false)
+                      navigate('/edit-profile')
+                    }}
+                  >
+                    Edit Profile
+                  </button>
+                  <button 
+                    className="dropdown-item logout-item"
+                    onClick={() => {
+                      setIsDropdownOpen(false)
+                      handleLogout()
+                    }}
+                  >
+                    Logout
+                  </button>
+                </div>
+              )}
+            </div>
           ) : (
-            <>
-              <Link to="/login" className="auth-btn login-btn">
-                Sign In
-              </Link>
-              <Link to="/register" className="auth-btn register-btn">
-                Sign Up
-              </Link>
-            </>
+            <Link
+              to="/login"
+              className="profile-link"
+              aria-label="Go to Login"
+            >
+              <span>👤</span>
+            </Link>
           )}
+
           <button 
             className={`hamburger ${isMenuOpen ? 'active' : ''}`}
             onClick={toggleMenu}

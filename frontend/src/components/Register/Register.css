@@ -168,3 +168,83 @@
   .register-card { padding: 2rem 1.5rem; }
   .register-header h2 { font-size: 1.6rem; }
 }
+
+[data-theme='light'] .register-container {
+  background: linear-gradient(145deg, #fff8ef 0%, #fff2de 54%, #f5fffa 100%);
+}
+
+[data-theme='light'] .register-card {
+  background: linear-gradient(180deg, rgba(255, 251, 244, 0.96), rgba(255, 244, 232, 0.94));
+  border: 1px solid rgba(216, 146, 89, 0.35);
+  box-shadow: 0 24px 56px rgba(143, 91, 45, 0.15);
+}
+
+[data-theme='light'] .register-header h2 {
+  color: #2f231b;
+}
+
+[data-theme='light'] .register-header p,
+[data-theme='light'] .register-footer,
+[data-theme='light'] .terms-checkbox {
+  color: rgba(73, 56, 44, 0.74);
+}
+
+[data-theme='light'] .form-group label {
+  color: rgba(74, 56, 44, 0.86);
+}
+
+[data-theme='light'] .form-group input {
+  background: rgba(255, 248, 240, 0.92);
+  border: 1px solid rgba(212, 146, 89, 0.33);
+  color: #3a2e27;
+}
+
+[data-theme='light'] .form-group input:focus {
+  border-color: #f48b47;
+  background: rgba(255, 244, 232, 0.93);
+  box-shadow: 0 0 12px rgba(244, 139, 71, 0.2);
+}
+
+[data-theme='light'] .form-group input.input-error {
+  border-color: #c14d5f;
+  box-shadow: 0 0 0 3px rgba(193, 77, 95, 0.14);
+}
+
+[data-theme='light'] .register-btn {
+  color: #fff;
+  background: linear-gradient(135deg, #f48b47 0%, #2f9c90 100%);
+}
+
+[data-theme='light'] .register-btn:hover {
+  box-shadow: 0 10px 26px rgba(145, 93, 48, 0.24);
+}
+
+[data-theme='light'] .login-link {
+  color: #2f9c90;
+}
+
+[data-theme='light'] .gradient-orb {
+  opacity: 0.26;
+}
+
+[data-theme='light'] .gradient-orb.top {
+  background: #f5a05e;
+}
+
+[data-theme='light'] .gradient-orb.bottom {
+  background: #67cdbc;
+}
+
+[data-theme='light'] .field-error,
+[data-theme='light'] .error-message {
+  color: #a63f54;
+}
+
+[data-theme='light'] .error-message {
+  background: rgba(193, 77, 95, 0.1);
+  border: 1px solid rgba(193, 77, 95, 0.35);
+}
+
+[data-theme='light'] .terms-checkbox input[type="checkbox"] {
+  accent-color: #f48b47;
+}

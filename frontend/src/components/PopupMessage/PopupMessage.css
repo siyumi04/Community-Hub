@@ -75,3 +75,27 @@
     width: auto;
   }
 }
+
+[data-theme='light'] .popup-toast {
+  color: #3e2f25;
+  box-shadow: 0 10px 22px rgba(138, 87, 43, 0.18);
+}
+
+[data-theme='light'] .popup-toast.success {
+  background: #e8fff3;
+  border-left: 5px solid #2f8b66;
+}
+
+[data-theme='light'] .popup-toast.error {
+  background: #ffeef1;
+  border-left: 5px solid #b94b5d;
+}
+
+[data-theme='light'] .popup-toast.info {
+  background: #fff4e8;
+  border-left: 5px solid #d47a34;
+}
+
+[data-theme='light'] .popup-close {
+  color: #654734;
+}

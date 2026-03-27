@@ -341,3 +341,121 @@
     text-align: center;
   }
 }
+
+[data-theme='light'] .login-container {
+  background: linear-gradient(145deg, #fff9ef 0%, #fff2df 54%, #f6fffa 100%);
+}
+
+[data-theme='light'] .login-card {
+  background: linear-gradient(180deg, rgba(255, 250, 242, 0.96), rgba(255, 243, 230, 0.95));
+  border: 1px solid rgba(216, 146, 89, 0.35);
+  box-shadow: 0 20px 52px rgba(147, 93, 47, 0.14);
+}
+
+[data-theme='light'] .login-header h2 {
+  color: #2f231b;
+}
+
+[data-theme='light'] .login-header p,
+[data-theme='light'] .remember-me,
+[data-theme='light'] .login-footer {
+  color: rgba(73, 55, 43, 0.74);
+}
+
+[data-theme='light'] .form-group label {
+  color: rgba(74, 56, 45, 0.85);
+}
+
+[data-theme='light'] .form-group input {
+  background: rgba(255, 248, 240, 0.92);
+  border: 1px solid rgba(212, 146, 89, 0.3);
+  color: #3a2e27;
+}
+
+[data-theme='light'] .form-group input::placeholder {
+  color: rgba(86, 66, 52, 0.48);
+}
+
+[data-theme='light'] .form-group input:focus {
+  background: rgba(255, 244, 232, 0.93);
+  border-color: #f48b47;
+  box-shadow: 0 0 0 3px rgba(244, 139, 71, 0.14);
+}
+
+[data-theme='light'] .forgot-password,
+[data-theme='light'] .register-link {
+  color: #2f9c90;
+}
+
+[data-theme='light'] .forgot-password:hover,
+[data-theme='light'] .register-link:hover {
+  color: #f48b47;
+}
+
+[data-theme='light'] .login-btn {
+  color: #fff;
+  background: linear-gradient(135deg, #f48b47 0%, #2f9c90 100%);
+}
+
+[data-theme='light'] .login-btn:hover:not(:disabled) {
+  box-shadow: 0 10px 24px rgba(153, 95, 47, 0.26);
+}
+
+[data-theme='light'] .login-divider {
+  color: rgba(86, 66, 53, 0.58);
+}
+
+[data-theme='light'] .login-divider::before {
+  background: linear-gradient(90deg, transparent, rgba(230, 157, 103, 0.45), transparent);
+}
+
+[data-theme='light'] .login-divider span {
+  background: rgba(255, 255, 255, 0.93);
+}
+
+[data-theme='light'] .social-btn {
+  background: rgba(255, 255, 255, 0.92);
+  border: 1px solid rgba(214, 145, 89, 0.28);
+  color: #5a3f30;
+}
+
+[data-theme='light'] .social-btn:hover {
+  background: rgba(244, 139, 71, 0.1);
+  border-color: rgba(212, 134, 74, 0.45);
+}
+
+[data-theme='light'] .google-btn:hover,
+[data-theme='light'] .github-btn:hover {
+  color: #2f9c90;
+}
+
+[data-theme='light'] .gradient-orb {
+  opacity: 0.24;
+}
+
+[data-theme='light'] .gradient-orb.top {
+  background: linear-gradient(135deg, #ffc18f, #f48b47);
+}
+
+[data-theme='light'] .gradient-orb.bottom {
+  background: linear-gradient(135deg, #8ee1d2, #2f9c90);
+}
+
+[data-theme='light'] .form-group input.input-error {
+  border-color: #c14d5f;
+  box-shadow: 0 0 0 3px rgba(193, 77, 95, 0.14);
+}
+
+[data-theme='light'] .field-error {
+  color: #a63f54;
+}
+
+[data-theme='light'] .error-message {
+  background: rgba(193, 77, 95, 0.1);
+  border: 1px solid rgba(193, 77, 95, 0.35);
+  color: #a63f54;
+}
+
+[data-theme='light'] .remember-me input[type="checkbox"] {
+  accent-color: #f48b47;
+}

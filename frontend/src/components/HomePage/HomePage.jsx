@@ -1,7 +1,15 @@
 import { Link } from 'react-router-dom'
+import { useState, useEffect } from 'react'
 import './HomePage.css'
 
 function HomePage() {
+  const [isLoggedIn, setIsLoggedIn] = useState(false)
+
+  useEffect(() => {
+    const storedStudent = localStorage.getItem('currentStudent')
+    setIsLoggedIn(!!storedStudent)
+  }, [])
+
   return (
     <main className="home-page">
       <section className="hero-section" id="home">
@@ -11,10 +19,12 @@ function HomePage() {
           <p className="hero-subtext">
             Community Hub helps students discover events, share skills, and launch meaningful projects in one place.
           </p>
-          <div className="hero-actions">
-            <Link to="/register" className="primary-cta">Create Your Account</Link>
-            <Link to="/login" className="secondary-cta">Sign In</Link>
-          </div>
+          {!isLoggedIn && (
+            <div className="hero-actions">
+              <Link to="/register" className="primary-cta">Create Your Account</Link>
+              <Link to="/login" className="secondary-cta">Sign In</Link>
+            </div>
+          )}
         </div>
       </section>
 
@@ -62,7 +72,7 @@ function HomePage() {
           <h2>Ready to launch your next community project?</h2>
           <p>Join now and start building impact with your team.</p>
         </div>
-        <Link to="/register" className="primary-cta">Get Started Free</Link>
+        {!isLoggedIn && <Link to="/register" className="primary-cta">Get Started Free</Link>}
       </section>
     </main>
   )
