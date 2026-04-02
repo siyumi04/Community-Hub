@@ -21,7 +21,7 @@ function HomePage() {
           </p>
           {!isLoggedIn && (
             <div className="hero-actions">
-              <Link to="/register" className="primary-cta">Create Your Account</Link>
+              <Link to="/create-account" className="primary-cta">Create Your Account</Link>
               <Link to="/login" className="secondary-cta">Sign In</Link>
             </div>
           )}
@@ -72,7 +72,7 @@ function HomePage() {
           <h2>Ready to launch your next community project?</h2>
           <p>Join now and start building impact with your team.</p>
         </div>
-        {!isLoggedIn && <Link to="/register" className="primary-cta">Get Started Free</Link>}
+        {!isLoggedIn && <Link to="/create-account" className="primary-cta">Get Started Free</Link>}
       </section>
     </main>
   )

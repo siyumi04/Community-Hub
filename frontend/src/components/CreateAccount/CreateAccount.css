@@ -1,0 +1,378 @@
+.create-account-container {
+  min-height: 100vh;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  padding: 20px;
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}
+
+.create-account-card {
+  background: white;
+  border-radius: 12px;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+  width: 100%;
+  max-width: 700px;
+  overflow: hidden;
+  animation: slideUp 0.5s ease-out;
+}
+
+@keyframes slideUp {
+  from {
+    opacity: 0;
+    transform: translateY(30px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* ==================== TAB NAVIGATION ==================== */
+.tab-navigation {
+  display: flex;
+  background: #f8f9fa;
+  border-bottom: 2px solid #e9ecef;
+}
+
+.tab-btn {
+  flex: 1;
+  padding: 16px 20px;
+  border: none;
+  background: transparent;
+  cursor: pointer;
+  font-size: 16px;
+  font-weight: 600;
+  color: #6c757d;
+  transition: all 0.3s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  position: relative;
+}
+
+.tab-btn:hover {
+  color: #495057;
+  background: #e9ecef;
+}
+
+.tab-btn.active {
+  color: #667eea;
+  border-bottom: 3px solid #667eea;
+  position: relative;
+}
+
+.tab-icon {
+  font-size: 20px;
+}
+
+/* ==================== TAB CONTENT ==================== */
+.tab-content {
+  padding: 40px 30px;
+  animation: fadeIn 0.3s ease-in;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+.tab-header {
+  text-align: center;
+  margin-bottom: 30px;
+}
+
+.tab-header h1 {
+  font-size: 28px;
+  color: #212529;
+  margin: 0 0 8px 0;
+  font-weight: 700;
+}
+
+.tab-header p {
+  font-size: 14px;
+  color: #6c757d;
+  margin: 0;
+}
+
+/* ==================== FORM STYLES ==================== */
+.register-form,
+.admin-form {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.form-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+}
+
+@media (max-width: 600px) {
+  .form-row {
+    grid-template-columns: 1fr;
+  }
+}
+
+.form-group {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.form-group label {
+  font-size: 13px;
+  font-weight: 600;
+  color: #212529;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.form-group input[type='text'],
+.form-group input[type='email'],
+.form-group input[type='password'] {
+  padding: 12px 14px;
+  border: 1.5px solid #dee2e6;
+  border-radius: 6px;
+  font-size: 14px;
+  background: #fff;
+  transition: all 0.3s ease;
+  font-family: inherit;
+}
+
+.form-group input:focus {
+  outline: none;
+  border-color: #667eea;
+  box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+  background: #fafbfc;
+}
+
+.form-group input.input-error {
+  border-color: #dc3545;
+  background: #fff5f5;
+}
+
+.form-group input.input-error:focus {
+  box-shadow: 0 0 0 3px rgba(220, 53, 69, 0.1);
+}
+
+/* ==================== FIELD HINTS & ERRORS ==================== */
+.field-hint {
+  font-size: 12px;
+  color: #6c757d;
+  margin-top: 2px;
+}
+
+.field-error {
+  font-size: 12px;
+  color: #dc3545;
+  margin: -2px 0 0 0;
+  font-weight: 500;
+}
+
+/* ==================== TERMS CHECKBOX ==================== */
+.form-footer-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  margin-top: 10px;
+}
+
+.terms-checkbox {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  cursor: pointer;
+  font-size: 14px;
+  color: #495057;
+  line-height: 1.5;
+}
+
+.terms-checkbox input[type='checkbox'] {
+  margin-top: 4px;
+  width: 18px;
+  height: 18px;
+  cursor: pointer;
+  accent-color: #667eea;
+}
+
+.terms-checkbox:hover {
+  color: #212529;
+}
+
+/* ==================== SUBMIT BUTTON ==================== */
+.register-btn {
+  padding: 12px 20px;
+  border: none;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+  font-size: 15px;
+  font-weight: 600;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  margin-top: 10px;
+}
+
+.register-btn:hover:not(:disabled) {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 20px rgba(102, 126, 234, 0.4);
+}
+
+.register-btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+/* ==================== TAB FOOTER ==================== */
+.tab-footer {
+  text-align: center;
+  margin-top: 24px;
+  padding-top: 20px;
+  border-top: 1px solid #e9ecef;
+  font-size: 14px;
+  color: #6c757d;
+}
+
+.tab-footer p {
+  margin: 0;
+}
+
+.login-link {
+  color: #667eea;
+  text-decoration: none;
+  font-weight: 600;
+  transition: all 0.2s ease;
+}
+
+.login-link:hover {
+  color: #764ba2;
+  text-decoration: underline;
+}
+
+/* ==================== DARK MODE SUPPORT ==================== */
+@media (prefers-color-scheme: dark) {
+  .create-account-card {
+    background: #1e1e1e;
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.7);
+  }
+
+  .tab-navigation {
+    background: #2d2d2d;
+    border-bottom-color: #404040;
+  }
+
+  .tab-btn {
+    color: #a0a0a0;
+  }
+
+  .tab-btn:hover {
+    color: #d0d0d0;
+    background: #363636;
+  }
+
+  .tab-btn.active {
+    color: #667eea;
+  }
+
+  .tab-header h1 {
+    color: #f0f0f0;
+  }
+
+  .tab-header p {
+    color: #a0a0a0;
+  }
+
+  .form-group label {
+    color: #e0e0e0;
+  }
+
+  .form-group input[type='text'],
+  .form-group input[type='email'],
+  .form-group input[type='password'] {
+    background: #2d2d2d;
+    border-color: #404040;
+    color: #f0f0f0;
+  }
+
+  .form-group input:focus {
+    background: #363636;
+    border-color: #667eea;
+    box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.2);
+  }
+
+  .form-group input.input-error {
+    background: #3d2a2a;
+    border-color: #dc3545;
+  }
+
+  .field-hint {
+    color: #a0a0a0;
+  }
+
+  .terms-checkbox {
+    color: #b0b0b0;
+  }
+
+  .terms-checkbox:hover {
+    color: #e0e0e0;
+  }
+
+  .tab-footer {
+    border-top-color: #404040;
+    color: #a0a0a0;
+  }
+}
+
+/* ==================== RESPONSIVE ==================== */
+@media (max-width: 600px) {
+  .create-account-container {
+    padding: 12px;
+  }
+
+  .create-account-card {
+    border-radius: 8px;
+  }
+
+  .tab-content {
+    padding: 24px 20px;
+  }
+
+  .tab-header h1 {
+    font-size: 24px;
+  }
+
+  .tab-btn {
+    font-size: 14px;
+    padding: 12px 16px;
+  }
+
+  .tab-icon {
+    font-size: 18px;
+  }
+
+  .form-row {
+    gap: 12px;
+  }
+
+  .register-btn {
+    padding: 11px 16px;
+    font-size: 13px;
+  }
+
+  .form-group input[type='text'],
+  .form-group input[type='email'],
+  .form-group input[type='password'] {
+    padding: 10px 12px;
+    font-size: 13px;
+  }
+}
