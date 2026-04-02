@@ -49,48 +49,91 @@ const communities = [
   },
 ]
 
+// day: 0=Sun,1=Mon,2=Tue,3=Wed,4=Thu,5=Fri,6=Sat
 const events = [
   {
     title: 'Campus Cricket Strategy Session',
     club: 'Cricket Club',
-    date: 'Monday 5:30 PM',
+    dayOfWeek: 1,          // Monday
+    time: '5:30 PM',
+    icon: '🏏',
     requiredSkills: ['cricket', 'teamwork', 'leadership'],
   },
   {
     title: 'Hockey Fitness Bootcamp',
     club: 'Hockey Club',
-    date: 'Tuesday 6:00 PM',
+    dayOfWeek: 2,          // Tuesday
+    time: '6:00 PM',
+    icon: '🏑',
     requiredSkills: ['hockey', 'fitness', 'teamwork'],
   },
   {
     title: 'Green Campus Cleanup Drive',
     club: 'Environmental Community',
-    date: 'Wednesday 4:30 PM',
+    dayOfWeek: 3,          // Wednesday
+    time: '4:30 PM',
+    icon: '🌿',
     requiredSkills: ['environment', 'sustainability', 'community'],
   },
   {
     title: 'FOC Event Planning Sprint',
     club: 'FOC Event Club',
-    date: 'Thursday 3:00 PM',
+    dayOfWeek: 4,          // Thursday
+    time: '3:00 PM',
+    icon: '🎯',
     requiredSkills: ['event', 'coordination', 'design', 'communication'],
   },
   {
     title: 'Campus Food Fest Preparation',
     club: 'Food & Beverages Community',
-    date: 'Friday 2:00 PM',
+    dayOfWeek: 5,          // Friday
+    time: '2:00 PM',
+    icon: '🍜',
     requiredSkills: ['food', 'beverages', 'hospitality', 'marketing'],
   },
 ]
 
+/** Returns the next real calendar date for a given weekday (0-6) */
+function getNextDate(targetDay) {
+  const today = new Date()
+  const todayDay = today.getDay()
+  let daysAhead = targetDay - todayDay
+  if (daysAhead <= 0) daysAhead += 7   // always future
+  const next = new Date(today)
+  next.setDate(today.getDate() + daysAhead)
+  return next
+}
+
+/** Returns "Today", "Tomorrow", or "Wed, Apr 9" etc. */
+function formatEventDate(date) {
+  const today = new Date()
+  const tomorrow = new Date(today)
+  tomorrow.setDate(today.getDate() + 1)
+
+  if (date.toDateString() === today.toDateString()) return 'Today'
+  if (date.toDateString() === tomorrow.toDateString()) return 'Tomorrow'
+
+  return date.toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' })
+}
+
+/** Returns days until event */
+function daysUntil(date) {
+  const today = new Date()
+  today.setHours(0, 0, 0, 0)
+  const diff = Math.round((date - today) / (1000 * 60 * 60 * 24))
+  return diff
+}
 
 function Dashboard() {
   const [studentSkills, setStudentSkills] = useState([])
+  const [studentName, setStudentName] = useState('')
 
   useEffect(() => {
     const syncSkills = () => {
       const storedStudent = localStorage.getItem('currentStudent')
       if (!storedStudent) {
         setStudentSkills([])
+        setStudentName('')
         return
       }
 
@@ -103,6 +146,7 @@ function Dashboard() {
               .map((item) => item.trim())
               .filter(Boolean)
         setStudentSkills(skills)
+        setStudentName(parsed.name ? parsed.name.split(' ')[0] : '')
       } catch {
         setStudentSkills([])
       }
@@ -113,28 +157,53 @@ function Dashboard() {
     return () => window.removeEventListener('student-profile-updated', syncSkills)
   }, [])
 
+  // Enrich events with dynamic dates
+  const enrichedEvents = useMemo(() =>
+    events.map((ev) => {
+      const date = getNextDate(ev.dayOfWeek)
+      return {
+        ...ev,
+        nextDate: date,
+        dateLabel: formatEventDate(date),
+        daysAway: daysUntil(date),
+        fullDate: date.toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric', year: 'numeric' }),
+      }
+    }), []
+  )
+
   const recommendedEvents = useMemo(() => {
     const normalizedSkills = studentSkills.map((skill) => skill.toLowerCase())
     if (normalizedSkills.length === 0) return []
 
-    return events.filter((event) =>
+    return enrichedEvents.filter((event) =>
       event.requiredSkills.some((skill) => normalizedSkills.includes(skill.toLowerCase())),
     )
-  }, [studentSkills])
+  }, [studentSkills, enrichedEvents])
+
+  const displayEvents = recommendedEvents.length > 0 ? recommendedEvents : enrichedEvents.slice(0, 3)
+  const isPersonalized = recommendedEvents.length > 0
 
   return (
     <main className="dashboard-page">
       <section className="dashboard-hero">
         <p className="dashboard-eyebrow">Student Communities</p>
-        <h1>Welcome to Your Communities</h1>
-        <p>
-          Explore communities and join the clubs that match your passion.
-        </p>
+        <h1>
+          {studentName ? `Welcome back, ${studentName} 👋` : 'Welcome to Your Communities'}
+        </h1>
+        <p>Explore communities and join the clubs that match your passion.</p>
       </section>
 
       <section className="recommendation-section">
         <div className="recommendation-header">
-          <h2>Recommended Events For You</h2>
+          <div className="rec-title-row">
+            <h2>
+              {isPersonalized ? '✨ Recommended Events For You' : 'Upcoming Events'}
+            </h2>
+            {isPersonalized && (
+              <span className="rec-badge">Based on your skills</span>
+            )}
+          </div>
+
           {studentSkills.length > 0 ? (
             <div className="skill-list">
               {studentSkills.map((skill) => (
@@ -142,22 +211,54 @@ function Dashboard() {
               ))}
             </div>
           ) : (
-            <p className="no-skill-text">Add skills in your profile to get better event recommendations.</p>
+            <p className="no-skill-text">
+              💡 Add skills in your profile to get personalized event recommendations.
+            </p>
           )}
         </div>
 
         <div className="event-list">
-          {(recommendedEvents.length > 0 ? recommendedEvents : events.slice(0, 3)).map((event) => (
-            <article className="event-card" key={event.title}>
-              <h3>{event.title}</h3>
-              <p>{event.club}</p>
-              <span>{event.date}</span>
-            </article>
-          ))}
+          {displayEvents.map((event) => {
+            const matchedSkills = studentSkills.filter((s) =>
+              event.requiredSkills.includes(s.toLowerCase())
+            )
+            return (
+              <article className="event-card" key={event.title}>
+                <div className="event-card-top">
+                  <span className="event-icon">{event.icon}</span>
+                  <span className={`event-countdown ${event.daysAway <= 2 ? 'soon' : ''}`}>
+                    {event.daysAway === 0 ? 'Today!' : event.daysAway === 1 ? 'Tomorrow' : `In ${event.daysAway} days`}
+                  </span>
+                </div>
+
+                <h3>{event.title}</h3>
+                <p className="event-club">{event.club}</p>
+
+                <div className="event-date-row">
+                  <span className="event-date-label">📅 {event.dateLabel}</span>
+                  <span className="event-time">⏰ {event.time}</span>
+                </div>
+
+                <p className="event-full-date">{event.fullDate}</p>
+
+                {matchedSkills.length > 0 && (
+                  <div className="event-matched-skills">
+                    {matchedSkills.map((s) => (
+                      <span key={s} className="matched-skill-tag">✓ {s}</span>
+                    ))}
+                  </div>
+                )}
+              </article>
+            )
+          })}
         </div>
       </section>
 
       <section className="community-grid-section">
+        <div className="community-section-header">
+          <h2>All Communities</h2>
+          <p>Find your community and get involved</p>
+        </div>
         <div className="community-grid">
           {communities.map((community) => (
             <article className="community-card" key={community.name}>
