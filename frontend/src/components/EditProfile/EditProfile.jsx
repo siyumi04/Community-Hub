@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import './EditProfile.css'
-import { showPopup } from '../../utils/popup'
+import { showPopup, showConfirm } from '../../utils/popup'
 import { apiFetch, clearAuthData } from '../../services/apiClient'
 
 const IT_NUMBER_PATTERN = /^IT\d{2}[A-Za-z0-9]{6}$/
@@ -253,9 +253,13 @@ function EditProfile() {
       return
     }
 
-    const confirmed = window.confirm(
-      'Are you sure you want to delete your account? This action cannot be undone.',
-    )
+    const confirmed = await showConfirm({
+      title: 'Delete Account?',
+      text: 'This action cannot be undone. All your data will be permanently removed.',
+      confirmText: 'Yes, Delete',
+      cancelText: 'Cancel',
+      icon: 'warning',
+    })
 
     if (!confirmed) return
 
