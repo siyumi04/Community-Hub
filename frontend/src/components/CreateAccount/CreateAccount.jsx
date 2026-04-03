@@ -6,7 +6,7 @@ import { apiFetch, setAuthToken } from '../../services/apiClient'
 
 const NAME_PATTERN = /^[A-Za-z][A-Za-z' -]{1,29}$/
 const IT_NUMBER_PATTERN = /^IT\d{2}[A-Za-z0-9]{6}$/
-const PASSWORD_PATTERN = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d).{8,}$/
+const PASSWORD_PATTERN = /^(?=.*\d{5})(?=.*[a-zA-Z]{2})[a-zA-Z0-9]{7}$/
 const DASHBOARD_NAME_PATTERN = /^[a-z0-9_-]{3,30}$/i
 const USERNAME_PATTERN = /^[a-zA-Z0-9_-]{3,30}$/
 
@@ -122,7 +122,7 @@ function CreateAccount() {
     if (name === 'password') {
       if (!String(value).trim()) return 'Password is required.'
       if (!PASSWORD_PATTERN.test(String(value))) {
-        return 'Need 8+ chars, uppercase, lowercase and number.'
+        return 'Password must be 7 characters: exactly 5 digits and 2 letters (e.g., 12345ab)'
       }
       return ''
     }
@@ -285,7 +285,7 @@ function CreateAccount() {
       const normalized = String(value).trim()
       if (!normalized) return 'Password is required.'
       if (!PASSWORD_PATTERN.test(normalized)) {
-        return 'Min 8 chars: uppercase, lowercase, number.'
+        return 'Password must be 7 characters: exactly 5 digits and 2 letters (e.g., 12345ab)'
       }
       return ''
     }

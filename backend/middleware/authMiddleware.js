@@ -54,3 +54,47 @@ export const requireSameStudent = (req, res, next) => {
 
   return next();
 };
+
+export const verifyAdminToken = (req, res, next) => {
+  try {
+    const token = getTokenFromHeader(req.headers.authorization || '');
+
+    if (!token) {
+      return res.status(401).json({
+        success: false,
+        message: 'Admin authorization token is required',
+      });
+    }
+
+    const jwtSecret = process.env.JWT_SECRET;
+    if (!jwtSecret) {
+      return res.status(500).json({
+        success: false,
+        message: 'JWT secret is not configured',
+      });
+    }
+
+    const decoded = jwt.verify(token, jwtSecret);
+    
+    // Check if the token is from an admin
+    if (!decoded.role || decoded.role !== 'admin') {
+      return res.status(403).json({
+        success: false,
+        message: 'Admin access required',
+      });
+    }
+
+    req.auth = {
+      adminId: String(decoded.adminId || ''),
+      email: decoded.email || '',
+      role: decoded.role || '',
+    };
+
+    return next();
+  } catch (error) {
+    return res.status(401).json({
+      success: false,
+      message: 'Invalid or expired admin token',
+    });
+  }
+};

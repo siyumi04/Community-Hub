@@ -6,7 +6,7 @@ import { apiFetch } from '../../services/apiClient'
 
 const EMAIL_PATTERN = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
 const IT_NUMBER_PATTERN = /^IT\d{2}[A-Za-z0-9]{6}$/
-const PASSWORD_PATTERN = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d).{8,}$/
+const PASSWORD_PATTERN = /^(?=.*\d{5})(?=.*[a-zA-Z]{2})[a-zA-Z0-9]{7}$/
 
 function ForgotPassword() {
   const navigate = useNavigate()
@@ -48,7 +48,7 @@ function ForgotPassword() {
     if (name === 'newPassword') {
       if (!String(value).trim()) return 'New password is required.'
       if (!PASSWORD_PATTERN.test(String(value))) {
-        return 'Need 8+ chars, uppercase, lowercase and number.'
+        return 'Password must be 7 characters: exactly 5 digits and 2 letters (e.g., 12345ab)'
       }
       return ''
     }

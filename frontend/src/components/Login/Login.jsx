@@ -137,7 +137,28 @@ function Login() {
     if (name === 'password') {
       const normalized = value.trim()
       if (!normalized) return 'Password is required.'
-      if (normalized.length < 8) return 'Password must be at least 8 characters.'
+      
+      // Validate password format: exactly 7 characters with exactly 5 digits and 2 letters
+      if (normalized.length !== 7) {
+        return 'Password must be exactly 7 characters.'
+      }
+      
+      const digitCount = (normalized.match(/\d/g) || []).length
+      const letterCount = (normalized.match(/[a-zA-Z]/g) || []).length
+      
+      if (digitCount !== 5) {
+        return 'Password must contain exactly 5 digits.'
+      }
+      
+      if (letterCount !== 2) {
+        return 'Password must contain exactly 2 letters.'
+      }
+      
+      // Check that it only contains alphanumeric characters
+      if (!/^[a-zA-Z0-9]{7}$/.test(normalized)) {
+        return 'Password must only contain letters and numbers.'
+      }
+      
       return ''
     }
 
@@ -181,8 +202,8 @@ function Login() {
         throw new Error(result?.message || 'Invalid username or password')
       }
 
-      const admin = result?.data
-      const token = result?.token
+      const admin = result?.data?.admin
+      const token = result?.data?.token
       if (!admin || !(admin._id || admin.id)) {
         throw new Error('Login failed. Invalid server response.')
       }
@@ -286,18 +307,82 @@ function Login() {
               </button>
             </form>
 
-          <div className="login-divider">
-            <span>Or continue with</span>
+            <div className="section-footer">
+              <p>
+                Don't have a student account?{' '}
+                <Link to="/create-account" className="register-link">
+                  Sign up here
+                </Link>
+              </p>
+            </div>
           </div>
 
-          <div className="social-login">
-            <button className="social-btn google-btn" type="button">
-              <span>Google</span>
-            </button>
-            <button className="social-btn github-btn" type="button">
-              <span>GitHub</span>
-            </button>
+          {/* DIVIDER */}
+          <div className="login-divider">
+            <span>Or</span>
           </div>
+
+          {/* ADMIN LOGIN SECTION */}
+          <div className="login-section admin-section">
+            <div className="section-header">
+              <h2>⚙️ Admin Login</h2>
+              <p>Sign in to your admin dashboard</p>
+            </div>
+
+            <form onSubmit={handleAdminSubmit} className="login-form">
+              <div className="form-group">
+                <label htmlFor="adminUsername">Username</label>
+                <input
+                  type="text"
+                  id="adminUsername"
+                  placeholder="Enter your username"
+                  value={adminUsername}
+                  onChange={(e) => {
+                    const value = e.target.value
+                    setAdminUsername(value)
+                    if (adminTouched.username) {
+                      setAdminErrors((prev) => ({ ...prev, username: validateAdminField('username', value) }))
+                    }
+                  }}
+                  onBlur={() => {
+                    setAdminTouched((prev) => ({ ...prev, username: true }))
+                    setAdminErrors((prev) => ({ ...prev, username: validateAdminField('username', adminUsername) }))
+                  }}
+                  className={adminErrors.username && adminTouched.username ? 'input-error' : ''}
+                  autoComplete="username"
+                  required
+                />
+                {adminErrors.username && adminTouched.username && (
+                  <p className="field-error">{adminErrors.username}</p>
+                )}
+              </div>
+
+              <div className="form-group">
+                <label htmlFor="adminPassword">Password</label>
+                <input
+                  type="password"
+                  id="adminPassword"
+                  placeholder="Enter your password"
+                  value={adminPassword}
+                  onChange={(e) => {
+                    const value = e.target.value
+                    setAdminPassword(value)
+                    if (adminTouched.password) {
+                      setAdminErrors((prev) => ({ ...prev, password: validateAdminField('password', value) }))
+                    }
+                  }}
+                  onBlur={() => {
+                    setAdminTouched((prev) => ({ ...prev, password: true }))
+                    setAdminErrors((prev) => ({ ...prev, password: validateAdminField('password', adminPassword) }))
+                  }}
+                  className={adminErrors.password && adminTouched.password ? 'input-error' : ''}
+                  autoComplete="current-password"
+                  required
+                />
+                {adminErrors.password && adminTouched.password && (
+                  <p className="field-error">{adminErrors.password}</p>
+                )}
+              </div>
 
               <button type="submit" className="login-btn admin-btn" disabled={adminLoading}>
                 {adminLoading ? 'Signing in...' : 'Sign In as Admin'}

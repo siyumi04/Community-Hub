@@ -12,6 +12,7 @@ const router = express.Router();
 // POST create admin account
 router.post('/register', createAdmin);
 
+
 // POST admin login
 router.post('/login', loginAdmin);
 

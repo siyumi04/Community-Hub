@@ -4,6 +4,10 @@ import dotenv from 'dotenv';
 import connectDB from './config/db.js';
 import studentRoutes from './routes/studentRoutes.js';
 import adminRoutes from './routes/adminRoutes.js';
+import memberRoutes from './routes/memberRoutes.js';
+import eventRoutes from './routes/eventRoutes.js';
+import noticeRoutes from './routes/noticeRoutes.js';
+import feedbackRoutes from './routes/feedbackRoutes.js';
 
 dotenv.config();
 
@@ -26,6 +30,10 @@ app.use((req, res, next) => {
 // Routes
 app.use('/api/students', studentRoutes);
 app.use('/api/admins', adminRoutes);
+app.use('/api/members', memberRoutes);
+app.use('/api/events', eventRoutes);
+app.use('/api/notices', noticeRoutes);
+app.use('/api/feedback', feedbackRoutes);
 
 
 

@@ -43,6 +43,15 @@ export const createAdmin = async (req, res) => {
       });
     }
 
+    // Validate password format (5 digits + 2 letters)
+    const passwordRegex = /^(?=.*\d{5})(?=.*[a-zA-Z]{2})[a-zA-Z0-9]{7}$/;
+    if (!passwordRegex.test(password)) {
+      return res.status(400).json({
+        success: false,
+        message: 'Password must contain exactly 5 digits and 2 letters (7 characters total)'
+      });
+    }
+
     // Validate password match
     if (password !== confirmPassword) {
       return res.status(400).json({
@@ -130,6 +139,24 @@ export const loginAdmin = async (req, res) => {
       return res.status(400).json({
         success: false,
         message: 'Username and password are required'
+      });
+    }
+
+    // Validate password format consistency
+    if (password.length !== 7) {
+      return res.status(400).json({
+        success: false,
+        message: 'Invalid password format'
+      });
+    }
+
+    const digitCount = (password.match(/\d/g) || []).length;
+    const letterCount = (password.match(/[a-zA-Z]/g) || []).length;
+    
+    if (digitCount !== 5 || letterCount !== 2) {
+      return res.status(400).json({
+        success: false,
+        message: 'Invalid password format'
       });
     }
 
