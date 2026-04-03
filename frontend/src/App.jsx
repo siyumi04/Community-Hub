@@ -7,6 +7,7 @@ import EditProfile from './components/EditProfile/EditProfile'
 import Login from './components/Login/Login'
 import Register from './components/Register/Register'
 import ForgotPassword from './components/ForgotPassword/ForgotPassword'
+import NoticeSummarizer from './components/NoticeSummarizer/NoticeSummarizer'
 import { getAuthToken } from './services/apiClient'
 
 function ProtectedRoute({ children }) {
@@ -39,6 +40,14 @@ function App() {
           element={(
             <ProtectedRoute>
               <EditProfile />
+            </ProtectedRoute>
+          )}
+        />
+        <Route
+          path="/notice-summarizer"
+          element={(
+            <ProtectedRoute>
+              <NoticeSummarizer />
             </ProtectedRoute>
           )}
         />

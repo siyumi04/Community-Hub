@@ -91,6 +91,14 @@ const events = [
     icon: '🍜',
     requiredSkills: ['food', 'beverages', 'hospitality', 'marketing'],
   },
+  {
+    title: 'Campus Cooking Workshop',
+    club: 'Food & Beverages Community',
+    dayOfWeek: 6,          // Saturday
+    time: '10:00 AM',
+    icon: '🍳',
+    requiredSkills: ['cooking', 'culinary', 'food', 'nutrition'],
+  },
 ]
 
 /** Returns the next real calendar date for a given weekday (0-6) */

@@ -111,6 +111,13 @@ function Header() {
                 </NavLink>
               </li>
             )}
+            {isLoggedIn && (
+              <li>
+                <NavLink to="/notice-summarizer" className={({ isActive }) => `nav-link${isActive ? ' active' : ''}`}>
+                  Notices
+                </NavLink>
+              </li>
+            )}
             <li><a href="#about" className="nav-link">About</a></li>
             <li><a href="#services" className="nav-link">Services</a></li>
             <li><a href="#contact" className="nav-link">Contact</a></li>
