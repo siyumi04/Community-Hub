@@ -1,10 +1,29 @@
 import { Routes, Route, Navigate } from 'react-router-dom'
 import Header from './components/Header/Header'
 import Footer from './components/Footer/Footer'
+import HomePage from './components/HomePage/HomePage'
+import Dashboard from './components/Dashboard/Dashboard'
+import EditProfile from './components/EditProfile/EditProfile'
+import Login from './components/Login/Login'
+import Register from './components/Register/Register'
+import ForgotPassword from './components/ForgotPassword/ForgotPassword'
+import NoticeSummarizer from './components/NoticeSummarizer/NoticeSummarizer'
 import CommunityDetailsPage from './pages/CommunityDetailsPage'
 import CommunityMemberPage from './pages/CommunityMemberPage'
+import { getAuthToken } from './services/apiClient'
 
 import './App.css'
+
+function ProtectedRoute({ children }) {
+  const hasStudent = !!localStorage.getItem('currentStudent')
+  const hasToken = !!getAuthToken()
+
+  if (!hasStudent || !hasToken) {
+    return <Navigate to="/login" replace />
+  }
+
+  return children
+}
 
 function App() {
   return (
@@ -12,7 +31,34 @@ function App() {
       <Header />
       <main className="flex-1">
         <Routes>
-          <Route path="/" element={<Navigate to="/communities/cricket" replace />} />
+          <Route path="/" element={<HomePage />} />
+          <Route
+            path="/dashboard"
+            element={(
+              <ProtectedRoute>
+                <Dashboard />
+              </ProtectedRoute>
+            )}
+          />
+          <Route
+            path="/edit-profile"
+            element={(
+              <ProtectedRoute>
+                <EditProfile />
+              </ProtectedRoute>
+            )}
+          />
+          <Route
+            path="/notice-summarizer"
+            element={(
+              <ProtectedRoute>
+                <NoticeSummarizer />
+              </ProtectedRoute>
+            )}
+          />
+          <Route path="/login" element={<Login />} />
+          <Route path="/register" element={<Register />} />
+          <Route path="/forgot-password" element={<ForgotPassword />} />
           <Route path="/communities/:id" element={<CommunityDetailsPage />} />
           <Route path="/communities/:id/member" element={<CommunityMemberPage />} />
           <Route path="*" element={<div className="flex items-center justify-center py-32 text-2xl text-slate-500">Page Not Found</div>} />
