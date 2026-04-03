@@ -171,18 +171,6 @@ function Login() {
             </button>
           </form>
 
-          <div className="login-divider">
-            <span>Or continue with</span>
-          </div>
-
-          <div className="social-login">
-            <button className="social-btn google-btn" type="button">
-              <span>Google</span>
-            </button>
-            <button className="social-btn github-btn" type="button">
-              <span>GitHub</span>
-            </button>
-          </div>
 
           <div className="login-footer">
             <p>
