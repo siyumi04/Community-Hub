@@ -61,6 +61,12 @@ function App() {
           <Route path="/forgot-password" element={<ForgotPassword />} />
           <Route path="/communities/:id" element={<CommunityDetailsPage />} />
           <Route path="/communities/:id/member" element={<CommunityMemberPage />} />
+          {/* Shorthand routes for communities */}
+          <Route path="/cricket" element={<Navigate to="/communities/cricket" replace />} />
+          <Route path="/hockey" element={<Navigate to="/communities/hockey" replace />} />
+          <Route path="/environmental" element={<Navigate to="/communities/environmental" replace />} />
+          <Route path="/foc" element={<Navigate to="/communities/foc" replace />} />
+          <Route path="/food" element={<Navigate to="/communities/food" replace />} />
           <Route path="*" element={<div className="flex items-center justify-center py-32 text-2xl text-slate-500">Page Not Found</div>} />
         </Routes>
       </main>
