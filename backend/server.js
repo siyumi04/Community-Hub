@@ -19,6 +19,8 @@ app.use(express.urlencoded({ extended: true, limit: '10mb' }));
 // Routes
 app.use('/api/students', studentRoutes);
 
+
+
 // Error Handling Middleware
 app.use((err, req, res, next) => {
   console.error(err.stack);
