@@ -41,8 +41,9 @@ body {
 
 #root {
   width: 100%;
-  margin: 0 auto;
-  text-align: center;
+  max-width: 100%;
+  margin: 0;
+  text-align: left;
   min-height: 100svh;
   display: flex;
   flex-direction: column;
