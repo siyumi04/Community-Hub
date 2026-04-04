@@ -20,18 +20,13 @@ const communitySchema = new mongoose.Schema({
         type: String,
         default: ""
     },
-    memberCount: {
-        type: Number,
-        default: 0
-    },
     members: [{
         studentId: {
             type: mongoose.Schema.Types.ObjectId,
             ref: 'Student'
         },
         memberId: {
-            type: String,
-            unique: true
+            type: String
         },
         fullName: String,
         email: String,
@@ -48,7 +43,14 @@ const communitySchema = new mongoose.Schema({
         }
     }]
 }, {
-    timestamps: true
+    timestamps: true,
+    toJSON: { virtuals: true },
+    toObject: { virtuals: true }
+});
+
+// Virtual property — memberCount is always computed from members.length (exact & real-time)
+communitySchema.virtual('memberCount').get(function() {
+    return this.members ? this.members.length : 0;
 });
 
 // Create the model from the schema

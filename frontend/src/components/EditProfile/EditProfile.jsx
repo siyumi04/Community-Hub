@@ -135,7 +135,13 @@ function EditProfile() {
           setProfileImageName('Current profile picture')
         }
 
-        localStorage.setItem('currentStudent', JSON.stringify(student))
+        // Merge with existing localStorage to preserve profilePicture if DB has none
+        const existing = (() => { try { return JSON.parse(localStorage.getItem('currentStudent') || '{}') } catch { return {} } })()
+        const merged = {
+          ...student,
+          profilePicture: student.profilePicture || existing.profilePicture || '',
+        }
+        localStorage.setItem('currentStudent', JSON.stringify(merged))
         window.dispatchEvent(new Event('student-profile-updated'))
       } catch {
         showPopup('Unable to load profile data from database.', 'error')
@@ -173,15 +179,46 @@ function EditProfile() {
 
     const reader = new FileReader()
     reader.onloadend = () => {
-      const imageDataUrl = typeof reader.result === 'string' ? reader.result : ''
+      let imageDataUrl = typeof reader.result === 'string' ? reader.result : ''
       if (!imageDataUrl) return
 
-      setProfileImage(imageDataUrl)
-      setProfileImageName(file.name)
-      setProfile((prev) => ({ ...prev, profilePicture: imageDataUrl }))
-      setTouched((prev) => ({ ...prev, profilePicture: true }))
-      setFieldErrors((prev) => ({ ...prev, profilePicture: '' }))
-      showPopup('Profile image selected successfully.', 'success')
+      // Compress image before saving to DB
+      const img = new Image()
+      img.onload = () => {
+        const canvas = document.createElement('canvas')
+        const maxWidth = 500
+        const maxHeight = 500
+        let width = img.width
+        let height = img.height
+
+        if (width > height) {
+          if (width > maxWidth) {
+            height *= maxWidth / width
+            width = maxWidth
+          }
+        } else {
+          if (height > maxHeight) {
+            width *= maxHeight / height
+            height = maxHeight
+          }
+        }
+
+        canvas.width = width
+        canvas.height = height
+        const ctx = canvas.getContext('2d')
+        ctx.drawImage(img, 0, 0, width, height)
+
+        // Compress to JPEG with lower quality
+        const compressedDataUrl = canvas.toDataURL('image/jpeg', 0.75)
+        
+        setProfileImage(compressedDataUrl)
+        setProfileImageName(file.name)
+        setProfile((prev) => ({ ...prev, profilePicture: compressedDataUrl }))
+        setTouched((prev) => ({ ...prev, profilePicture: true }))
+        setFieldErrors((prev) => ({ ...prev, profilePicture: '' }))
+        showPopup('Profile image selected and compressed successfully.', 'success')
+      }
+      img.src = imageDataUrl
     }
     reader.readAsDataURL(file)
   }
@@ -236,7 +273,12 @@ function EditProfile() {
         const result = await response.json()
         const updatedStudent = result?.data
         if (updatedStudent) {
-          localStorage.setItem('currentStudent', JSON.stringify(updatedStudent))
+          // Merge local profilePicture in case backend omits it
+          const merged = {
+            ...updatedStudent,
+            profilePicture: updatedStudent.profilePicture || profile.profilePicture || '',
+          }
+          localStorage.setItem('currentStudent', JSON.stringify(merged))
           window.dispatchEvent(new Event('student-profile-updated'))
         }
       } else {

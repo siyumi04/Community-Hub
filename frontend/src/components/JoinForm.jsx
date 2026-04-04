@@ -4,7 +4,25 @@ import { COMMUNITY_FORM_FIELDS } from '../utils/constants';
 import { apiFetch } from '../services/apiClient';
 import { showPopup } from '../utils/popup';
 
+const COMMUNITY_BORDER = {
+  cricket:       '#f59e0b',
+  hockey:        '#6366f1',
+  environmental: '#2dd4bf',
+  foc:           '#a855f7',
+  food:          '#fb923c',
+};
+
+const COMMUNITY_BUTTON = {
+  cricket:       { bg: '#b45309', hover: '#d97706' },
+  hockey:        { bg: '#4f46e5', hover: '#6366f1' },
+  environmental: { bg: '#0d9488', hover: '#14b8a6' },
+  foc:           { bg: '#7c3aed', hover: '#a855f7' },
+  food:          { bg: '#ea580c', hover: '#f97316' },
+};
+
 const JoinForm = ({ communityId, communityName, onClose, onSuccess }) => {
+  const borderColor = COMMUNITY_BORDER[communityId] || '#6366f1';
+  const buttonColors = COMMUNITY_BUTTON[communityId] || { bg: '#4f46e5', hover: '#6366f1' };
   const navigate = useNavigate();
 
   // Common fields state
@@ -150,6 +168,7 @@ const JoinForm = ({ communityId, communityName, onClose, onSuccess }) => {
     // Prepare submission data
     const formData = {
       studentId: currentStudent._id || currentStudent.id,
+      studentNumber: studentId,  // the IT number typed in the form e.g. IT21123456
       communityId,
       communityName,
       fullName,
@@ -175,6 +194,23 @@ const JoinForm = ({ communityId, communityName, onClose, onSuccess }) => {
         return;
       }
 
+      // Update localStorage with the new joined community
+      const updatedStudent = {
+        ...currentStudent,
+        joinedCommunities: [
+          ...(currentStudent.joinedCommunities || []),
+          {
+            communityId,
+            communityName,
+            memberId: result.data.memberId,
+            year: result.data.year,
+            joinedAt: new Date().toISOString(),
+          },
+        ],
+      };
+      localStorage.setItem('currentStudent', JSON.stringify(updatedStudent));
+      window.dispatchEvent(new Event('student-profile-updated'));
+
       // Show success popup, then navigate after delay
       setShowSuccess(true);
       setTimeout(() => {
@@ -198,8 +234,9 @@ const JoinForm = ({ communityId, communityName, onClose, onSuccess }) => {
       {/* Modal */}
       <div className="fixed inset-0 z-[120] flex items-center justify-center p-4">
         <div
-          className="rounded-2xl shadow-2xl max-w-2xl w-full max-h-[90vh] flex flex-col border-[3px] border-indigo-400"
+          className="rounded-2xl shadow-2xl max-w-2xl w-full max-h-[90vh] flex flex-col border-[3px]"
           style={{
+            borderColor,
             background: 'rgba(15, 23, 42, 0.55)',
             backdropFilter: 'blur(18px)',
             WebkitBackdropFilter: 'blur(18px)',
@@ -620,7 +657,12 @@ const JoinForm = ({ communityId, communityName, onClose, onSuccess }) => {
             </button>
             <button
               onClick={handleSubmit}
-              className="flex-1 px-4 py-2 bg-indigo-600 text-white rounded-lg font-semibold hover:bg-indigo-500 transition"
+              className="flex-1 px-4 py-2 text-white rounded-lg font-semibold transition"
+              style={{
+                backgroundColor: buttonColors.bg,
+              }}
+              onMouseEnter={(e) => e.target.style.backgroundColor = buttonColors.hover}
+              onMouseLeave={(e) => e.target.style.backgroundColor = buttonColors.bg}
             >
               Submit Request
             </button>

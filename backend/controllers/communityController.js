@@ -1,10 +1,11 @@
 import Community from '../models/Community.js';
 import Student from '../models/Student.js';
+import CommunityMember from '../models/CommunityMember.js';
 
 // Utility function to generate member ID
-const generateMemberId = (communityId, year, sequenceNumber) => {
-    // Format: COMMUNITYABBR-YEAR-SEQUENCENUMBER
-    // Example: CRI-2024-001 (Cricket Club, 2024 batch, 1st member)
+const generateMemberId = (communityId, sequenceNumber) => {
+    // Format: COMMUNITYABBR-CURRENTYEAR-SEQUENCENUMBER
+    // Example: CRI-2026-001 (Cricket Club, joined in 2026, 1st member)
     const abbreviations = {
         'cricket': 'CRI',
         'hockey': 'HOC',
@@ -14,8 +15,9 @@ const generateMemberId = (communityId, year, sequenceNumber) => {
     };
     
     const abbr = abbreviations[communityId] || communityId.substring(0, 3).toUpperCase();
+    const currentYear = new Date().getFullYear();
     const sequence = String(sequenceNumber).padStart(3, '0');
-    return `${abbr}-${year}-${sequence}`;
+    return `${abbr}-${currentYear}-${sequence}`;
 };
 
 // Get all communities
@@ -118,7 +120,7 @@ export const joinCommunity = async (req, res) => {
 
         // Generate member ID
         const sequenceNumber = community.members.length + 1;
-        const memberId = generateMemberId(communityId, year, sequenceNumber);
+        const memberId = generateMemberId(communityId, sequenceNumber);
 
         // Add member to Community
         community.members.push({
@@ -132,8 +134,35 @@ export const joinCommunity = async (req, res) => {
             additionalFields: new Map(Object.entries(additionalFields || {}))
         });
 
-        community.memberCount = community.members.length;
         await community.save();
+
+        // Save full join form data to clubmembers collection
+        try {
+            await CommunityMember.create({
+                memberId,
+                studentId,
+                communityId,
+                communityName,
+                fullName,
+                studentNumber: req.body.studentNumber || '',
+                email,
+                phone,
+                year,
+                whyJoin: whyJoin || '',
+                additionalFields: new Map(Object.entries(additionalFields || {})),
+                status: 'active'
+            });
+            console.log(`✅ CommunityMember saved for memberId: ${memberId}`);
+        } catch (err) {
+            if (err.code === 11000) {
+                console.error(`⚠️  Duplicate join attempt:`, err.message);
+                return res.status(400).json({
+                    success: false,
+                    message: 'You are already a member of this community'
+                });
+            }
+            throw err;
+        }
 
         // Add community to Student's joinedCommunities
         student.joinedCommunities.push({
@@ -229,9 +258,14 @@ export const leaveCommunity = async (req, res) => {
             community.members = community.members.filter(
                 member => member.memberId !== memberId
             );
-            community.memberCount = community.members.length;
             await community.save();
         }
+
+        // Mark as left in clubmembers collection
+        await CommunityMember.findOneAndUpdate(
+            { memberId },
+            { status: 'left', leftAt: new Date() }
+        );
 
         res.status(200).json({
             success: true,
