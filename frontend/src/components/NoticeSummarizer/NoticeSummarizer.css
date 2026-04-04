@@ -1,6 +1,6 @@
-/* ═══════════════════════════════════════════
-   Notice Summarizer — Login-Matched Dark UI
-   ═══════════════════════════════════════════ */
+/* -------------------------------------------
+   Notice Summarizer � Login-Matched Dark UI
+   ------------------------------------------- */
 
 .notice-page {
   min-height: calc(100vh - 180px);
@@ -11,7 +11,7 @@
   overflow: hidden;
 }
 
-/* ── Hero ───────────────────────────────── */
+/* -- Hero --------------------------------- */
 .notice-hero {
   width: min(820px, 100% - 2rem);
   margin: 0 auto 2.5rem;
@@ -63,7 +63,7 @@
   line-height: 1.7;
 }
 
-/* ── Workspace (two-panel layout) ───────── */
+/* -- Workspace (two-panel layout) --------- */
 .notice-workspace {
   width: min(1100px, 100% - 2rem);
   margin: 0 auto 2.5rem;
@@ -96,7 +96,7 @@
   box-shadow: 0 20px 60px rgba(0, 0, 0, 0.4), 0 0 40px rgba(102, 126, 234, 0.1);
 }
 
-/* ── Panel Headers ──────────────────────── */
+/* -- Panel Headers ------------------------ */
 .panel-header {
   display: flex;
   align-items: center;
@@ -127,7 +127,7 @@
   font-variant-numeric: tabular-nums;
 }
 
-/* ── Textarea ───────────────────────────── */
+/* -- Textarea ----------------------------- */
 .notice-textarea {
   width: 100%;
   min-height: 320px;
@@ -155,7 +155,7 @@
   color: rgba(255, 255, 255, 0.4);
 }
 
-/* ── Action Buttons ─────────────────────── */
+/* -- Action Buttons ----------------------- */
 .panel-actions {
   display: flex;
   gap: 0.7rem;
@@ -246,7 +246,7 @@
   background: rgba(102, 126, 234, 0.25);
 }
 
-/* ── Error ───────────────────────────────── */
+/* -- Error --------------------------------- */
 .notice-error {
   display: flex;
   align-items: center;
@@ -267,7 +267,7 @@
   75% { transform: translateX(4px); }
 }
 
-/* ── Summary Output ─────────────────────── */
+/* -- Summary Output ----------------------- */
 .summary-output {
   min-height: 320px;
   padding: 1rem;
@@ -359,17 +359,24 @@
   to { opacity: 1; transform: translateY(0); }
 }
 
-/* ── Sample Notices Section ─────────────── */
+/* -- Sample Notices Section --------------- */
 .samples-section {
   width: min(1100px, 100% - 2rem);
   margin: 0 auto;
   text-align: left;
+  padding: 1.4rem;
+  border-radius: 1.2rem;
+  border: 1px solid rgba(102, 126, 234, 0.2);
+  background: rgba(10, 10, 20, 0.8);
+  backdrop-filter: blur(20px);
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.4);
 }
 
 .samples-section h3 {
   margin: 0 0 1rem;
   font-size: 1.15rem;
   color: #ffffff;
+  font-weight: 700;
 }
 
 .samples-grid {
@@ -382,21 +389,23 @@
   display: flex;
   flex-direction: column;
   gap: 0.5rem;
-  padding: 1rem;
+  padding: 1.1rem;
   border-radius: 0.85rem;
-  border: 1px solid rgba(102, 126, 234, 0.15);
-  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(56, 232, 196, 0.25);
+  background: linear-gradient(145deg, rgba(56, 232, 196, 0.08), rgba(102, 126, 234, 0.06));
   cursor: pointer;
   text-align: left;
   color: inherit;
   font-family: inherit;
-  transition: all 0.3s ease;
+  transition: all 0.28s ease;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.06), 0 4px 16px rgba(0, 0, 0, 0.3);
 }
 
 .sample-card:hover {
-  transform: translateY(-2px);
-  border-color: #667eea;
-  background: rgba(102, 126, 234, 0.1);
+  transform: translateY(-3px);
+  border-color: rgba(56, 232, 196, 0.55);
+  background: linear-gradient(145deg, rgba(56, 232, 196, 0.14), rgba(102, 126, 234, 0.1));
+  box-shadow: 0 8px 28px rgba(0, 0, 0, 0.4), 0 0 20px rgba(56, 232, 196, 0.08);
 }
 
 .sample-label {
@@ -407,7 +416,7 @@
 
 .sample-preview {
   font-size: 0.78rem;
-  color: rgba(255, 255, 255, 0.45);
+  color: rgba(255, 255, 255, 0.55);
   line-height: 1.5;
   display: -webkit-box;
   -webkit-line-clamp: 2;
@@ -416,7 +425,7 @@
   overflow: hidden;
 }
 
-/* ── Responsive ─────────────────────────── */
+/* -- Responsive --------------------------- */
 @media (max-width: 980px) {
   .notice-workspace {
     grid-template-columns: 1fr;
