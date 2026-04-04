@@ -1,0 +1,78 @@
+.swal-hub-popup {
+  border-radius: 18px !important;
+  border: 1px solid rgba(140, 153, 255, 0.22) !important;
+  box-shadow: 0 30px 65px rgba(4, 7, 28, 0.58), 0 0 0 1px rgba(255, 255, 255, 0.04) !important;
+  backdrop-filter: blur(10px);
+}
+
+.swal-hub-popup::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 4px;
+  border-radius: 18px 18px 0 0;
+  background: linear-gradient(90deg, rgba(96, 165, 250, 0.9), rgba(129, 140, 248, 0.95));
+}
+
+.swal-hub-success::before {
+  background: linear-gradient(90deg, #22c55e, #16a34a);
+}
+
+.swal-hub-error::before {
+  background: linear-gradient(90deg, #fb7185, #f43f5e);
+}
+
+.swal-hub-warning::before {
+  background: linear-gradient(90deg, #fbbf24, #f59e0b);
+}
+
+.swal-hub-info::before {
+  background: linear-gradient(90deg, #60a5fa, #4f46e5);
+}
+
+.swal-hub-title {
+  letter-spacing: -0.01em;
+}
+
+.swal-hub-text {
+  color: rgba(228, 234, 255, 0.84) !important;
+  font-size: 0.97rem !important;
+  line-height: 1.55 !important;
+}
+
+.swal-hub-icon {
+  margin-top: 0.2rem !important;
+  margin-bottom: 0.8rem !important;
+}
+
+.swal-hub-btn,
+.swal-hub-cancel {
+  border-radius: 10px !important;
+  font-weight: 700 !important;
+  letter-spacing: 0.01em;
+  padding: 0.72rem 1.35rem !important;
+  border: 0 !important;
+}
+
+.swal-hub-btn:focus,
+.swal-hub-cancel:focus {
+  box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.28) !important;
+}
+
+.swal2-actions {
+  gap: 0.65rem !important;
+}
+
+.swal-hub-timer {
+  background: linear-gradient(90deg, #60a5fa, #818cf8) !important;
+  height: 4px !important;
+}
+
+@media (max-width: 640px) {
+  .swal2-popup.swal-hub-popup {
+    width: calc(100% - 1.5rem) !important;
+    padding: 1.7rem 1.1rem !important;
+  }
+}

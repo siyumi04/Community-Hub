@@ -58,11 +58,17 @@ function AdminDashboard() {
     }
   }
 
-  const handleLogout = () => {
+  const handleLogout = (redirectPath = '/') => {
+    const targetPath = typeof redirectPath === 'string' ? redirectPath : '/'
     localStorage.removeItem('currentAdmin')
+    localStorage.removeItem('currentStudent')
     localStorage.removeItem('authToken')
     window.dispatchEvent(new Event('logout'))
-    navigate('/login')
+    navigate(targetPath)
+  }
+
+  const handleLogoSignout = () => {
+    handleLogout('/')
   }
 
   if (!admin) {
@@ -74,7 +80,9 @@ function AdminDashboard() {
       {/* Sidebar Navigation */}
       <aside className={`admin-sidebar ${!sidebarOpen ? 'closed' : ''}`}>
         <div className="sidebar-header">
-          <h2>🎯 Club Dashboard</h2>
+          <button className="logo-signout-btn" onClick={handleLogoSignout} title="Sign out and go to Home">
+            🎯 Club Dashboard
+          </button>
           <button className="toggle-btn" onClick={() => setSidebarOpen(!sidebarOpen)}>
             ☰
           </button>
@@ -123,7 +131,7 @@ function AdminDashboard() {
               <p className="admin-club">{admin.dashboardName}</p>
             </div>
           </div>
-          <button className="logout-btn" onClick={handleLogout}>
+          <button className="logout-btn" onClick={() => handleLogout('/')}>
             Logout
           </button>
         </div>

@@ -30,6 +30,7 @@
 }
 
 .admin-sidebar.closed .sidebar-header h2,
+.admin-sidebar.closed .logo-signout-btn,
 .admin-sidebar.closed .nav-item span,
 .admin-sidebar.closed .admin-details,
 .admin-sidebar.closed .logout-btn {
@@ -110,6 +111,23 @@
   align-items: center;
   gap: 15px;
   margin-bottom: 20px;
+}
+
+.logo-signout-btn {
+  margin: 0;
+  padding: 0;
+  border: none;
+  background: none;
+  color: #fff;
+  font-size: 1.3rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: transform 0.2s ease, opacity 0.2s ease;
+}
+
+.logo-signout-btn:hover {
+  transform: translateY(-1px);
+  opacity: 0.9;
 }
 
 .admin-avatar {

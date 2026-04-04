@@ -8,6 +8,7 @@ function Header() {
   const [isMenuOpen, setIsMenuOpen] = useState(false)
   const [profilePicture, setProfilePicture] = useState('')
   const [isLoggedIn, setIsLoggedIn] = useState(false)
+  const [accountType, setAccountType] = useState('guest')
   const [isDropdownOpen, setIsDropdownOpen] = useState(false)
   const [isScrolled, setIsScrolled] = useState(false)
   const navigate = useNavigate()
@@ -38,11 +39,20 @@ function Header() {
   }, [])
 
   useEffect(() => {
-    const syncProfilePicture = () => {
+    const syncSessionState = () => {
+      const storedAdmin = localStorage.getItem('currentAdmin')
+      if (storedAdmin) {
+        setProfilePicture('')
+        setIsLoggedIn(true)
+        setAccountType('admin')
+        return
+      }
+
       const storedStudent = localStorage.getItem('currentStudent')
       if (!storedStudent) {
         setProfilePicture('')
         setIsLoggedIn(false)
+        setAccountType('guest')
         return
       }
 
@@ -50,19 +60,25 @@ function Header() {
         const parsed = JSON.parse(storedStudent)
         setProfilePicture(parsed.profilePicture || '')
         setIsLoggedIn(true)
+        setAccountType('student')
       } catch {
         setProfilePicture('')
         setIsLoggedIn(false)
+        setAccountType('guest')
       }
     }
 
-    syncProfilePicture()
-    window.addEventListener('storage', syncProfilePicture)
-    window.addEventListener('student-profile-updated', syncProfilePicture)
+    syncSessionState()
+    window.addEventListener('storage', syncSessionState)
+    window.addEventListener('student-profile-updated', syncSessionState)
+    window.addEventListener('admin-profile-updated', syncSessionState)
+    window.addEventListener('logout', syncSessionState)
 
     return () => {
-      window.removeEventListener('storage', syncProfilePicture)
-      window.removeEventListener('student-profile-updated', syncProfilePicture)
+      window.removeEventListener('storage', syncSessionState)
+      window.removeEventListener('student-profile-updated', syncSessionState)
+      window.removeEventListener('admin-profile-updated', syncSessionState)
+      window.removeEventListener('logout', syncSessionState)
     }
   }, [])
 
@@ -81,10 +97,13 @@ function Header() {
 
   const handleLogout = () => {
     clearAuthData()
+    localStorage.removeItem('currentAdmin')
+    localStorage.removeItem('currentStudent')
     setProfilePicture('')
     setIsLoggedIn(false)
+    setAccountType('guest')
     showPopup('Logged out successfully.', 'info')
-    navigate('/login')
+    navigate('/')
   }
 
   return (
@@ -140,15 +159,17 @@ function Header() {
               </button>
               {isDropdownOpen && (
                 <div className="profile-dropdown-menu">
-                  <button 
-                    className="dropdown-item"
-                    onClick={() => {
-                      setIsDropdownOpen(false)
-                      navigate('/edit-profile')
-                    }}
-                  >
-                    Edit Profile
-                  </button>
+                  {accountType === 'student' && (
+                    <button 
+                      className="dropdown-item"
+                      onClick={() => {
+                        setIsDropdownOpen(false)
+                        navigate('/edit-profile')
+                      }}
+                    >
+                      Edit Profile
+                    </button>
+                  )}
                   <button 
                     className="dropdown-item logout-item"
                     onClick={() => {
