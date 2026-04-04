@@ -7,6 +7,7 @@ import adminRoutes from './routes/adminRoutes.js';
 import memberRoutes from './routes/memberRoutes.js';
 import eventRoutes from './routes/eventRoutes.js';
 import noticeRoutes from './routes/noticeRoutes.js';
+import communityRoutes from './routes/communityRoutes.js';
 import feedbackRoutes from './routes/feedbackRoutes.js';
 
 dotenv.config();
@@ -48,6 +49,7 @@ app.use('/api/admins', adminRoutes);
 app.use('/api/members', memberRoutes);
 app.use('/api/events', eventRoutes);
 app.use('/api/notices', noticeRoutes);
+app.use('/api/communities', communityRoutes);
 app.use('/api/feedback', feedbackRoutes);
 
 // Error Handling Middleware

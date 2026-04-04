@@ -237,14 +237,29 @@ export const forgotPassword = async (req, res) => {
 export const updateStudent = async (req, res) => {
   try {
     const { id } = req.params;
-    const updates = { ...req.body };
+    const updates = req.body;
 
-    if (updates.email) {
-      updates.email = String(updates.email).trim().toLowerCase();
+    // Load full document so save() keeps all existing fields intact
+    const student = await Student.findById(id);
+
+    if (!student) {
+      return res.status(404).json({
+        success: false,
+        message: 'Student not found',
+      });
     }
 
-    if (updates.itNumber) {
-      updates.itNumber = String(updates.itNumber).trim().toUpperCase();
+    // Apply each field explicitly — guarantees they reach MongoDB
+    if (updates.name !== undefined)              student.name              = String(updates.name).trim();
+    if (updates.email !== undefined)             student.email             = String(updates.email).trim().toLowerCase();
+    if (updates.itNumber !== undefined)          student.itNumber          = String(updates.itNumber).trim().toUpperCase();
+    if (updates.bio !== undefined)               student.bio               = String(updates.bio).trim();
+    if (updates.favoriteCommunity !== undefined) student.favoriteCommunity = String(updates.favoriteCommunity).trim();
+    if (updates.skills !== undefined)            student.skills            = updates.skills;
+
+    if (updates.profilePicture !== undefined && updates.profilePicture !== '') {
+      student.profilePicture = updates.profilePicture;
+      console.log(`✅ Saving profilePicture for student ${id}, size: ${updates.profilePicture.length} bytes`);
     }
 
     if (updates.password) {
@@ -254,28 +269,24 @@ export const updateStudent = async (req, res) => {
           message: 'Password must be at least 8 characters',
         });
       }
-      updates.password = await bcrypt.hash(String(updates.password), SALT_ROUNDS);
+      student.password = await bcrypt.hash(String(updates.password), SALT_ROUNDS);
     }
 
-    const student = await Student.findByIdAndUpdate(id, updates, {
-      new: true,
-      runValidators: true,
-      select: '-password',
-    });
+    await student.save();
 
-    if (!student) {
-      return res.status(404).json({
-        success: false,
-        message: 'Student not found',
-      });
-    }
+    // Return sanitized student (no password)
+    const studentObj = student.toObject();
+    delete studentObj.password;
+
+    console.log(`✅ Student ${id} saved. ProfilePicture present: ${!!studentObj.profilePicture}`);
 
     res.status(200).json({
       success: true,
-      data: student,
+      data: studentObj,
       message: 'Student updated successfully',
     });
   } catch (error) {
+    console.error(`❌ Error updating student:`, error.message);
     res.status(500).json({
       success: false,
       message: error.message,

@@ -35,7 +35,27 @@ const studentSchema = new mongoose.Schema({
     bio: {
         type: String,
         default: ""
-    }
+    },
+    joinedCommunities: [{
+        communityId: {
+            type: String,
+            enum: ['cricket', 'hockey', 'environmental', 'foc', 'food']
+        },
+        communityName: String,
+        memberId: {
+            type: String,
+            required: true
+        },
+        year: String,
+        joinedAt: {
+            type: Date,
+            default: Date.now
+        },
+        additionalInfo: {
+            type: Map,
+            of: String
+        }
+    }]
 }, {
     timestamps: true // Automatically adds createdAt and updatedAt fields
 });
