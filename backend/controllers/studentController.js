@@ -100,6 +100,13 @@ export const createStudent = async (req, res) => {
       });
     }
 
+    if (String(password).length < 8) {
+      return res.status(400).json({
+        success: false,
+        message: 'Password must be at least 8 characters',
+      });
+    }
+
     const hashedPassword = await bcrypt.hash(String(password), SALT_ROUNDS);
 
     const newStudent = new Student({
@@ -149,16 +156,14 @@ export const loginStudent = async (req, res) => {
 
     let isPasswordValid = false;
     const storedPassword = String(student.password || '');
-    const isStoredPasswordHashed = BCRYPT_HASH_PATTERN.test(storedPassword);
 
-    if (isStoredPasswordHashed) {
+    if (BCRYPT_HASH_PATTERN.test(storedPassword)) {
       isPasswordValid = await bcrypt.compare(password, storedPassword);
     } else if (storedPassword && storedPassword === password) {
-      // Legacy plaintext password support: migrate to bcrypt after successful login.
-      const upgradedHash = await bcrypt.hash(password, SALT_ROUNDS);
-      student.password = upgradedHash;
-      await student.save();
       isPasswordValid = true;
+      // Legacy password migration: hash plain text password after successful login.
+      student.password = await bcrypt.hash(password, SALT_ROUNDS);
+      await student.save();
     }
 
     if (!isPasswordValid) {
@@ -243,6 +248,12 @@ export const updateStudent = async (req, res) => {
     }
 
     if (updates.password) {
+      if (String(updates.password).length < 8) {
+        return res.status(400).json({
+          success: false,
+          message: 'Password must be at least 8 characters',
+        });
+      }
       updates.password = await bcrypt.hash(String(updates.password), SALT_ROUNDS);
     }
 
