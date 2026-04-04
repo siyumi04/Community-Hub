@@ -3,7 +3,11 @@ import cors from 'cors';
 import dotenv from 'dotenv';
 import connectDB from './config/db.js';
 import studentRoutes from './routes/studentRoutes.js';
+import adminRoutes from './routes/adminRoutes.js';
+import memberRoutes from './routes/memberRoutes.js';
+import eventRoutes from './routes/eventRoutes.js';
 import noticeRoutes from './routes/noticeRoutes.js';
+import feedbackRoutes from './routes/feedbackRoutes.js';
 
 dotenv.config();
 
@@ -17,9 +21,19 @@ app.use(cors({ origin: process.env.CLIENT_URL }));
 app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ extended: true, limit: '10mb' }));
 
+// Logging middleware to debug requests
+app.use((req, res, next) => {
+  console.log(`[${new Date().toISOString()}] ${req.method} ${req.path}`);
+  next();
+});
+
 // Routes
 app.use('/api/students', studentRoutes);
+app.use('/api/admins', adminRoutes);
+app.use('/api/members', memberRoutes);
+app.use('/api/events', eventRoutes);
 app.use('/api/notices', noticeRoutes);
+app.use('/api/feedback', feedbackRoutes);
 
 // Error Handling Middleware
 app.use((err, req, res, next) => {
