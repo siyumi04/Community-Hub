@@ -100,20 +100,20 @@ export const createStudent = async (req, res) => {
       });
     }
 
-    // Validate password format (5 digits + 2 letters)
-    const passwordRegex = /^(?=.*\d{5})(?=.*[a-zA-Z]{2})[a-zA-Z0-9]{7}$/;
-    if (!passwordRegex.test(password)) {
+    if (String(password).length < 8) {
       return res.status(400).json({
         success: false,
-        message: 'Password must contain exactly 5 digits and 2 letters (7 characters total)'
+        message: 'Password must be at least 8 characters',
       });
     }
+
+    const hashedPassword = await bcrypt.hash(String(password), SALT_ROUNDS);
 
     const newStudent = new Student({
       name: normalizedName,
       itNumber: normalizedItNumber,
       email: normalizedEmail,
-      password: password,
+      password: hashedPassword,
       skills: skills || [],
     });
 
@@ -157,9 +157,13 @@ export const loginStudent = async (req, res) => {
     let isPasswordValid = false;
     const storedPassword = String(student.password || '');
 
-    // Check plain text password comparison
-    if (storedPassword && storedPassword === password) {
+    if (BCRYPT_HASH_PATTERN.test(storedPassword)) {
+      isPasswordValid = await bcrypt.compare(password, storedPassword);
+    } else if (storedPassword && storedPassword === password) {
       isPasswordValid = true;
+      // Legacy password migration: hash plain text password after successful login.
+      student.password = await bcrypt.hash(password, SALT_ROUNDS);
+      await student.save();
     }
 
     if (!isPasswordValid) {
@@ -199,19 +203,10 @@ export const forgotPassword = async (req, res) => {
       });
     }
 
-    if (newPassword.length < 7) {
+    if (newPassword.length < 8) {
       return res.status(400).json({
         success: false,
-        message: 'Password must be 7 characters: exactly 5 digits and 2 letters',
-      });
-    }
-
-    // Validate password format (5 digits + 2 letters)
-    const passwordRegex = /^(?=.*\d{5})(?=.*[a-zA-Z]{2})[a-zA-Z0-9]{7}$/;
-    if (!passwordRegex.test(newPassword)) {
-      return res.status(400).json({
-        success: false,
-        message: 'Password must contain exactly 5 digits and 2 letters (7 characters total)'
+        message: 'Password must be at least 8 characters',
       });
     }
 
@@ -223,7 +218,7 @@ export const forgotPassword = async (req, res) => {
       });
     }
 
-    student.password = newPassword;
+    student.password = await bcrypt.hash(newPassword, SALT_ROUNDS);
     await student.save();
 
     return res.status(200).json({
@@ -253,15 +248,13 @@ export const updateStudent = async (req, res) => {
     }
 
     if (updates.password) {
-      // Validate password format (5 digits + 2 letters)
-      const passwordRegex = /^(?=.*\d{5})(?=.*[a-zA-Z]{2})[a-zA-Z0-9]{7}$/;
-      if (!passwordRegex.test(String(updates.password))) {
+      if (String(updates.password).length < 8) {
         return res.status(400).json({
           success: false,
-          message: 'Password must contain exactly 5 digits and 2 letters (7 characters total)'
+          message: 'Password must be at least 8 characters',
         });
       }
-      updates.password = String(updates.password);
+      updates.password = await bcrypt.hash(String(updates.password), SALT_ROUNDS);
     }
 
     const student = await Student.findByIdAndUpdate(id, updates, {

@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useState } from 'react'
+import { useNavigate } from 'react-router-dom'
 import './Dashboard.css'
 import community01 from '../../assets/ITPM images/Community01.jpg'
 import community02 from '../../assets/ITPM images/Community02.jpg'
@@ -13,6 +14,7 @@ import logo05 from '../../assets/ITPM images/logo05.png'
 
 const communities = [
   {
+    id: 'cricket',
     name: 'Cricket Club',
     description: 'Practice sessions, tournaments, and player development for cricket lovers.',
     tag: 'Sports',
@@ -20,6 +22,7 @@ const communities = [
     logo: logo01,
   },
   {
+    id: 'hockey',
     name: 'Hockey Club',
     description: 'Build teamwork and fitness through competitive and friendly hockey events.',
     tag: 'Sports',
@@ -27,6 +30,7 @@ const communities = [
     logo: logo02,
   },
   {
+    id: 'environmental',
     name: 'Environmental Community',
     description: 'Lead sustainability projects, cleanups, and awareness campaigns on campus.',
     tag: 'Sustainability',
@@ -34,6 +38,7 @@ const communities = [
     logo: logo03,
   },
   {
+    id: 'foc',
     name: 'FOC Event Club',
     description: 'Plan and organize Faculty of Computing events with creative student teams.',
     tag: 'Events',
@@ -41,6 +46,7 @@ const communities = [
     logo: logo04,
   },
   {
+    id: 'food',
     name: 'Food & Beverages Community',
     description: 'Discover recipes, food culture, and host tasting sessions with friends.',
     tag: 'Lifestyle',
@@ -91,6 +97,14 @@ const events = [
     icon: '🍜',
     requiredSkills: ['food', 'beverages', 'hospitality', 'marketing'],
   },
+  {
+    title: 'Campus Cooking Workshop',
+    club: 'Food & Beverages Community',
+    dayOfWeek: 6,          // Saturday
+    time: '10:00 AM',
+    icon: '🍳',
+    requiredSkills: ['cooking', 'culinary', 'food', 'nutrition'],
+  },
 ]
 
 /** Returns the next real calendar date for a given weekday (0-6) */
@@ -125,6 +139,7 @@ function daysUntil(date) {
 }
 
 function Dashboard() {
+  const navigate = useNavigate()
   const [studentSkills, setStudentSkills] = useState([])
   const [studentName, setStudentName] = useState('')
 
@@ -261,7 +276,12 @@ function Dashboard() {
         </div>
         <div className="community-grid">
           {communities.map((community) => (
-            <article className="community-card" key={community.name}>
+            <article 
+              className="community-card" 
+              key={community.id}
+              onClick={() => navigate(`/communities/${community.id}`)}
+              style={{ cursor: 'pointer' }}
+            >
               <div className="community-media">
                 <img className="community-cover" src={community.cover} alt={`${community.name} cover`} />
                 <img className="community-logo" src={community.logo} alt={`${community.name} logo`} />

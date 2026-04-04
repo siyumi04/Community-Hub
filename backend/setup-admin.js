@@ -1,5 +1,6 @@
 import mongoose from 'mongoose';
 import dotenv from 'dotenv';
+import bcrypt from 'bcryptjs';
 dotenv.config();
 
 const adminSchema = new mongoose.Schema({
@@ -17,8 +18,11 @@ const Admin = mongoose.model('Admin', adminSchema);
 
 (async () => {
   try {
-    await mongoose.connect(process.env.MONGO_URI);
+    const dbName = process.env.MONGO_DB_NAME || 'community_hub';
+    await mongoose.connect(process.env.MONGO_URI, { dbName });
     console.log('✅ Connected to MongoDB');
+
+    const hashedPassword = await bcrypt.hash('12345ab', 10);
     
     // Check if admin exists
     const existing = await Admin.findOne({ username: 'admin_test' });
@@ -26,7 +30,7 @@ const Admin = mongoose.model('Admin', adminSchema);
       console.log('ℹ️  Admin exists, updating password...');
       await Admin.updateOne(
         { username: 'admin_test' },
-        { password: '12345ab' }
+        { password: hashedPassword }
       );
     } else {
       console.log('📝 Creating new admin account...');
@@ -37,7 +41,7 @@ const Admin = mongoose.model('Admin', adminSchema);
         email: 'admin@test.com',
         dashboardName: 'test_admin_hub',
         username: 'admin_test',
-        password: '12345ab',
+        password: hashedPassword,
         createdAt: new Date()
       });
       await newAdmin.save();

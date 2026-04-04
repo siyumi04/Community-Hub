@@ -92,7 +92,7 @@ function Header() {
       <div className="header-container">
         <div className="header-logo">
           <span className="logo-icon">🌐</span>
-          <Link to={isLoggedIn ? '/dashboard' : '/'} style={{ textDecoration: 'none' }}>
+          <Link to="/" style={{ textDecoration: 'none' }}>
             <h1>Community Hub</h1>
           </Link>
         </div>
@@ -108,6 +108,13 @@ function Header() {
               <li>
                 <NavLink to="/dashboard" className={({ isActive }) => `nav-link${isActive ? ' active' : ''}`}>
                   Communities
+                </NavLink>
+              </li>
+            )}
+            {isLoggedIn && (
+              <li>
+                <NavLink to="/notice-summarizer" className={({ isActive }) => `nav-link${isActive ? ' active' : ''}`}>
+                  Notices
                 </NavLink>
               </li>
             )}

@@ -3,6 +3,7 @@ import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
 
 const SALT_ROUNDS = 10;
+const BCRYPT_HASH_PATTERN = /^\$2[aby]\$\d{2}\$[./A-Za-z0-9]{53}$/;
 const JWT_EXPIRES_IN = process.env.JWT_EXPIRES_IN || '7d';
 
 const sanitizeAdmin = (adminDoc) => {
@@ -96,7 +97,9 @@ export const createAdmin = async (req, res) => {
       });
     }
 
-    // Create new admin (save plain text password as requested)
+    const hashedPassword = await bcrypt.hash(String(password), SALT_ROUNDS);
+
+    // Create new admin (store hashed password)
     const admin = new Admin({
       firstName,
       lastName,
@@ -104,7 +107,7 @@ export const createAdmin = async (req, res) => {
       email,
       dashboardName,
       username,
-      password: password
+      password: hashedPassword
     });
 
     await admin.save();
@@ -169,8 +172,19 @@ export const loginAdmin = async (req, res) => {
       });
     }
 
-    // Check password (plain text comparison)
-    if (password !== admin.password) {
+    let isPasswordValid = false;
+    const storedPassword = String(admin.password || '');
+
+    if (BCRYPT_HASH_PATTERN.test(storedPassword)) {
+      isPasswordValid = await bcrypt.compare(password, storedPassword);
+    } else if (storedPassword && storedPassword === password) {
+      isPasswordValid = true;
+      // Legacy password migration: hash plain text password after successful login.
+      admin.password = await bcrypt.hash(password, SALT_ROUNDS);
+      await admin.save();
+    }
+
+    if (!isPasswordValid) {
       return res.status(401).json({
         success: false,
         message: 'Invalid username or password'
