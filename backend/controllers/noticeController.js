@@ -13,7 +13,14 @@ function getGroq() {
 export const createNotice = async (req, res) => {
   try {
     const { title, content, category, priority, postedTo, expiryDate } = req.body
-    const adminId = req.admin?.id || req.admin?._id
+    const adminId = req.auth?.adminId || req.admin?.id || req.admin?._id
+
+    if (!adminId) {
+      return res.status(401).json({
+        success: false,
+        message: 'Admin authorization is required',
+      })
+    }
 
     if (!title || !content) {
       return res.status(400).json({
@@ -49,7 +56,13 @@ export const createNotice = async (req, res) => {
 // Get all notices for admin
 export const getNotices = async (req, res) => {
   try {
-    const adminId = req.admin?.id || req.admin?._id
+    const adminId = req.auth?.adminId || req.admin?.id || req.admin?._id
+    if (!adminId) {
+      return res.status(401).json({
+        success: false,
+        message: 'Admin authorization is required',
+      })
+    }
     const notices = await Notice.find({ adminId, isActive: true }).sort({ createdAt: -1 })
 
     res.status(200).json({
@@ -68,7 +81,13 @@ export const getNotices = async (req, res) => {
 // Get active notices only
 export const getActiveNotices = async (req, res) => {
   try {
-    const adminId = req.admin?.id || req.admin?._id
+    const adminId = req.auth?.adminId || req.admin?.id || req.admin?._id
+    if (!adminId) {
+      return res.status(401).json({
+        success: false,
+        message: 'Admin authorization is required',
+      })
+    }
     const now = new Date()
 
     const notices = await Notice.find({
@@ -93,7 +112,7 @@ export const getActiveNotices = async (req, res) => {
 export const updateNotice = async (req, res) => {
   try {
     const { noticeId } = req.params
-    const adminId = req.admin?.id || req.admin?._id
+    const adminId = req.auth?.adminId || req.admin?.id || req.admin?._id
     const updates = req.body
 
     const notice = await Notice.findOneAndUpdate({ _id: noticeId, adminId }, updates, { new: true })
@@ -122,7 +141,7 @@ export const updateNotice = async (req, res) => {
 export const archiveNotice = async (req, res) => {
   try {
     const { noticeId } = req.params
-    const adminId = req.admin?.id || req.admin?._id
+    const adminId = req.auth?.adminId || req.admin?.id || req.admin?._id
 
     const notice = await Notice.findOneAndUpdate({ _id: noticeId, adminId }, { isActive: false }, { new: true })
 
@@ -150,7 +169,7 @@ export const archiveNotice = async (req, res) => {
 export const incrementViews = async (req, res) => {
   try {
     const { noticeId } = req.params
-    const adminId = req.admin?.id || req.admin?._id
+    const adminId = req.auth?.adminId || req.admin?.id || req.admin?._id
 
     const notice = await Notice.findOneAndUpdate(
       { _id: noticeId, adminId },

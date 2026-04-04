@@ -7,6 +7,7 @@ import { apiFetch, setAuthToken } from '../../services/apiClient'
 const NAME_PATTERN = /^[A-Za-z][A-Za-z' -]{1,29}$/
 const IT_NUMBER_PATTERN = /^IT\d{2}[A-Za-z0-9]{6}$/
 const PASSWORD_PATTERN = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d).{8,}$/
+const ADMIN_PASSWORD_PATTERN = /^(?=(?:.*\d){5})(?=(?:.*[A-Za-z]){2})[A-Za-z0-9]{7}$/
 const DASHBOARD_NAME_PATTERN = /^[a-z0-9_-]{3,30}$/i
 const USERNAME_PATTERN = /^[a-zA-Z0-9_-]{3,30}$/
 
@@ -284,7 +285,7 @@ function CreateAccount() {
     if (name === 'password') {
       const normalized = String(value).trim()
       if (!normalized) return 'Password is required.'
-      if (!PASSWORD_PATTERN.test(normalized)) {
+      if (!ADMIN_PASSWORD_PATTERN.test(normalized)) {
         return 'Password must be 7 characters: exactly 5 digits and 2 letters (e.g., 12345ab)'
       }
       return ''
@@ -404,6 +405,13 @@ function CreateAccount() {
           >
             <span className="tab-icon">👤</span>
             Student Account
+          </button>
+          <button
+            className={`tab-btn ${activeTab === 'admin' ? 'active' : ''}`}
+            onClick={() => setActiveTab('admin')}
+          >
+            <span className="tab-icon">⚙️</span>
+            Admin Account
           </button>
         </div>
 
@@ -561,6 +569,151 @@ function CreateAccount() {
 
                 <button type="submit" className="register-btn" disabled={studentLoading}>
                   {studentLoading ? 'Creating Account...' : 'Create Student Account'}
+                </button>
+              </div>
+            </form>
+
+            <div className="tab-footer">
+              <p>Already have an account? <Link to="/login" className="login-link">Sign in here</Link></p>
+            </div>
+          </div>
+        )}
+
+        {activeTab === 'admin' && (
+          <div className="tab-content admin-tab">
+            <div className="tab-header">
+              <h1>Admin Registration</h1>
+              <p>Create an admin account for dashboard access</p>
+            </div>
+
+            <form onSubmit={handleAdminSubmit} className="register-form">
+              <div className="form-row">
+                <div className="form-group">
+                  <label>First Name</label>
+                  <input
+                    type="text"
+                    name="firstName"
+                    placeholder="Admin"
+                    value={adminForm.firstName}
+                    onChange={handleAdminChange}
+                    onBlur={handleAdminBlur}
+                    className={adminErrors.firstName && adminTouched.firstName ? 'input-error' : ''}
+                    required
+                  />
+                  {adminErrors.firstName && adminTouched.firstName && <p className="field-error">{adminErrors.firstName}</p>}
+                </div>
+                <div className="form-group">
+                  <label>Last Name</label>
+                  <input
+                    type="text"
+                    name="lastName"
+                    placeholder="User"
+                    value={adminForm.lastName}
+                    onChange={handleAdminChange}
+                    onBlur={handleAdminBlur}
+                    className={adminErrors.lastName && adminTouched.lastName ? 'input-error' : ''}
+                    required
+                  />
+                  {adminErrors.lastName && adminTouched.lastName && <p className="field-error">{adminErrors.lastName}</p>}
+                </div>
+              </div>
+
+              <div className="form-row">
+                <div className="form-group">
+                  <label>IT Number</label>
+                  <input
+                    type="text"
+                    name="itNumber"
+                    placeholder="IT24XXXXXX"
+                    value={adminForm.itNumber}
+                    onChange={handleAdminChange}
+                    onBlur={handleAdminBlur}
+                    className={adminErrors.itNumber && adminTouched.itNumber ? 'input-error' : ''}
+                    required
+                  />
+                  {adminErrors.itNumber && adminTouched.itNumber && <p className="field-error">{adminErrors.itNumber}</p>}
+                </div>
+                <div className="form-group">
+                  <label>Email Address</label>
+                  <input
+                    type="email"
+                    name="email"
+                    placeholder="admin@email.com"
+                    value={adminForm.email}
+                    onChange={handleAdminChange}
+                    onBlur={handleAdminBlur}
+                    className={adminErrors.email && adminTouched.email ? 'input-error' : ''}
+                    required
+                  />
+                  {adminErrors.email && adminTouched.email && <p className="field-error">{adminErrors.email}</p>}
+                </div>
+              </div>
+
+              <div className="form-row">
+                <div className="form-group">
+                  <label>Dashboard Name</label>
+                  <input
+                    type="text"
+                    name="dashboardName"
+                    placeholder="my_admin_hub"
+                    value={adminForm.dashboardName}
+                    onChange={handleAdminChange}
+                    onBlur={handleAdminBlur}
+                    className={adminErrors.dashboardName && adminTouched.dashboardName ? 'input-error' : ''}
+                    required
+                  />
+                  {adminErrors.dashboardName && adminTouched.dashboardName && <p className="field-error">{adminErrors.dashboardName}</p>}
+                </div>
+                <div className="form-group">
+                  <label>Username</label>
+                  <input
+                    type="text"
+                    name="username"
+                    placeholder="admin_username"
+                    value={adminForm.username}
+                    onChange={handleAdminChange}
+                    onBlur={handleAdminBlur}
+                    className={adminErrors.username && adminTouched.username ? 'input-error' : ''}
+                    required
+                  />
+                  {adminErrors.username && adminTouched.username && <p className="field-error">{adminErrors.username}</p>}
+                </div>
+              </div>
+
+              <div className="form-row">
+                <div className="form-group">
+                  <label>Password</label>
+                  <input
+                    type="password"
+                    name="password"
+                    placeholder="12345ab"
+                    value={adminForm.password}
+                    onChange={handleAdminChange}
+                    onBlur={handleAdminBlur}
+                    className={adminErrors.password && adminTouched.password ? 'input-error' : ''}
+                    required
+                  />
+                  {adminErrors.password && adminTouched.password && <p className="field-error">{adminErrors.password}</p>}
+                </div>
+                <div className="form-group">
+                  <label>Confirm Password</label>
+                  <input
+                    type="password"
+                    name="confirmPassword"
+                    placeholder="Confirm"
+                    value={adminForm.confirmPassword}
+                    onChange={handleAdminChange}
+                    onBlur={handleAdminBlur}
+                    className={adminErrors.confirmPassword && adminTouched.confirmPassword ? 'input-error' : ''}
+                    required
+                  />
+                  {adminErrors.confirmPassword && adminTouched.confirmPassword && <p className="field-error">{adminErrors.confirmPassword}</p>}
+                </div>
+              </div>
+
+              <div className="form-footer-actions">
+                <button type="submit" className="register-btn" disabled={adminLoading}>
+                  {adminLoading ? 'Creating Account...' : 'Create Admin Account'}
                 </button>
               </div>
             </form>

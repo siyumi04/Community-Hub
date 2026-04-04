@@ -32,6 +32,30 @@ const eventSchema = new mongoose.Schema(
       type: String,
       required: true,
     },
+    venue: {
+      type: String,
+      required: true,
+    },
+    year: {
+      type: Number,
+      required: true,
+      min: 2024,
+      max: 2100,
+    },
+    month: {
+      type: Number,
+      required: true,
+      min: 1,
+      max: 12,
+    },
+    suggestedDate: {
+      type: Date,
+      required: true,
+    },
+    eventPost: {
+      type: String,
+      required: true,
+    },
     maxCapacity: {
       type: Number,
       required: true,

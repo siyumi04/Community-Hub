@@ -2,13 +2,13 @@ import { useState, useEffect } from 'react'
 import { apiFetch } from '../../../services/apiClient'
 import MiniCalendar from '../components/MiniCalendar'
 
-function DashboardOverview({ admin, memberStats, eventStats }) {
+function DashboardOverview({ admin, memberStats, eventStats, noticeRefreshSignal }) {
   const [notices, setNotices] = useState([])
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
     fetchNotices()
-  }, [])
+  }, [noticeRefreshSignal])
 
   const fetchNotices = async () => {
     try {

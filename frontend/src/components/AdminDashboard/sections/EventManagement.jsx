@@ -2,19 +2,16 @@ import { useState, useEffect } from 'react'
 import { apiFetch } from '../../../services/apiClient'
 import { showPopup } from '../../../utils/popup'
 
-function EventManagement({ admin }) {
+function EventManagement({ admin, onEventUpdated }) {
   const [events, setEvents] = useState([])
   const [view, setView] = useState('upcoming') // 'upcoming', 'past'
   const [loading, setLoading] = useState(true)
   const [showCreateEventForm, setShowCreateEventForm] = useState(false)
   const [formData, setFormData] = useState({
     eventName: '',
-    description: '',
-    category: 'Other',
-    startDate: '',
-    endDate: '',
-    location: '',
-    maxCapacity: '',
+    venue: '',
+    year: '',
+    month: '',
   })
 
   useEffect(() => {
@@ -39,7 +36,7 @@ function EventManagement({ admin }) {
 
   const handleCreateEvent = async (e) => {
     e.preventDefault()
-    if (!formData.eventName || !formData.startDate || !formData.endDate) {
+    if (!formData.eventName || !formData.venue || !formData.year || !formData.month) {
       showPopup('error', 'Validation', 'Please fill all required fields')
       return
     }
@@ -54,15 +51,15 @@ function EventManagement({ admin }) {
         showPopup('success', 'Success', 'Event created successfully!')
         setFormData({
           eventName: '',
-          description: '',
-          category: 'Other',
-          startDate: '',
-          endDate: '',
-          location: '',
-          maxCapacity: '',
+          venue: '',
+          year: '',
+          month: '',
         })
         setShowCreateEventForm(false)
-        fetchEvents()
+        await fetchEvents()
+        if (typeof onEventUpdated === 'function') {
+          onEventUpdated()
+        }
       } else {
         showPopup('error', 'Error', data.message)
       }
@@ -77,14 +74,15 @@ function EventManagement({ admin }) {
       const response = await apiFetch(`/events/${eventId}`, { method: 'DELETE' })
       if (response.ok) {
         showPopup('success', 'Success', 'Event deleted!')
-        fetchEvents()
+        await fetchEvents()
+        if (typeof onEventUpdated === 'function') {
+          onEventUpdated()
+        }
       }
     } catch (err) {
       showPopup('error', 'Error', 'Failed to delete event')
     }
   }
-
-  const categories = ['Sports', 'Cultural', 'Academic', 'Social', 'Technical', 'Competition', 'Workshop', 'Other']
 
   return (
     <div className="event-management">
@@ -108,50 +106,31 @@ function EventManagement({ admin }) {
                 onChange={(e) => setFormData({ ...formData, eventName: e.target.value })}
                 required
               />
-              <select
-                value={formData.category}
-                onChange={(e) => setFormData({ ...formData, category: e.target.value })}
-              >
-                {categories.map((cat) => (
-                  <option key={cat} value={cat}>
-                    {cat}
-                  </option>
-                ))}
-              </select>
-            </div>
-            <textarea
-              placeholder="Event Description"
-              value={formData.description}
-              onChange={(e) => setFormData({ ...formData, description: e.target.value })}
-              required
-            />
-            <div className="form-row">
-              <input
-                type="datetime-local"
-                value={formData.startDate}
-                onChange={(e) => setFormData({ ...formData, startDate: e.target.value })}
-                required
-              />
-              <input
-                type="datetime-local"
-                value={formData.endDate}
-                onChange={(e) => setFormData({ ...formData, endDate: e.target.value })}
-                required
-              />
-            </div>
-            <div className="form-row">
               <input
                 type="text"
-                placeholder="Location"
-                value={formData.location}
-                onChange={(e) => setFormData({ ...formData, location: e.target.value })}
+                placeholder="Venue (e.g. University Main Playground)"
+                value={formData.venue}
+                onChange={(e) => setFormData({ ...formData, venue: e.target.value })}
+                required
+              />
+            </div>
+            <div className="form-row">
+              <input
+                type="number"
+                placeholder="Year (e.g. 2026)"
+                value={formData.year}
+                onChange={(e) => setFormData({ ...formData, year: e.target.value })}
+                min="2026"
+                max="2035"
                 required
               />
               <input
                 type="number"
-                placeholder="Max Capacity"
-                value={formData.maxCapacity}
-                onChange={(e) => setFormData({ ...formData, maxCapacity: e.target.value })}
+                placeholder="Month (1-12)"
+                value={formData.month}
+                onChange={(e) => setFormData({ ...formData, month: e.target.value })}
+                min="1"
+                max="12"
                 required
               />
             </div>
@@ -189,13 +168,13 @@ function EventManagement({ admin }) {
                 <span className={`badge badge-${event.eventStatus}`}>{event.eventStatus}</span>
               </div>
               <p className="event-category">{event.category}</p>
-              <p className="event-description">{event.description}</p>
+              <p className="event-description">{event.eventPost || event.description}</p>
               <div className="event-details">
                 <p>
                   📅 {new Date(event.startDate).toLocaleDateString()} -{' '}
                   {new Date(event.endDate).toLocaleDateString()}
                 </p>
-                <p>📍 {event.location}</p>
+                <p>📍 {event.venue || event.location}</p>
                 <p>👥 {event.registeredMembers}/{event.maxCapacity} registered</p>
               </div>
               <div className="event-actions">

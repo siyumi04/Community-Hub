@@ -16,6 +16,7 @@ function AdminDashboard() {
   const [sidebarOpen, setSidebarOpen] = useState(true)
   const [memberStats, setMemberStats] = useState(null)
   const [eventStats, setEventStats] = useState(null)
+  const [noticeRefreshSignal, setNoticeRefreshSignal] = useState(0)
 
   useEffect(() => {
     const storedAdmin = localStorage.getItem('currentAdmin')
@@ -69,6 +70,14 @@ function AdminDashboard() {
 
   const handleLogoSignout = () => {
     handleLogout('/')
+  }
+
+  const handleNoticeUpdated = () => {
+    setNoticeRefreshSignal((prev) => prev + 1)
+  }
+
+  const handleEventUpdated = () => {
+    fetchStats()
   }
 
   if (!admin) {
@@ -146,11 +155,16 @@ function AdminDashboard() {
 
         <div className="admin-content">
           {activeTab === 'overview' && (
-            <DashboardOverview admin={admin} memberStats={memberStats} eventStats={eventStats} />
+            <DashboardOverview
+              admin={admin}
+              memberStats={memberStats}
+              eventStats={eventStats}
+              noticeRefreshSignal={noticeRefreshSignal}
+            />
           )}
           {activeTab === 'members' && <MemberManagement admin={admin} />}
-          {activeTab === 'events' && <EventManagement admin={admin} />}
-          {activeTab === 'notices' && <NoticeManagement admin={admin} />}
+          {activeTab === 'events' && <EventManagement admin={admin} onEventUpdated={handleEventUpdated} />}
+          {activeTab === 'notices' && <NoticeManagement admin={admin} onNoticeUpdated={handleNoticeUpdated} />}
           {activeTab === 'analytics' && <AnalyticsBoard admin={admin} />}
         </div>
       </main>
