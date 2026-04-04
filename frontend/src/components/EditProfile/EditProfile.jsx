@@ -18,6 +18,7 @@ function EditProfile() {
     favoriteCommunity: '',
     bio: '',
     profilePicture: '',
+    joinedCommunities: [],
   })
   const [deleting, setDeleting] = useState(false)
   const [fieldErrors, setFieldErrors] = useState({
@@ -126,6 +127,7 @@ function EditProfile() {
           favoriteCommunity: student.favoriteCommunity || '',
           bio: student.bio || '',
           profilePicture: student.profilePicture || '',
+          joinedCommunities: student.joinedCommunities || [],
         })
 
         if (student.profilePicture) {
@@ -402,6 +404,39 @@ function EditProfile() {
               )}
             </div>
           </div>
+
+          {/* Joined Communities Section - Read Only */}
+          {profile.joinedCommunities && profile.joinedCommunities.length > 0 && (
+            <div className="edit-group">
+              <label>Joined Communities</label>
+              <div className="joined-communities-container">
+                {profile.joinedCommunities.map((community, index) => (
+                  <div key={index} className="community-badge">
+                    <div className="community-badge-header">
+                      <span className="community-name">{community.communityName}</span>
+                    </div>
+                    <div className="community-badge-content">
+                      <div className="badge-item">
+                        <span className="badge-label">Member ID:</span>
+                        <span className="badge-value">{community.memberId}</span>
+                      </div>
+                      <div className="badge-item">
+                        <span className="badge-label">Year:</span>
+                        <span className="badge-value">{community.year}</span>
+                      </div>
+                      <div className="badge-item">
+                        <span className="badge-label">Joined:</span>
+                        <span className="badge-value">
+                          {new Date(community.joinedAt).toLocaleDateString()}
+                        </span>
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+              <p className="info-text">* Read-only. Your membership information cannot be edited.</p>
+            </div>
+          )}
 
           <div className="edit-group">
             <label htmlFor="bio">Bio</label>

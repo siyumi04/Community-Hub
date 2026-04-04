@@ -1,6 +1,8 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { COMMUNITY_FORM_FIELDS } from '../utils/constants';
+import { apiFetch } from '../services/apiClient';
+import { showPopup } from '../utils/popup';
 
 const JoinForm = ({ communityId, communityName, onClose, onSuccess }) => {
   const navigate = useNavigate();
@@ -116,7 +118,7 @@ const JoinForm = ({ communityId, communityName, onClose, onSuccess }) => {
     setStudentId(uppercaseValue);
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
 
     // Mark all fields as touched to show errors
@@ -135,11 +137,22 @@ const JoinForm = ({ communityId, communityName, onClose, onSuccess }) => {
     // Validate all
     if (!isFormValid()) return;
 
+    // Get current student from localStorage
+    const storedStudent = localStorage.getItem('currentStudent');
+    if (!storedStudent) {
+      showPopup('Please log in first', 'error');
+      navigate('/login');
+      return;
+    }
+
+    const currentStudent = JSON.parse(storedStudent);
+
     // Prepare submission data
     const formData = {
+      studentId: currentStudent._id || currentStudent.id,
       communityId,
+      communityName,
       fullName,
-      studentId,
       email,
       phone,
       year,
@@ -148,14 +161,30 @@ const JoinForm = ({ communityId, communityName, onClose, onSuccess }) => {
     };
 
     console.log('✅ Form submitted:', formData);
-    // TODO: Replace with API call later
 
-    // Show success popup, then navigate after delay
-    setShowSuccess(true);
-    setTimeout(() => {
-      setShowSuccess(false);
-      navigate(`/communities/${communityId}/member`);
-    }, 2500);
+    try {
+      const response = await apiFetch('/communities/join', {
+        method: 'POST',
+        body: JSON.stringify(formData)
+      });
+
+      const result = await response.json();
+
+      if (!response.ok) {
+        showPopup(result.message || 'Failed to join community', 'error');
+        return;
+      }
+
+      // Show success popup, then navigate after delay
+      setShowSuccess(true);
+      setTimeout(() => {
+        setShowSuccess(false);
+        onClose(false);
+        navigate(`/communities/${communityId}/member`);
+      }, 2500);
+    } catch (error) {
+      showPopup(error.message || 'An error occurred while joining the community', 'error');
+    }
   };
 
   return (

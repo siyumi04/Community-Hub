@@ -4,6 +4,7 @@ import dotenv from 'dotenv';
 import connectDB from './config/db.js';
 import studentRoutes from './routes/studentRoutes.js';
 import noticeRoutes from './routes/noticeRoutes.js';
+import communityRoutes from './routes/communityRoutes.js';
 
 dotenv.config();
 
@@ -20,6 +21,7 @@ app.use(express.urlencoded({ extended: true, limit: '10mb' }));
 // Routes
 app.use('/api/students', studentRoutes);
 app.use('/api/notices', noticeRoutes);
+app.use('/api/communities', communityRoutes);
 
 // Error Handling Middleware
 app.use((err, req, res, next) => {
