@@ -149,8 +149,8 @@ function AdminDashboard() {
       {/* Main Content */}
       <main className="admin-main">
         <header className="admin-top-bar">
-          <h1>{admin.dashboardName}</h1>
-          <p>Welcome back, {admin.firstName}!</p>
+          <h1>admin_secure_2097_hub</h1>
+          <p>Welcome back, {admin.firstName || 'Secure'}!</p>
         </header>
 
         <div className="admin-content">
@@ -162,7 +162,7 @@ function AdminDashboard() {
               noticeRefreshSignal={noticeRefreshSignal}
             />
           )}
-          {activeTab === 'members' && <MemberManagement admin={admin} />}
+          {activeTab === 'members' && <MemberManagement admin={admin} memberStats={memberStats} />}
           {activeTab === 'events' && <EventManagement admin={admin} onEventUpdated={handleEventUpdated} />}
           {activeTab === 'notices' && <NoticeManagement admin={admin} onNoticeUpdated={handleNoticeUpdated} />}
           {activeTab === 'analytics' && <AnalyticsBoard admin={admin} />}

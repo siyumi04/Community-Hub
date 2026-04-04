@@ -23,6 +23,18 @@ const memberSchema = new mongoose.Schema(
       type: String,
       required: true,
     },
+    // Legacy field kept for backward compatibility, not required
+    sport: {
+      type: String,
+    },
+    mainType: {
+      type: String,
+      required: true,
+    },
+    category: {
+      type: String,
+      required: true,
+    },
     status: {
       type: String,
       enum: ['pending', 'approved', 'rejected', 'banned'],
@@ -30,7 +42,6 @@ const memberSchema = new mongoose.Schema(
     },
     role: {
       type: String,
-      enum: ['Member', 'Event Team', 'Moderator'],
       default: 'Member',
     },
     joinedDate: {

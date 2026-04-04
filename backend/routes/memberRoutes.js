@@ -3,6 +3,7 @@ import {
   getMembers,
   getPendingRequests,
   addMember,
+  updateMember,
   approveMember,
   rejectMember,
   promoteMember,
@@ -27,6 +28,7 @@ router.get('/export/csv', exportMembersCSV)
 router.post('/add', addMember)
 
 // Patch routes
+router.patch('/:memberId', updateMember)
 router.patch('/:memberId/approve', approveMember)
 router.patch('/:memberId/reject', rejectMember)
 router.patch('/:memberId/promote', promoteMember)

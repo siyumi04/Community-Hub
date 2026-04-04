@@ -210,6 +210,43 @@
   overflow-y: auto;
 }
 
+/* Overview welcome strip */
+.overview-welcome {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 20px;
+  margin-bottom: 24px;
+}
+
+.overview-greeting {
+  margin: 0;
+  color: #fff;
+  font-size: 1.25rem;
+  font-weight: 600;
+}
+
+.overview-sub {
+  margin: 4px 0 0 0;
+  color: rgba(255, 255, 255, 0.65);
+  font-size: 0.95rem;
+}
+
+.overview-meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.overview-chip {
+  padding: 6px 12px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  color: rgba(255, 255, 255, 0.85);
+  font-size: 0.8rem;
+}
+
 /* Section Header */
 .section-header {
   display: flex;
@@ -225,6 +262,12 @@
   color: #fff;
   font-size: 2rem;
   font-weight: 700;
+}
+
+.section-subtitle {
+  margin-top: 6px;
+  color: rgba(255, 255, 255, 0.65);
+  font-size: 0.95rem;
 }
 
 .section-actions {
