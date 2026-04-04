@@ -3,6 +3,7 @@ import {
   createNotice,
   getNotices,
   getActiveNotices,
+  getPublicNotices,
   updateNotice,
   archiveNotice,
   incrementViews,
@@ -12,10 +13,11 @@ import { verifyAdminToken } from '../middleware/authMiddleware.js'
 
 const router = express.Router()
 
-// Public summarize route used by notice summarizer page
+// Public routes (no auth required)
 router.post('/summarize', summarizeNotice)
+router.get('/public', getPublicNotices)
 
-// Apply auth middleware to all routes
+// Apply auth middleware to all routes below
 router.use(verifyAdminToken)
 
 // Get routes

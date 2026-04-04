@@ -36,7 +36,7 @@ const CommunityMemberPage = () => {
         </div>
         {/* Dark section for notices so white heading & cards are visible */}
         <div className="rounded-2xl p-8" style={{ background: 'linear-gradient(160deg, #0f172a 0%, #1e1b4b 100%)' }}>
-          <NoticeBoard notices={community.notices} />
+          <NoticeBoard />
         </div>
       </div>
 

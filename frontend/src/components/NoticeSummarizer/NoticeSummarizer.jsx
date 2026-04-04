@@ -1,73 +1,24 @@
-import { useState, useRef } from 'react'
+import { useState, useRef, useEffect } from 'react'
 import { apiFetch } from '../../services/apiClient'
+import { API_BASE_URL } from '../../utils/constants'
 import './NoticeSummarizer.css'
 
-const SAMPLE_NOTICES = [
-  {
-    label: '📚 Exam Schedule Notice',
-    text: `IMPORTANT NOTICE: Final Examination Schedule – Semester 2, 2026
+// Priority config for badge colors
+const PRIORITY_CONFIG = {
+  Urgent: { label: '⚠ Urgent', className: 'priority-urgent' },
+  High: { label: 'High', className: 'priority-high' },
+  Medium: { label: 'Medium', className: 'priority-medium' },
+  Low: { label: 'Low', className: 'priority-low' },
+}
 
-Dear Students,
-
-This is to inform all undergraduate students of the Faculty of Computing that the final examinations for Semester 2, 2026 will be conducted from April 21, 2026 to May 9, 2026. The examination timetable has been uploaded to the university portal.
-
-All students are required to:
-1. Collect their examination admission cards from the Student Services Division before April 14, 2026.
-2. Students who have not settled their tuition fees will NOT be permitted to sit for examinations. The deadline for fee payment is April 10, 2026.
-3. Report to the examination hall 30 minutes before the scheduled start time.
-4. Bring a valid university ID card and admission card to every examination.
-5. Students requesting special accommodations must submit their applications to the Dean's office by April 7, 2026.
-
-Please note that no electronic devices (including smartwatches) are permitted in the examination hall. Any student found violating examination regulations will face disciplinary action as per university policy.
-
-For any queries, contact the Examination Division at exams@university.lk or visit Room 205 during office hours (9:00 AM - 4:00 PM).
-
-Regards,
-Senior Assistant Registrar – Examinations`,
-  },
-  {
-    label: '🎉 Club Registration',
-    text: `NOTICE: Student Club Registrations Open for Academic Year 2026/2027
-
-The Student Affairs Division is pleased to announce that registrations for student clubs and societies for the academic year 2026/2027 are now open. All students from Year 1 to Year 4 are encouraged to join at least one club to enhance their university experience.
-
-Registration Period: April 5, 2026 – April 20, 2026
-Registration Method: Online via the Student Portal → "Club Registration" tab
-Club Fair: April 8, 2026, 10:00 AM – 3:00 PM at the University Auditorium
-
-Available clubs include: Cricket Club, Hockey Club, Environmental Community, FOC Event Club, Food & Beverages Community, Robotics Society, Drama Circle, Debating Society, and more.
-
-Each student can register for a maximum of 3 clubs. Selection will be confirmed via email by April 25, 2026. Students who were office bearers last year must re-apply if they wish to continue.
-
-For more details, contact the Student Affairs Division at studentaffairs@university.lk.`,
-  },
-  {
-    label: '🏗️ Maintenance Notice',
-    text: `URGENT NOTICE: Scheduled Maintenance – IT Infrastructure
-
-Dear Faculty and Students,
-
-Please be informed that the IT Services Department will be conducting scheduled maintenance on the university's network infrastructure on Saturday, April 12, 2026 from 6:00 AM to 6:00 PM.
-
-During this period:
-- The Student Portal, LMS (Learning Management System), and email services will be unavailable
-- Wi-Fi connectivity across all campus buildings will be intermittently disrupted
-- Library online catalog and e-resource access will be offline
-- VPN services for remote access will not be functional
-
-All students are advised to:
-- Download any required learning materials before April 11, 2026
-- Save all ongoing work on cloud platforms before the maintenance window
-- Submit any pending assignments before April 11, 2026, 11:59 PM as the submission portal will be offline
-- Plan offline study activities for the maintenance day
-
-Assignment deadlines falling on April 12 have been extended to April 13, 2026, 11:59 PM.
-
-We apologize for the inconvenience. For emergencies during the maintenance window, contact the IT Help Desk at 011-2345678.
-
-IT Services Department`,
-  },
-]
+// Category emoji map
+const CATEGORY_EMOJI = {
+  Announcement: '📢',
+  Event: '🎉',
+  Urgent: '🚨',
+  General: '📋',
+  Maintenance: '🔧',
+}
 
 function NoticeSummarizer() {
   const [noticeText, setNoticeText] = useState('')
@@ -76,6 +27,35 @@ function NoticeSummarizer() {
   const [error, setError] = useState('')
   const [charCount, setCharCount] = useState(0)
   const textareaRef = useRef(null)
+
+  // Live notices state
+  const [notices, setNotices] = useState([])
+  const [noticesLoading, setNoticesLoading] = useState(true)
+  const [noticesError, setNoticesError] = useState('')
+  const [selectedNoticeId, setSelectedNoticeId] = useState(null)
+
+  // Fetch live notices from backend
+  useEffect(() => {
+    const fetchNotices = async () => {
+      try {
+        setNoticesLoading(true)
+        const response = await fetch(`${API_BASE_URL}/notices/public`)
+        const data = await response.json()
+
+        if (response.ok && data.success) {
+          setNotices(data.data)
+        } else {
+          setNoticesError(data.message || 'Failed to load notices')
+        }
+      } catch (err) {
+        setNoticesError('Unable to connect to server')
+      } finally {
+        setNoticesLoading(false)
+      }
+    }
+
+    fetchNotices()
+  }, [])
 
   const handleTextChange = (e) => {
     const text = e.target.value
@@ -124,18 +104,51 @@ function NoticeSummarizer() {
     setSummary('')
     setError('')
     setCharCount(0)
+    setSelectedNoticeId(null)
     textareaRef.current?.focus()
   }
 
-  const handleSampleClick = (sampleText) => {
-    setNoticeText(sampleText)
-    setCharCount(sampleText.length)
+  const handleNoticeClick = (notice) => {
+    // Build the full notice text for summarization
+    const fullText = `${notice.title}\n\n${notice.content}`
+    setNoticeText(fullText)
+    setCharCount(fullText.length)
     setSummary('')
     setError('')
+    setSelectedNoticeId(notice._id)
+
+    // Scroll to workspace
+    const workspace = document.querySelector('.notice-workspace')
+    if (workspace) {
+      workspace.scrollIntoView({ behavior: 'smooth', block: 'start' })
+    }
   }
 
   const handleCopySummary = () => {
     navigator.clipboard.writeText(summary)
+  }
+
+  const formatDate = (dateString) => {
+    return new Date(dateString).toLocaleDateString('en-US', {
+      month: 'short',
+      day: 'numeric',
+      year: 'numeric',
+    })
+  }
+
+  const formatTimeAgo = (dateString) => {
+    const now = new Date()
+    const date = new Date(dateString)
+    const diffMs = now - date
+    const diffMins = Math.floor(diffMs / 60000)
+    const diffHours = Math.floor(diffMs / 3600000)
+    const diffDays = Math.floor(diffMs / 86400000)
+
+    if (diffMins < 1) return 'Just now'
+    if (diffMins < 60) return `${diffMins}m ago`
+    if (diffHours < 24) return `${diffHours}h ago`
+    if (diffDays < 7) return `${diffDays}d ago`
+    return formatDate(dateString)
   }
 
   return (
@@ -147,18 +160,94 @@ function NoticeSummarizer() {
         </div>
         <h1>Notice Summarizer</h1>
         <p>
-          Paste any long university notice and let AI instantly extract key deadlines,
-          required actions, and important details into concise bullet points.
+          Select an admin notice below or paste any notice, and let AI instantly extract
+          key deadlines, required actions, and important details.
         </p>
       </section>
 
+      {/* ── Live Admin Notices ── */}
+      <section className="live-notices-section">
+        <div className="live-notices-header">
+          <div className="live-notices-title-row">
+            <span className="live-dot" />
+            <h3>Admin Notices</h3>
+            <span className="notices-count-badge">
+              {notices.length} {notices.length === 1 ? 'notice' : 'notices'}
+            </span>
+          </div>
+          <p className="live-notices-subtitle">
+            Click any notice to load it into the summarizer
+          </p>
+        </div>
+
+        {noticesLoading ? (
+          <div className="notices-loading-state">
+            <div className="notices-loading-shimmer" />
+            <div className="notices-loading-shimmer" />
+            <div className="notices-loading-shimmer" />
+          </div>
+        ) : noticesError ? (
+          <div className="notices-error-state">
+            <span>⚠️</span> {noticesError}
+          </div>
+        ) : notices.length === 0 ? (
+          <div className="notices-empty-state">
+            <span className="empty-icon">📭</span>
+            <p>No notices posted yet</p>
+            <p className="empty-sub">Notices posted by admins will appear here</p>
+          </div>
+        ) : (
+          <div className="notices-grid">
+            {notices.map((notice) => {
+              const priorityConfig = PRIORITY_CONFIG[notice.priority] || PRIORITY_CONFIG.Medium
+              const emoji = CATEGORY_EMOJI[notice.category] || '📋'
+              const isSelected = selectedNoticeId === notice._id
+
+              return (
+                <button
+                  key={notice._id}
+                  className={`live-notice-card ${isSelected ? 'selected' : ''} ${priorityConfig.className}`}
+                  onClick={() => handleNoticeClick(notice)}
+                  id={`notice-${notice._id}`}
+                >
+                  <div className="live-notice-top">
+                    <span className="notice-category-badge">
+                      {emoji} {notice.category}
+                    </span>
+                    <span className={`notice-priority-badge ${priorityConfig.className}`}>
+                      {priorityConfig.label}
+                    </span>
+                  </div>
+
+                  <h4 className="live-notice-title">{notice.title}</h4>
+
+                  <p className="live-notice-preview">
+                    {notice.content.length > 120
+                      ? notice.content.slice(0, 120) + '…'
+                      : notice.content}
+                  </p>
+
+                  <div className="live-notice-footer">
+                    <span className="notice-time">{formatTimeAgo(notice.createdAt)}</span>
+                    {isSelected && (
+                      <span className="notice-loaded-badge">✓ Loaded</span>
+                    )}
+                  </div>
+                </button>
+              )
+            })}
+          </div>
+        )}
+      </section>
+
+      {/* ── Summarizer Workspace ── */}
       <section className="notice-workspace">
         {/* ── Input Panel ── */}
         <div className="notice-panel input-panel">
           <div className="panel-header">
             <div className="panel-title-row">
               <span className="panel-icon">📝</span>
-              <h2>Original Notice</h2>
+              <h2>Notice Content</h2>
             </div>
             <span className="char-counter">{charCount.toLocaleString()} chars</span>
           </div>
@@ -166,7 +255,7 @@ function NoticeSummarizer() {
           <textarea
             ref={textareaRef}
             className="notice-textarea"
-            placeholder="Paste your notice here…&#10;&#10;For example, exam schedules, club registration notices, maintenance alerts, or any university announcement."
+            placeholder={"Select a notice above or paste one here…\n\nThe full notice text will appear here for AI summarization."}
             value={noticeText}
             onChange={handleTextChange}
             rows={14}
@@ -237,30 +326,11 @@ function NoticeSummarizer() {
                 <span className="placeholder-icon">🤖</span>
                 <p>Your AI-generated summary will appear here</p>
                 <p className="placeholder-sub">
-                  Paste a notice and click &quot;Summarize&quot; to get started
+                  Select a notice above or paste one, then click &quot;Summarize&quot;
                 </p>
               </div>
             )}
           </div>
-        </div>
-      </section>
-
-      {/* ── Sample Notices ── */}
-      <section className="samples-section">
-        <h3>Try a Sample Notice</h3>
-        <div className="samples-grid">
-          {SAMPLE_NOTICES.map((sample) => (
-            <button
-              key={sample.label}
-              className="sample-card"
-              onClick={() => handleSampleClick(sample.text)}
-            >
-              <span className="sample-label">{sample.label}</span>
-              <span className="sample-preview">
-                {sample.text.slice(0, 90)}…
-              </span>
-            </button>
-          ))}
         </div>
       </section>
     </main>

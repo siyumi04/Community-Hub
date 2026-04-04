@@ -196,6 +196,28 @@ export const incrementViews = async (req, res) => {
   }
 }
 
+// Get all active notices (public — no auth required)
+export const getPublicNotices = async (req, res) => {
+  try {
+    const now = new Date()
+
+    const notices = await Notice.find({
+      isActive: true,
+      $or: [{ expiryDate: { $gt: now } }, { expiryDate: null }],
+    }).sort({ createdAt: -1 })
+
+    res.status(200).json({
+      success: true,
+      data: notices,
+    })
+  } catch (err) {
+    res.status(500).json({
+      success: false,
+      message: err.message || 'Failed to fetch notices',
+    })
+  }
+}
+
 /**
  * POST /api/notices/summarize
  * Body: { noticeText: string }
