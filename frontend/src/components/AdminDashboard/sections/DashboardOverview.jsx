@@ -4,11 +4,17 @@ import MiniCalendar from '../components/MiniCalendar'
 
 function DashboardOverview({ admin, memberStats, eventStats, noticeRefreshSignal }) {
   const [notices, setNotices] = useState([])
+  const [aiEvents, setAiEvents] = useState([])
   const [loading, setLoading] = useState(true)
+  const [eventsLoading, setEventsLoading] = useState(true)
 
   useEffect(() => {
     fetchNotices()
   }, [noticeRefreshSignal])
+
+  useEffect(() => {
+    fetchAiEvents()
+  }, [])
 
   const fetchNotices = async () => {
     try {
@@ -23,6 +29,31 @@ function DashboardOverview({ admin, memberStats, eventStats, noticeRefreshSignal
     } finally {
       setLoading(false)
     }
+  }
+
+  const fetchAiEvents = async () => {
+    try {
+      setEventsLoading(true)
+      const response = await apiFetch('/events?status=upcoming')
+      const data = await response.json()
+      if (response.ok && data.success) {
+        setAiEvents(data.data.slice(0, 3))
+      }
+    } catch (err) {
+      console.error('Failed to fetch AI events:', err)
+    } finally {
+      setEventsLoading(false)
+    }
+  }
+
+  const formatDate = (dateStr) => {
+    if (!dateStr) return 'N/A'
+    return new Date(dateStr).toLocaleDateString('en-US', {
+      weekday: 'short',
+      day: '2-digit',
+      month: 'short',
+      year: 'numeric',
+    })
   }
 
   return (
@@ -64,6 +95,71 @@ function DashboardOverview({ admin, memberStats, eventStats, noticeRefreshSignal
             <p className="stat-detail">Posted to members</p>
           </div>
         </div>
+      </div>
+
+      {/* AI Events Showcase */}
+      <div className="overview-card full-width ai-events-showcase">
+        <div className="card-header">
+          <div className="ai-section-title">
+            <span className="ai-section-icon">🤖</span>
+            <div>
+              <h2>AI-Generated Events</h2>
+              <p>Events with AI-powered date suggestions & auto-generated posts</p>
+            </div>
+          </div>
+        </div>
+        {eventsLoading ? (
+          <p className="loading">Loading AI events...</p>
+        ) : aiEvents.length > 0 ? (
+          <div className="ai-events-grid">
+            {aiEvents.map((event) => (
+              <div key={event._id} className="ai-event-card">
+                <div className="ai-event-card-header">
+                  <h4>{event.eventName}</h4>
+                  <span className="ai-badge-mini">
+                    <span className="ai-badge-dot"></span>
+                    AI
+                  </span>
+                </div>
+
+                <div className="ai-event-post-preview">
+                  <div className="ai-post-label-sm">
+                    <span className="ai-icon-sm">✨</span> AI Post
+                  </div>
+                  <p>{event.eventPost || event.description}</p>
+                </div>
+
+                <div className="ai-event-meta">
+                  <div className="ai-meta-item">
+                    <span className="ai-meta-icon">📅</span>
+                    <div>
+                      <span className="ai-meta-label">AI Suggested Date</span>
+                      <span className="ai-meta-value">{formatDate(event.suggestedDate)}</span>
+                    </div>
+                  </div>
+                  <div className="ai-meta-item">
+                    <span className="ai-meta-icon">📍</span>
+                    <div>
+                      <span className="ai-meta-label">Venue</span>
+                      <span className="ai-meta-value">{event.venue || event.location}</span>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="ai-event-footer">
+                  <span className={`badge badge-${event.eventStatus}`}>{event.eventStatus}</span>
+                  <span className="ai-event-capacity">👥 {event.registeredMembers}/{event.maxCapacity}</span>
+                </div>
+              </div>
+            ))}
+          </div>
+        ) : (
+          <div className="ai-events-empty">
+            <span className="ai-empty-icon">🤖</span>
+            <p>No AI-generated events yet</p>
+            <p className="ai-empty-hint">Go to the Events tab and create your first AI-powered event!</p>
+          </div>
+        )}
       </div>
 
       {/* Two Column Layout */}

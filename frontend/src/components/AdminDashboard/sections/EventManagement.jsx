@@ -6,6 +6,7 @@ function EventManagement({ admin, onEventUpdated }) {
   const [events, setEvents] = useState([])
   const [view, setView] = useState('upcoming') // 'upcoming', 'past'
   const [loading, setLoading] = useState(true)
+  const [creating, setCreating] = useState(false)
   const [showCreateEventForm, setShowCreateEventForm] = useState(false)
   const [formData, setFormData] = useState({
     eventName: '',
@@ -42,13 +43,14 @@ function EventManagement({ admin, onEventUpdated }) {
     }
 
     try {
+      setCreating(true)
       const response = await apiFetch('/events/create', {
         method: 'POST',
         body: JSON.stringify(formData),
       })
       const data = await response.json()
       if (response.ok) {
-        showPopup('success', 'Success', 'Event created successfully!')
+        showPopup('success', 'Success', 'Event created with AI-generated details!')
         setFormData({
           eventName: '',
           venue: '',
@@ -65,6 +67,8 @@ function EventManagement({ admin, onEventUpdated }) {
       }
     } catch (err) {
       showPopup('error', 'Error', 'Failed to create event')
+    } finally {
+      setCreating(false)
     }
   }
 
@@ -84,27 +88,51 @@ function EventManagement({ admin, onEventUpdated }) {
     }
   }
 
+  const formatDate = (dateStr) => {
+    if (!dateStr) return 'N/A'
+    return new Date(dateStr).toLocaleDateString('en-US', {
+      weekday: 'short',
+      day: '2-digit',
+      month: 'short',
+      year: 'numeric',
+    })
+  }
+
+  const monthNames = [
+    '', 'January', 'February', 'March', 'April', 'May', 'June',
+    'July', 'August', 'September', 'October', 'November', 'December',
+  ]
+
   return (
     <div className="event-management">
       <div className="section-header">
         <h2>📅 Event Management</h2>
         <button className="btn btn-primary" onClick={() => setShowCreateEventForm(!showCreateEventForm)}>
-          ➕ Create Event
+          ➕ Create AI Event
         </button>
       </div>
 
       {/* Create Event Form */}
       {showCreateEventForm && (
-        <div className="form-card">
-          <h3>Create New Event</h3>
+        <div className="form-card ai-form-card">
+          <div className="ai-form-header">
+            <span className="ai-sparkle-icon">✨</span>
+            <div>
+              <h3>Create AI-Powered Event</h3>
+              <p className="ai-form-subtitle">
+                Enter basic details — our AI will generate the best date & event post automatically
+              </p>
+            </div>
+          </div>
           <form onSubmit={handleCreateEvent}>
             <div className="form-row">
               <input
                 type="text"
-                placeholder="Event Name"
+                placeholder="Event Name (e.g. Annual Cricket Match)"
                 value={formData.eventName}
                 onChange={(e) => setFormData({ ...formData, eventName: e.target.value })}
                 required
+                disabled={creating}
               />
               <input
                 type="text"
@@ -112,6 +140,7 @@ function EventManagement({ admin, onEventUpdated }) {
                 value={formData.venue}
                 onChange={(e) => setFormData({ ...formData, venue: e.target.value })}
                 required
+                disabled={creating}
               />
             </div>
             <div className="form-row">
@@ -123,6 +152,7 @@ function EventManagement({ admin, onEventUpdated }) {
                 min="2026"
                 max="2035"
                 required
+                disabled={creating}
               />
               <input
                 type="number"
@@ -132,13 +162,26 @@ function EventManagement({ admin, onEventUpdated }) {
                 min="1"
                 max="12"
                 required
+                disabled={creating}
               />
             </div>
             <div className="form-actions">
-              <button type="submit" className="btn btn-primary">
-                Create Event
+              <button type="submit" className="btn btn-primary" disabled={creating}>
+                {creating ? (
+                  <span className="ai-creating-label">
+                    <span className="ai-spinner"></span>
+                    AI is generating...
+                  </span>
+                ) : (
+                  '🤖 Generate & Create Event'
+                )}
               </button>
-              <button type="button" className="btn btn-secondary" onClick={() => setShowCreateEventForm(false)}>
+              <button
+                type="button"
+                className="btn btn-secondary"
+                onClick={() => setShowCreateEventForm(false)}
+                disabled={creating}
+              >
                 Cancel
               </button>
             </div>
@@ -168,14 +211,40 @@ function EventManagement({ admin, onEventUpdated }) {
                 <span className={`badge badge-${event.eventStatus}`}>{event.eventStatus}</span>
               </div>
               <p className="event-category">{event.category}</p>
-              <p className="event-description">{event.eventPost || event.description}</p>
+
+              {/* AI Generated Content Section */}
+              <div className="ai-generated-section">
+                <div className="ai-badge-row">
+                  <span className="ai-badge">
+                    <span className="ai-badge-dot"></span>
+                    🤖 AI Generated
+                  </span>
+                </div>
+
+                {/* AI-Generated Event Post */}
+                <div className="ai-event-post">
+                  <div className="ai-post-label">
+                    <span className="ai-icon">✨</span> AI Event Post
+                  </div>
+                  <p className="ai-post-text">{event.eventPost || event.description}</p>
+                </div>
+
+                {/* AI-Suggested Date */}
+                <div className="ai-suggested-date">
+                  <div className="ai-post-label">
+                    <span className="ai-icon">📅</span> AI Suggested Date
+                  </div>
+                  <p className="ai-date-text">{formatDate(event.suggestedDate)}</p>
+                </div>
+              </div>
+
               <div className="event-details">
-                <p>
-                  📅 {new Date(event.startDate).toLocaleDateString()} -{' '}
-                  {new Date(event.endDate).toLocaleDateString()}
-                </p>
+                <p>📅 {formatDate(event.startDate)} — {formatDate(event.endDate)}</p>
                 <p>📍 {event.venue || event.location}</p>
                 <p>👥 {event.registeredMembers}/{event.maxCapacity} registered</p>
+                {event.month && event.year && (
+                  <p>🗓️ Planned for {monthNames[event.month]} {event.year}</p>
+                )}
               </div>
               <div className="event-actions">
                 <button className="btn btn-primary btn-sm">✓ Mark Attended</button>
