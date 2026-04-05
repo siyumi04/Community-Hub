@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { apiFetch } from '../services/apiClient';
+import { apiFetch } from '../../services/apiClient';
 
 const ACCENT_COLORS = {
   cricket:       { from: '#b45309', to: '#451a03' },
