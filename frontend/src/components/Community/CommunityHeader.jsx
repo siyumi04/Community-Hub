@@ -6,7 +6,7 @@ const FALLBACK_GRADIENTS = {
   food:          'linear-gradient(135deg, #7c2d12 0%, #c2410c 100%)',
 };
 
-const CommunityHeader = ({ name, logoUrl, bgImageUrl, onJoin, communityId, showJoinButton = true }) => {
+const CommunityHeader = ({ name, logoUrl, bgImageUrl, onJoin, onLeave, communityId, showJoinButton = true, showLeaveButton = false, leaving = false }) => {
   const fallback = FALLBACK_GRADIENTS[communityId] || 'linear-gradient(135deg, #1e293b, #334155)';
 
   return (
@@ -48,9 +48,19 @@ const CommunityHeader = ({ name, logoUrl, bgImageUrl, onJoin, communityId, showJ
               Join Community
             </button>
           )}
+
+          {showLeaveButton && (
+            <button
+              onClick={onLeave}
+              disabled={leaving}
+              className="bg-red-600 hover:bg-red-500 disabled:opacity-60 disabled:cursor-not-allowed text-white px-8 py-2.5 rounded-full font-semibold shadow-lg transition-all text-sm tracking-wide"
+            >
+              {leaving ? 'Leaving...' : 'Leave Community'}
+            </button>
+          )}
         </div>
 
-        {/* Community Name */}
+      
         <h1 className="text-white text-5xl font-bold tracking-tight drop-shadow-lg leading-snug">
           {name}
         </h1>
