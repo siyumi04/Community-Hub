@@ -91,8 +91,10 @@ function Login() {
       }
 
       setAuthToken(token)
+      localStorage.removeItem('currentAdmin')
       localStorage.setItem('currentStudent', JSON.stringify(student))
       window.dispatchEvent(new Event('student-profile-updated'))
+      window.dispatchEvent(new Event('admin-profile-updated'))
       showPopup('success', 'Login Successful', 'Welcome back!')
 
       navigate('/dashboard')
@@ -190,8 +192,10 @@ function Login() {
       }
 
       setAuthToken(token)
+      localStorage.removeItem('currentStudent')
       localStorage.setItem('currentAdmin', JSON.stringify(admin))
       window.dispatchEvent(new Event('admin-profile-updated'))
+      window.dispatchEvent(new Event('student-profile-updated'))
       showPopup('success', 'Admin Login Successful', `Welcome to your dashboard, ${admin.firstName}!`)
 
       // Navigate to admin dashboard

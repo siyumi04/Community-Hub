@@ -149,8 +149,8 @@ function AdminDashboard() {
       {/* Main Content */}
       <main className="admin-main">
         <header className="admin-top-bar">
-          <h1>admin_secure_2097_hub</h1>
-          <p>Welcome back, {admin.firstName || 'Secure'}!</p>
+          <h1>{admin.dashboardName}</h1>
+          <p>Welcome back, {admin.firstName}!</p>
         </header>
 
         <div className="admin-content">

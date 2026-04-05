@@ -26,8 +26,8 @@ app.use(
     origin: 'http://localhost:5173',
   }),
 );
-app.use(express.json({ limit: '10mb' }));
-app.use(express.urlencoded({ extended: true, limit: '10mb' }));
+app.use(express.json({ limit: '25mb' }));
+app.use(express.urlencoded({ extended: true, limit: '25mb' }));
 
 // Logging middleware to debug requests
 app.use((req, res, next) => {

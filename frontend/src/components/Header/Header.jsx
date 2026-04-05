@@ -40,6 +40,19 @@ function Header() {
 
   useEffect(() => {
     const syncSessionState = () => {
+      const storedStudent = localStorage.getItem('currentStudent')
+      if (storedStudent) {
+        try {
+          const parsed = JSON.parse(storedStudent)
+          setProfilePicture(parsed.profilePicture || '')
+          setIsLoggedIn(true)
+          setAccountType('student')
+          return
+        } catch {
+          // Continue to admin/guest fallback if student data is malformed.
+        }
+      }
+
       const storedAdmin = localStorage.getItem('currentAdmin')
       if (storedAdmin) {
         setProfilePicture('')
@@ -48,24 +61,9 @@ function Header() {
         return
       }
 
-      const storedStudent = localStorage.getItem('currentStudent')
-      if (!storedStudent) {
-        setProfilePicture('')
-        setIsLoggedIn(false)
-        setAccountType('guest')
-        return
-      }
-
-      try {
-        const parsed = JSON.parse(storedStudent)
-        setProfilePicture(parsed.profilePicture || '')
-        setIsLoggedIn(true)
-        setAccountType('student')
-      } catch {
-        setProfilePicture('')
-        setIsLoggedIn(false)
-        setAccountType('guest')
-      }
+      setProfilePicture('')
+      setIsLoggedIn(false)
+      setAccountType('guest')
     }
 
     syncSessionState()

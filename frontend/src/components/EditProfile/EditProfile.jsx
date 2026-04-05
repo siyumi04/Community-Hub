@@ -4,9 +4,9 @@ import './EditProfile.css'
 import { showPopup, showConfirm } from '../../utils/popup'
 import { apiFetch, clearAuthData } from '../../services/apiClient'
 
-const IT_NUMBER_PATTERN = /^IT\d{2}[A-Za-z0-9]{6}$/
+const IT_NUMBER_PATTERN = /^IT\d{2}[A-Za-z0-9]{4,12}$/
 const EMAIL_PATTERN = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
-const FULL_NAME_PATTERN = /^[A-Za-z][A-Za-z' -]{2,49}$/
+const FULL_NAME_PATTERN = /^[A-Za-z][A-Za-z.' -]{1,79}$/
 
 function EditProfile() {
   const navigate = useNavigate()
@@ -44,7 +44,7 @@ function EditProfile() {
     if (name === 'fullName') {
       const normalized = String(value).trim()
       if (!normalized) return 'Full name is required.'
-      if (!FULL_NAME_PATTERN.test(normalized)) return 'Use 3-50 letters only.'
+      if (!FULL_NAME_PATTERN.test(normalized)) return 'Use 2-80 chars (letters, spaces, apostrophe, dot, hyphen).'
       return ''
     }
 
@@ -58,7 +58,7 @@ function EditProfile() {
     if (name === 'itNumber') {
       const normalized = String(value).trim().toUpperCase()
       if (!normalized) return 'IT Number is required.'
-      if (!IT_NUMBER_PATTERN.test(normalized)) return 'Format should be like IT21ABC123.'
+      if (!IT_NUMBER_PATTERN.test(normalized)) return 'Format should start with IT (example: IT21ABC123).'
       return ''
     }
 
@@ -163,27 +163,50 @@ function EditProfile() {
     const file = e.target.files?.[0]
     if (!file) return
 
+    const resetPicker = () => {
+      e.target.value = ''
+    }
+
     if (!file.type.startsWith('image/')) {
       setFieldErrors((prev) => ({ ...prev, profilePicture: 'Please upload a valid image file.' }))
-        setTouched((prev) => ({ ...prev, profilePicture: true }))
-        showPopup('Please upload a valid image file.', 'error')
+      setTouched((prev) => ({ ...prev, profilePicture: true }))
+      showPopup('Please upload a valid image file.', 'error')
+      resetPicker()
       return
     }
 
-    if (file.size > 2 * 1024 * 1024) {
-      setFieldErrors((prev) => ({ ...prev, profilePicture: 'Profile image must be 2MB or smaller.' }))
-        setTouched((prev) => ({ ...prev, profilePicture: true }))
-        showPopup('Profile image must be 2MB or smaller.', 'error')
+    // Large photos are compressed before save; keep a generous upper bound for source files.
+    if (file.size > 8 * 1024 * 1024) {
+      setFieldErrors((prev) => ({ ...prev, profilePicture: 'Profile image must be 8MB or smaller.' }))
+      setTouched((prev) => ({ ...prev, profilePicture: true }))
+      showPopup('Profile image must be 8MB or smaller.', 'error')
+      resetPicker()
       return
     }
 
     const reader = new FileReader()
+
+    reader.onerror = () => {
+      setFieldErrors((prev) => ({ ...prev, profilePicture: 'Unable to read this image file.' }))
+      setTouched((prev) => ({ ...prev, profilePicture: true }))
+      showPopup('Unable to read this image file.', 'error')
+      resetPicker()
+    }
+
     reader.onloadend = () => {
       let imageDataUrl = typeof reader.result === 'string' ? reader.result : ''
       if (!imageDataUrl) return
 
       // Compress image before saving to DB
       const img = new Image()
+
+      img.onerror = () => {
+        setFieldErrors((prev) => ({ ...prev, profilePicture: 'Unsupported image format. Try JPG or PNG.' }))
+        setTouched((prev) => ({ ...prev, profilePicture: true }))
+        showPopup('Unsupported image format. Try JPG or PNG.', 'error')
+        resetPicker()
+      }
+
       img.onload = () => {
         const canvas = document.createElement('canvas')
         const maxWidth = 500
@@ -206,10 +229,32 @@ function EditProfile() {
         canvas.width = width
         canvas.height = height
         const ctx = canvas.getContext('2d')
+        if (!ctx) {
+          setFieldErrors((prev) => ({ ...prev, profilePicture: 'Could not process image on this browser.' }))
+          setTouched((prev) => ({ ...prev, profilePicture: true }))
+          showPopup('Could not process image on this browser.', 'error')
+          resetPicker()
+          return
+        }
+
         ctx.drawImage(img, 0, 0, width, height)
 
-        // Compress to JPEG with lower quality
-        const compressedDataUrl = canvas.toDataURL('image/jpeg', 0.75)
+        // Compress to JPEG and keep payload safely below backend/body limits.
+        let quality = 0.82
+        let compressedDataUrl = canvas.toDataURL('image/jpeg', quality)
+        const maxDataUrlLength = 900_000
+        while (compressedDataUrl.length > maxDataUrlLength && quality > 0.5) {
+          quality -= 0.08
+          compressedDataUrl = canvas.toDataURL('image/jpeg', quality)
+        }
+
+        if (compressedDataUrl.length > maxDataUrlLength) {
+          setFieldErrors((prev) => ({ ...prev, profilePicture: 'Image is too large after compression. Choose a smaller image.' }))
+          setTouched((prev) => ({ ...prev, profilePicture: true }))
+          showPopup('Image is too large after compression. Choose a smaller image.', 'error')
+          resetPicker()
+          return
+        }
         
         setProfileImage(compressedDataUrl)
         setProfileImageName(file.name)
@@ -266,8 +311,13 @@ function EditProfile() {
         }
 
         if (!response.ok) {
-          const errorData = await response.json().catch(() => ({}))
-          throw new Error(errorData.message || 'Failed to update profile in database')
+          const errorData = await response.json().catch(() => null)
+          const backendMessage = errorData?.message || errorData?.error || ''
+          throw new Error(
+            backendMessage
+              ? `Update failed (${response.status}): ${backendMessage}`
+              : `Update failed (${response.status} ${response.statusText || 'Request Error'})`
+          )
         }
 
         const result = await response.json()
@@ -278,8 +328,10 @@ function EditProfile() {
             ...updatedStudent,
             profilePicture: updatedStudent.profilePicture || profile.profilePicture || '',
           }
+          localStorage.removeItem('currentAdmin')
           localStorage.setItem('currentStudent', JSON.stringify(merged))
           window.dispatchEvent(new Event('student-profile-updated'))
+          window.dispatchEvent(new Event('admin-profile-updated'))
         }
       } else {
         throw new Error('No student is logged in')
@@ -287,7 +339,10 @@ function EditProfile() {
 
       showPopup('Profile updated successfully.', 'success')
     } catch (err) {
-      showPopup(err.message || 'Failed to update profile.', 'error')
+      const fallbackMessage = err?.name === 'TypeError'
+        ? 'Could not connect to server. Please check backend is running.'
+        : 'Failed to update profile.'
+      showPopup(err.message || fallbackMessage, 'error')
     }
   }
 

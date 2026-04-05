@@ -1236,6 +1236,101 @@
 }
 
 /* ============================================ */
+/* OVERVIEW WELCOME STRIP                       */
+/* ============================================ */
+
+.overview-welcome {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 16px;
+  padding: 20px 24px;
+  margin-bottom: 25px;
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 12px;
+}
+
+.overview-greeting {
+  margin: 0;
+  color: #fff;
+  font-size: 1.25rem;
+  font-weight: 700;
+}
+
+.overview-sub {
+  margin: 4px 0 0 0;
+  color: rgba(255, 255, 255, 0.55);
+  font-size: 0.92rem;
+}
+
+.overview-meta {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.overview-chip {
+  padding: 5px 14px;
+  background: rgba(102, 126, 234, 0.12);
+  border: 1px solid rgba(102, 126, 234, 0.25);
+  border-radius: 20px;
+  color: rgba(255, 255, 255, 0.75);
+  font-size: 0.82rem;
+  font-weight: 600;
+  letter-spacing: 0.2px;
+}
+
+/* ============================================ */
+/* ADDITIONAL MEMBER MANAGEMENT STYLES          */
+/* ============================================ */
+
+.section-subtitle {
+  margin: 4px 0 0 0;
+  color: rgba(255, 255, 255, 0.5);
+  font-size: 0.92rem;
+  font-weight: 400;
+}
+
+.subsection-title {
+  margin: 20px 0 16px 0;
+  color: #fff;
+  font-size: 1.1rem;
+  font-weight: 700;
+}
+
+.action-btn.promote {
+  background: rgba(59, 130, 246, 0.2);
+  border-color: rgba(59, 130, 246, 0.4);
+  color: #3b82f6;
+}
+
+.action-btn.promote:hover {
+  background: rgba(59, 130, 246, 0.3);
+}
+
+.action-btn.remove {
+  background: rgba(249, 115, 22, 0.2);
+  border-color: rgba(249, 115, 22, 0.4);
+  color: #f97316;
+}
+
+.action-btn.remove:hover {
+  background: rgba(249, 115, 22, 0.3);
+}
+
+.action-btn.ban {
+  background: rgba(239, 68, 68, 0.2);
+  border-color: rgba(239, 68, 68, 0.4);
+  color: #ef4444;
+}
+
+.action-btn.ban:hover {
+  background: rgba(239, 68, 68, 0.3);
+}
+
+/* ============================================ */
 /* AI-GENERATED EVENT STYLES                    */
 /* ============================================ */
 

@@ -24,19 +24,43 @@ const typeConfig = {
   },
 }
 
+const isPopupType = (value) => typeof value === 'string' && Boolean(typeConfig[value])
+
 const resolvePopupArgs = (arg1, arg2, arg3) => {
-  // New format: showPopup(type, title, message)
+  // Format A: showPopup(type, title, message)
+  // Format B: showPopup(title, message, type)
   if (arg3 !== undefined) {
-    const type = typeof arg1 === 'string' && typeConfig[arg1] ? arg1 : 'info'
+    const arg1IsType = isPopupType(arg1)
+    const arg3IsType = isPopupType(arg3)
+
+    if (arg1IsType && !arg3IsType) {
+      const type = arg1
+      return {
+        type,
+        title: String(arg2 || type.charAt(0).toUpperCase() + type.slice(1)),
+        message: String(arg3 || ''),
+      }
+    }
+
+    if (!arg1IsType && arg3IsType) {
+      const type = arg3
+      return {
+        type,
+        title: String(arg1 || type.charAt(0).toUpperCase() + type.slice(1)),
+        message: String(arg2 || ''),
+      }
+    }
+
+    const type = arg1IsType ? arg1 : 'info'
     return {
       type,
-      title: String(arg2 || type.charAt(0).toUpperCase() + type.slice(1)),
-      message: String(arg3 || ''),
+      title: String(arg1IsType ? arg2 || type.charAt(0).toUpperCase() + type.slice(1) : arg1 || 'Info'),
+      message: String(arg1IsType ? arg3 || '' : arg2 || ''),
     }
   }
 
   // Legacy format: showPopup(message, type)
-  if (arg2 !== undefined && typeof arg2 === 'string' && typeConfig[arg2]) {
+  if (arg2 !== undefined && isPopupType(arg2)) {
     const type = arg2
     return {
       type,
