@@ -1,12 +1,12 @@
 import { useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { COMMUNITIES_DATA } from '../utils/constants';
-import CommunityHeader from '../components/CommunityHeader';
-import CommunityStats from '../components/CommunityStats';
-import CommunityBio from '../components/CommunityBio';
-import UpcomingEvents from '../components/UpcomingEvents';
-import NoticeBoard from '../components/NoticeBoard';
-import ChatFloatingButton from '../components/ChatFloatingButton';
+import CommunityHeader from '../components/Community/CommunityHeader';
+import CommunityStats from '../components/Community/CommunityStats';
+import CommunityBio from '../components/Community/CommunityBio';
+import UpcomingEvents from '../components/Community/UpcomingEvents';
+import NoticeBoard from '../components/Notices/NoticeBoard';
+import ChatFloatingButton from '../components/Community/ChatFloatingButton';
 import { apiFetch } from '../services/apiClient';
 import { showPopup, showConfirm } from '../utils/popup';
 

@@ -1,11 +1,11 @@
 import { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { COMMUNITIES_DATA } from '../utils/constants';
-import CommunityHeader from '../components/CommunityHeader';
-import CommunityStats from '../components/CommunityStats';
-import CommunityBio from '../components/CommunityBio';
-import UpcomingEvents from '../components/UpcomingEvents';
-import JoinForm from '../components/JoinForm';
+import CommunityHeader from '../components/Community/CommunityHeader';
+import CommunityStats from '../components/Community/CommunityStats';
+import CommunityBio from '../components/Community/CommunityBio';
+import UpcomingEvents from '../components/Community/UpcomingEvents';
+import JoinForm from '../components/Community/JoinForm';
 
 const CommunityDetailsPage = () => {
   const { id } = useParams();

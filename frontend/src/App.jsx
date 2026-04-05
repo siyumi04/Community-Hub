@@ -12,6 +12,7 @@ import ForgotPassword from './components/ForgotPassword/ForgotPassword'
 import NoticeSummarizer from './components/NoticeSummarizer/NoticeSummarizer'
 import CommunityDetailsPage from './pages/CommunityDetailsPage'
 import CommunityMemberPage from './pages/CommunityMemberPage'
+import ChatPage from './pages/ChatPage'
 import { getAuthToken } from './services/apiClient'
 
 import './App.css'
@@ -83,6 +84,14 @@ function App() {
           <Route path="/forgot-password" element={<ForgotPassword />} />
           <Route path="/communities/:id" element={<CommunityDetailsPage />} />
           <Route path="/communities/:id/member" element={<CommunityMemberPage />} />
+          <Route
+            path="/chat/:communityId"
+            element={(
+              <ProtectedRoute>
+                <ChatPage />
+              </ProtectedRoute>
+            )}
+          />
           {/* Shorthand routes for communities */}
           <Route path="/cricket" element={<Navigate to="/communities/cricket" replace />} />
           <Route path="/hockey" element={<Navigate to="/communities/hockey" replace />} />

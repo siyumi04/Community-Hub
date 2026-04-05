@@ -9,6 +9,7 @@ import eventRoutes from './routes/eventRoutes.js';
 import noticeRoutes from './routes/noticeRoutes.js';
 import communityRoutes from './routes/communityRoutes.js';
 import feedbackRoutes from './routes/feedbackRoutes.js';
+import chatRoutes from './routes/chatRoutes.js';
 
 dotenv.config();
 
@@ -18,20 +19,11 @@ const app = express();
 connectDB();
 
 // Middleware
+// Development CORS configuration: allow the frontend origin and let CORS
+// handle preflight requests automatically without custom wildcard routes.
 app.use(
   cors({
-    origin(origin, callback) {
-      if (!origin) return callback(null, true);
-
-      const allowedOrigins = [process.env.CLIENT_URL].filter(Boolean);
-      const isLocalhost = /^https?:\/\/(localhost|127\.0\.0\.1)(:\d+)?$/.test(origin);
-
-      if (allowedOrigins.includes(origin) || isLocalhost) {
-        return callback(null, true);
-      }
-
-      return callback(new Error(`CORS blocked for origin: ${origin}`));
-    },
+    origin: 'http://localhost:5173',
   }),
 );
 app.use(express.json({ limit: '10mb' }));
@@ -51,6 +43,7 @@ app.use('/api/events', eventRoutes);
 app.use('/api/notices', noticeRoutes);
 app.use('/api/communities', communityRoutes);
 app.use('/api/feedback', feedbackRoutes);
+app.use('/api/chat', chatRoutes);
 
 // Error Handling Middleware
 app.use((err, req, res, next) => {

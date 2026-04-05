@@ -58,6 +58,18 @@ function DashboardOverview({ admin, memberStats, eventStats, noticeRefreshSignal
 
   return (
     <div className="dashboard-overview">
+      {/* Welcome summary strip */}
+      <div className="overview-welcome">
+        <div>
+          <p className="overview-greeting">Welcome back, {admin?.firstName}!</p>
+          <p className="overview-sub">Here&apos;s what&apos;s happening in your community hub today.</p>
+        </div>
+        <div className="overview-meta">
+          <span className="overview-chip">Dashboard: {admin?.dashboardName}</span>
+          <span className="overview-chip">Admin ID: {admin?.itNumber}</span>
+        </div>
+      </div>
+
       {/* Quick Stats */}
       <div className="stats-grid">
         <div className="stat-card">

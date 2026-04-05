@@ -1,8 +1,8 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { COMMUNITY_FORM_FIELDS } from '../utils/constants';
-import { apiFetch } from '../services/apiClient';
-import { showPopup } from '../utils/popup';
+import { COMMUNITY_FORM_FIELDS } from '../../utils/constants';
+import { apiFetch } from '../../services/apiClient';
+import { showPopup } from '../../utils/popup';
 
 const COMMUNITY_BORDER = {
   cricket:       '#f59e0b',

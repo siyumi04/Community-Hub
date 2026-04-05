@@ -1,9 +1,12 @@
+import mongoose from 'mongoose'
 import Member from '../models/Member.js'
+
+const getAdminId = (req) => req.auth?.adminId || req.admin?.id || req.admin?._id
 
 // Get all members for an admin
 export const getMembers = async (req, res) => {
   try {
-    const adminId = req.admin?.id || req.admin?._id
+    const adminId = getAdminId(req)
     if (!adminId) {
       return res.status(401).json({
         success: false,
@@ -28,7 +31,7 @@ export const getMembers = async (req, res) => {
 // Get pending membership requests
 export const getPendingRequests = async (req, res) => {
   try {
-    const adminId = req.admin?.id || req.admin?._id
+    const adminId = getAdminId(req)
     const pending = await Member.find({ adminId, status: 'pending' }).sort({ joinedDate: 1 })
     res.status(200).json({
       success: true,
@@ -46,13 +49,21 @@ export const getPendingRequests = async (req, res) => {
 // Add new member
 export const addMember = async (req, res) => {
   try {
-    const { name, email, itNumber, notes } = req.body
-    const adminId = req.admin?.id || req.admin?._id
+    const {
+      name,
+      email,
+      itNumber,
+      mainType,
+      category,
+      role,
+      notes,
+    } = req.body
+    const adminId = getAdminId(req)
 
-    if (!name || !email || !itNumber) {
+    if (!name || !email || !itNumber || !mainType || !category || !role) {
       return res.status(400).json({
         success: false,
-        message: 'Name, email, and IT number are required',
+        message: 'Name, email, IT number, main type, category, and role are required',
       })
     }
 
@@ -69,8 +80,12 @@ export const addMember = async (req, res) => {
       name,
       email,
       itNumber,
+      mainType,
+      category,
+      sport: mainType === 'sport' ? category : undefined,
       notes,
       status: 'pending',
+      role,
     })
 
     await member.save()
@@ -87,11 +102,71 @@ export const addMember = async (req, res) => {
   }
 }
 
+// Update basic member details (name, email, itNumber, mainType, category, role, notes)
+export const updateMember = async (req, res) => {
+  try {
+    const { memberId } = req.params
+    const adminId = getAdminId(req)
+
+    const allowedFields = ['name', 'email', 'itNumber', 'mainType', 'category', 'role', 'notes']
+    const updates = {}
+
+    allowedFields.forEach((field) => {
+      if (Object.prototype.hasOwnProperty.call(req.body, field)) {
+        updates[field] = req.body[field]
+      }
+    })
+
+    if (Object.keys(updates).length === 0) {
+      return res.status(400).json({
+        success: false,
+        message: 'No valid fields provided to update',
+      })
+    }
+
+    if (updates.email) {
+      updates.email = String(updates.email).trim().toLowerCase()
+    }
+    if (updates.itNumber) {
+      updates.itNumber = String(updates.itNumber).trim().toUpperCase()
+    }
+
+    // keep legacy sport in sync when mainType/category change
+    if (updates.mainType && updates.category && updates.mainType === 'sport') {
+      updates.sport = updates.category
+    }
+
+    const member = await Member.findOneAndUpdate(
+      { _id: memberId, adminId },
+      updates,
+      { new: true },
+    )
+
+    if (!member) {
+      return res.status(404).json({
+        success: false,
+        message: 'Member not found',
+      })
+    }
+
+    res.status(200).json({
+      success: true,
+      data: member,
+      message: 'Member updated successfully',
+    })
+  } catch (err) {
+    res.status(500).json({
+      success: false,
+      message: err.message || 'Failed to update member',
+    })
+  }
+}
+
 // Approve membership request
 export const approveMember = async (req, res) => {
   try {
     const { memberId } = req.params
-    const adminId = req.admin?.id || req.admin?._id
+    const adminId = getAdminId(req)
 
     const member = await Member.findOneAndUpdate(
       { _id: memberId, adminId },
@@ -123,7 +198,7 @@ export const approveMember = async (req, res) => {
 export const rejectMember = async (req, res) => {
   try {
     const { memberId } = req.params
-    const adminId = req.admin?.id || req.admin?._id
+    const adminId = getAdminId(req)
 
     const member = await Member.findOneAndUpdate(
       { _id: memberId, adminId },
@@ -156,7 +231,7 @@ export const promoteMember = async (req, res) => {
   try {
     const { memberId } = req.params
     const { role } = req.body
-    const adminId = req.admin?.id || req.admin?._id
+    const adminId = getAdminId(req)
 
     if (!['Event Team', 'Moderator'].includes(role)) {
       return res.status(400).json({
@@ -196,7 +271,7 @@ export const removeMember = async (req, res) => {
   try {
     const { memberId } = req.params
     const { action } = req.body // 'remove' or 'ban'
-    const adminId = req.admin?.id || req.admin?._id
+    const adminId = getAdminId(req)
 
     const status = action === 'ban' ? 'banned' : 'removed'
     const member = await Member.findOneAndUpdate(
@@ -212,10 +287,12 @@ export const removeMember = async (req, res) => {
       })
     }
 
+    const actionLabel = action === 'ban' ? 'banned' : 'removed'
+
     res.status(200).json({
       success: true,
       data: member,
-      message: `Member ${action}ned successfully`,
+      message: `Member ${actionLabel} successfully`,
     })
   } catch (err) {
     res.status(500).json({
@@ -228,13 +305,13 @@ export const removeMember = async (req, res) => {
 // Export members as CSV
 export const exportMembersCSV = async (req, res) => {
   try {
-    const adminId = req.admin?.id || req.admin?._id
+    const adminId = getAdminId(req)
     const members = await Member.find({ adminId, status: 'approved' })
 
-    let csv = 'Name,Email,IT Number,Role,Joined Date\n'
+    let csv = 'Name,Email,IT Number,Sport,Role,Joined Date\n'
     members.forEach((member) => {
       const joinDate = new Date(member.joinedDate).toLocaleDateString()
-      csv += `"${member.name}","${member.email}","${member.itNumber}","${member.role}","${joinDate}"\n`
+      csv += `"${member.name}","${member.email}","${member.itNumber}","${member.sport}","${member.role}","${joinDate}"\n`
     })
 
     res.header('Content-Type', 'text/csv')
@@ -251,7 +328,7 @@ export const exportMembersCSV = async (req, res) => {
 // Get member statistics
 export const getMemberStats = async (req, res) => {
   try {
-    const adminId = req.admin?.id || req.admin?._id
+    const adminId = getAdminId(req)
 
     const stats = await Member.aggregate([
       { $match: { adminId: new mongoose.Types.ObjectId(adminId) } },

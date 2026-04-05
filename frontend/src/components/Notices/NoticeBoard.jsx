@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react'
-import { API_BASE_URL } from '../utils/constants'
+import { API_BASE_URL } from '../../utils/constants'
 
 const NoticeBoard = () => {
   const [notices, setNotices] = useState([])
