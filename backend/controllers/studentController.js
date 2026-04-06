@@ -239,46 +239,60 @@ export const updateStudent = async (req, res) => {
     const { id } = req.params;
     const updates = req.body;
 
-    // Load full document so save() keeps all existing fields intact
-    const student = await Student.findById(id);
-
-    if (!student) {
+    const existingStudent = await Student.findById(id);
+    if (!existingStudent) {
       return res.status(404).json({
         success: false,
         message: 'Student not found',
       });
     }
 
-    // Apply each field explicitly — guarantees they reach MongoDB
-    if (updates.name !== undefined)              student.name              = String(updates.name).trim();
-    if (updates.email !== undefined)             student.email             = String(updates.email).trim().toLowerCase();
-    if (updates.itNumber !== undefined)          student.itNumber          = String(updates.itNumber).trim().toUpperCase();
-    if (updates.bio !== undefined)               student.bio               = String(updates.bio).trim();
-    if (updates.favoriteCommunity !== undefined) student.favoriteCommunity = String(updates.favoriteCommunity).trim();
-    if (updates.skills !== undefined)            student.skills            = updates.skills;
+    const updatePayload = {};
 
-    if (updates.profilePicture !== undefined && updates.profilePicture !== '') {
-      student.profilePicture = updates.profilePicture;
-      console.log(`✅ Saving profilePicture for student ${id}, size: ${updates.profilePicture.length} bytes`);
+    if (updates.name !== undefined) updatePayload.name = String(updates.name).trim();
+    if (updates.email !== undefined) updatePayload.email = String(updates.email).trim().toLowerCase();
+    if (updates.itNumber !== undefined) updatePayload.itNumber = String(updates.itNumber).trim().toUpperCase();
+    if (updates.bio !== undefined) updatePayload.bio = String(updates.bio).trim();
+    if (updates.favoriteCommunity !== undefined) updatePayload.favoriteCommunity = String(updates.favoriteCommunity).trim();
+    if (updates.skills !== undefined) updatePayload.skills = updates.skills;
+
+    if (updates.profilePicture !== undefined) {
+      const nextProfilePicture = String(updates.profilePicture || '');
+      if (nextProfilePicture.length > 20_000_000) {
+        return res.status(413).json({
+          success: false,
+          message: 'Profile picture payload is too large',
+        });
+      }
+      updatePayload.profilePicture = nextProfilePicture;
+      console.log(`✅ Received profilePicture for student ${id}, size: ${nextProfilePicture.length} bytes`);
     }
 
-    if (updates.password) {
+    if (updates.password !== undefined && updates.password !== '') {
       if (String(updates.password).length < 8) {
         return res.status(400).json({
           success: false,
           message: 'Password must be at least 8 characters',
         });
       }
-      student.password = await bcrypt.hash(String(updates.password), SALT_ROUNDS);
+      updatePayload.password = await bcrypt.hash(String(updates.password), SALT_ROUNDS);
     }
 
-    await student.save();
+    const updatedStudent = await Student.findByIdAndUpdate(
+      id,
+      { $set: updatePayload },
+      { new: true, runValidators: true }
+    ).select('-password');
 
-    // Return sanitized student (no password)
-    const studentObj = student.toObject();
-    delete studentObj.password;
+    if (!updatedStudent) {
+      return res.status(404).json({
+        success: false,
+        message: 'Student not found after update',
+      });
+    }
 
-    console.log(`✅ Student ${id} saved. ProfilePicture present: ${!!studentObj.profilePicture}`);
+    const studentObj = updatedStudent.toObject();
+    console.log(`✅ Student ${id} saved. ProfilePicture present: ${Boolean(studentObj.profilePicture)} size: ${String(studentObj.profilePicture || '').length}`);
 
     res.status(200).json({
       success: true,
@@ -288,6 +302,59 @@ export const updateStudent = async (req, res) => {
   } catch (error) {
     console.error(`❌ Error updating student:`, error.message);
     res.status(500).json({
+      success: false,
+      message: error.message,
+    });
+  }
+};
+
+// Update student profile picture only
+export const updateStudentProfilePicture = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const nextProfilePicture = String(req.body?.profilePicture || '');
+
+    if (!nextProfilePicture) {
+      return res.status(400).json({
+        success: false,
+        message: 'Profile picture is required',
+      });
+    }
+
+    if (nextProfilePicture.length > 20_000_000) {
+      return res.status(413).json({
+        success: false,
+        message: 'Profile picture payload is too large',
+      });
+    }
+
+    const updatedStudent = await Student.findByIdAndUpdate(
+      id,
+      { $set: { profilePicture: nextProfilePicture } },
+      { new: true, runValidators: true }
+    ).select('-password');
+
+    if (!updatedStudent) {
+      return res.status(404).json({
+        success: false,
+        message: 'Student not found',
+      });
+    }
+
+    const studentObj = updatedStudent.toObject();
+    const profilePictureLength = String(studentObj.profilePicture || '').length;
+
+    console.log(`✅ Profile picture saved for student ${id}, size: ${profilePictureLength} bytes`);
+
+    return res.status(200).json({
+      success: true,
+      data: studentObj,
+      profilePictureLength,
+      message: 'Profile picture updated successfully',
+    });
+  } catch (error) {
+    console.error('❌ Error updating profile picture:', error.message);
+    return res.status(500).json({
       success: false,
       message: error.message,
     });

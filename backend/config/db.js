@@ -2,9 +2,15 @@ import mongoose from 'mongoose';
 
 const connectDB = async () => {
     try {
-        const dbName = process.env.MONGO_DB_NAME || 'community_hub';
+        const expectedDbName = 'community_hub';
+        const dbName = String(process.env.MONGO_DB_NAME || expectedDbName).trim() || expectedDbName;
         await mongoose.connect(process.env.MONGO_URI, { dbName });
-        console.log("Database Connected Successfully! ✅");
+        const activeDbName = mongoose.connection?.db?.databaseName || '(unknown)';
+        console.log(`Database Connected Successfully! ✅ Active DB: ${activeDbName}`);
+
+        if (activeDbName !== expectedDbName) {
+            throw new Error(`Unsafe database selected: ${activeDbName}. Expected: ${expectedDbName}`);
+        }
 
         // Drop ALL non-_id_ indexes from clubmembers and communities
         // to clear stale unique indexes that block multi-community joins

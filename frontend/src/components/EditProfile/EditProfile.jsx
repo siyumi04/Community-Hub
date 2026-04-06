@@ -40,6 +40,45 @@ function EditProfile() {
   const [profileImage, setProfileImage] = useState('')
   const [profileImageName, setProfileImageName] = useState('No image selected')
 
+  const saveProfilePictureToDb = async (compressedDataUrl) => {
+    if (!profile.id) {
+      throw new Error('No student is logged in')
+    }
+
+    const response = await apiFetch(`/students/${profile.id}/profile-picture`, {
+      method: 'PATCH',
+      body: JSON.stringify({ profilePicture: compressedDataUrl }),
+    })
+
+    if (response.status === 401 || response.status === 403) {
+      clearAuthData()
+      navigate('/login')
+      throw new Error('Your session has expired. Please sign in again.')
+    }
+
+    if (!response.ok) {
+      const errorData = await response.json().catch(() => null)
+      const backendMessage = errorData?.message || errorData?.error || ''
+      throw new Error(
+        backendMessage
+          ? `Profile image save failed (${response.status}): ${backendMessage}`
+          : `Profile image save failed (${response.status})`
+      )
+    }
+
+    const result = await response.json()
+    const updatedStudent = result?.data
+
+    if (updatedStudent) {
+      localStorage.removeItem('currentAdmin')
+      localStorage.setItem('currentStudent', JSON.stringify(updatedStudent))
+      window.dispatchEvent(new Event('student-profile-updated'))
+      window.dispatchEvent(new Event('admin-profile-updated'))
+    }
+
+    return updatedStudent
+  }
+
   const validateField = (name, value) => {
     if (name === 'fullName') {
       const normalized = String(value).trim()
@@ -108,6 +147,13 @@ function EditProfile() {
         const response = await apiFetch(`/students/${studentId}`)
         if (response.status === 401) {
           showPopup('Your session has expired. Please sign in again.', 'error')
+          clearAuthData()
+          navigate('/login')
+          return
+        }
+        if (response.status === 403 || response.status === 404) {
+          showPopup('Your account session is out of sync. Please sign in again.', 'error')
+          clearAuthData()
           navigate('/login')
           return
         }
@@ -119,6 +165,8 @@ function EditProfile() {
         const student = result?.data
         if (!student) return
 
+        const resolvedProfilePicture = student.profilePicture || ''
+
         setProfile({
           id: student._id || student.id || '',
           fullName: student.name || '',
@@ -126,20 +174,21 @@ function EditProfile() {
           itNumber: student.itNumber || '',
           favoriteCommunity: student.favoriteCommunity || '',
           bio: student.bio || '',
-          profilePicture: student.profilePicture || '',
+          profilePicture: resolvedProfilePicture,
           joinedCommunities: student.joinedCommunities || [],
         })
 
-        if (student.profilePicture) {
-          setProfileImage(student.profilePicture)
+        if (resolvedProfilePicture) {
+          setProfileImage(resolvedProfilePicture)
           setProfileImageName('Current profile picture')
+        } else {
+          setProfileImage('')
+          setProfileImageName('No image selected')
         }
 
-        // Merge with existing localStorage to preserve profilePicture if DB has none
-        const existing = (() => { try { return JSON.parse(localStorage.getItem('currentStudent') || '{}') } catch { return {} } })()
         const merged = {
           ...student,
-          profilePicture: student.profilePicture || existing.profilePicture || '',
+          profilePicture: resolvedProfilePicture,
         }
         localStorage.setItem('currentStudent', JSON.stringify(merged))
         window.dispatchEvent(new Event('student-profile-updated'))
@@ -256,12 +305,23 @@ function EditProfile() {
           return
         }
         
-        setProfileImage(compressedDataUrl)
-        setProfileImageName(file.name)
-        setProfile((prev) => ({ ...prev, profilePicture: compressedDataUrl }))
-        setTouched((prev) => ({ ...prev, profilePicture: true }))
-        setFieldErrors((prev) => ({ ...prev, profilePicture: '' }))
-        showPopup('Profile image selected and compressed successfully.', 'success')
+        ;(async () => {
+          try {
+            const updatedStudent = await saveProfilePictureToDb(compressedDataUrl)
+            const savedProfilePicture = updatedStudent?.profilePicture || compressedDataUrl
+
+            setProfileImage(savedProfilePicture)
+            setProfileImageName(file.name)
+            setProfile((prev) => ({ ...prev, profilePicture: savedProfilePicture }))
+            setTouched((prev) => ({ ...prev, profilePicture: true }))
+            setFieldErrors((prev) => ({ ...prev, profilePicture: '' }))
+            showPopup('Profile image saved to database successfully.', 'success')
+          } catch (error) {
+            setFieldErrors((prev) => ({ ...prev, profilePicture: error.message || 'Failed to save profile image.' }))
+            setTouched((prev) => ({ ...prev, profilePicture: true }))
+            showPopup(error.message || 'Failed to save profile image.', 'error')
+          }
+        })()
       }
       img.src = imageDataUrl
     }
@@ -287,13 +347,14 @@ function EditProfile() {
     const fullName = profile.fullName.trim()
     const email = profile.email.trim().toLowerCase()
     const itNumber = profile.itNumber.trim().toUpperCase()
+    const resolvedProfilePicture = profileImage || profile.profilePicture || ''
 
     try {
       const payload = {
         name: fullName,
         email,
         itNumber,
-        profilePicture: profile.profilePicture,
+        profilePicture: resolvedProfilePicture,
         favoriteCommunity: profile.favoriteCommunity.trim(),
         bio: profile.bio.trim(),
       }
@@ -306,6 +367,13 @@ function EditProfile() {
 
         if (response.status === 401) {
           showPopup('Your session has expired. Please sign in again.', 'error')
+          clearAuthData()
+          navigate('/login')
+          return
+        }
+        if (response.status === 403 || response.status === 404) {
+          showPopup('Your account session is out of sync. Please sign in again.', 'error')
+          clearAuthData()
           navigate('/login')
           return
         }
@@ -323,11 +391,18 @@ function EditProfile() {
         const result = await response.json()
         const updatedStudent = result?.data
         if (updatedStudent) {
-          // Merge local profilePicture in case backend omits it
           const merged = {
             ...updatedStudent,
-            profilePicture: updatedStudent.profilePicture || profile.profilePicture || '',
+            profilePicture: updatedStudent.profilePicture || '',
           }
+
+          setProfile((prev) => ({
+            ...prev,
+            profilePicture: merged.profilePicture,
+          }))
+          setProfileImage(merged.profilePicture || '')
+          setProfileImageName(merged.profilePicture ? 'Current profile picture' : 'No image selected')
+
           localStorage.removeItem('currentAdmin')
           localStorage.setItem('currentStudent', JSON.stringify(merged))
           window.dispatchEvent(new Event('student-profile-updated'))

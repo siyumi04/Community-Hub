@@ -23,7 +23,8 @@ connectDB();
 // handle preflight requests automatically without custom wildcard routes.
 app.use(
   cors({
-    origin: 'http://localhost:5173',
+    // Reflect request origin in dev so Vite auto-ports (5173/5174/5176...) all work.
+    origin: true,
   }),
 );
 app.use(express.json({ limit: '25mb' }));

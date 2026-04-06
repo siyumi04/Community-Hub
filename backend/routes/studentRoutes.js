@@ -6,6 +6,7 @@ import {
     loginStudent,
     forgotPassword,
     updateStudent,
+    updateStudentProfilePicture,
     deleteStudent
 } from '../controllers/studentController.js';
 import { protect, requireSameStudent } from '../middleware/authMiddleware.js';
@@ -29,6 +30,9 @@ router.post('/forgot-password', forgotPassword);
 
 // PUT update student
 router.put('/:id', protect, requireSameStudent, updateStudent);
+
+// PATCH profile picture only
+router.patch('/:id/profile-picture', protect, requireSameStudent, updateStudentProfilePicture);
 
 // DELETE student
 router.delete('/:id', protect, requireSameStudent, deleteStudent);
