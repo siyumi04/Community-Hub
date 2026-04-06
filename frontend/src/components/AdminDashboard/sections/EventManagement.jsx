@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react'
 import { apiFetch } from '../../../services/apiClient'
-import { showPopup } from '../../../utils/popup'
+import { showPopup, showConfirm } from '../../../utils/popup'
 
 function EventManagement({ admin, onEventUpdated }) {
   const [events, setEvents] = useState([])
@@ -73,7 +73,15 @@ function EventManagement({ admin, onEventUpdated }) {
   }
 
   const handleDeleteEvent = async (eventId) => {
-    if (!window.confirm('Are you sure you want to delete this event?')) return
+    const confirmed = await showConfirm({
+      title: 'Delete Event?',
+      text: 'Are you sure you want to delete this event?',
+      confirmText: 'Delete',
+      cancelText: 'Cancel',
+      icon: 'warning',
+    })
+    if (!confirmed) return
+
     try {
       const response = await apiFetch(`/events/${eventId}`, { method: 'DELETE' })
       if (response.ok) {

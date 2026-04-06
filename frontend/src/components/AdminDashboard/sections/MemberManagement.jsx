@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react'
 import jsPDF from 'jspdf'
 import 'jspdf-autotable'
 import { apiFetch } from '../../../services/apiClient'
-import { showPopup } from '../../../utils/popup'
+import { showPopup, showConfirm } from '../../../utils/popup'
 
 function MemberManagement({ admin, memberStats }) {
   const [members, setMembers] = useState([])
@@ -224,7 +224,15 @@ function MemberManagement({ admin, memberStats }) {
   }
 
   const handleRemoveMember = async (memberId) => {
-    if (!window.confirm('Are you sure you want to remove this member?')) return
+    const confirmed = await showConfirm({
+      title: 'Remove Member?',
+      text: 'Are you sure you want to remove this member?',
+      confirmText: 'Remove',
+      cancelText: 'Cancel',
+      icon: 'warning',
+    })
+    if (!confirmed) return
+
     try {
       const response = await apiFetch(`/members/${memberId}/remove`, {
         method: 'PATCH',
@@ -240,7 +248,15 @@ function MemberManagement({ admin, memberStats }) {
   }
 
   const handleBanMember = async (memberId) => {
-    if (!window.confirm('Are you sure you want to ban this member?')) return
+    const confirmed = await showConfirm({
+      title: 'Ban Member?',
+      text: 'Are you sure you want to ban this member?',
+      confirmText: 'Ban',
+      cancelText: 'Cancel',
+      icon: 'warning',
+    })
+    if (!confirmed) return
+
     try {
       const response = await apiFetch(`/members/${memberId}/remove`, {
         method: 'PATCH',

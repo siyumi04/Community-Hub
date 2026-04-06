@@ -331,6 +331,10 @@
   color: #00f0ff !important;
 }
 
+:root[data-route='home'] .footer {
+  margin-top: 0 !important;
+}
+
 
 
 

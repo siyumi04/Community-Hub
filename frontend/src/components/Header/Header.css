@@ -444,10 +444,12 @@
   background: linear-gradient(135deg, #0f0c29 0%, #302b63 50%, #24243e 100%);
   color: #ffffff;
   border-image: linear-gradient(90deg, transparent, #667eea, #f093fb, transparent) 1;
+  backdrop-filter: none;
 }
 
 :root[data-theme='light'][data-route='home'] .header.scrolled {
-  background: linear-gradient(135deg, rgba(15, 12, 41, 0.94) 0%, rgba(48, 43, 99, 0.94) 50%, rgba(36, 36, 62, 0.94) 100%);
+  background: linear-gradient(135deg, #0f0c29 0%, #302b63 50%, #24243e 100%);
+  backdrop-filter: none;
 }
 
 :root[data-theme='light'][data-route='home'] .header-logo h1,

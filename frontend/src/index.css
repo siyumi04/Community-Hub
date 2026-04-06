@@ -463,3 +463,26 @@ code {
   border: 1px solid rgba(210, 221, 255, 0.28) !important;
   background: rgba(255, 255, 255, 0.04) !important;
 }
+
+/* Lock Home header text to dark-theme palette even when global theme is light. */
+:root[data-theme='light'][data-route='home'] .header,
+:root[data-theme='light'][data-route='home'] .header a,
+:root[data-theme='light'][data-route='home'] .header .header-logo h1,
+:root[data-theme='light'][data-route='home'] .header .nav-link,
+:root[data-theme='light'][data-route='home'] .header .dropdown-item {
+  color: #ffffff !important;
+}
+
+:root[data-theme='light'][data-route='home'] .header .nav-link:hover,
+:root[data-theme='light'][data-route='home'] .header .nav-link.active,
+:root[data-theme='light'][data-route='home'] .header .dropdown-item:hover {
+  color: #00f0ff !important;
+}
+
+:root[data-theme='light'][data-route='home'] .header .dropdown-item.logout-item {
+  color: #ffb1c4 !important;
+}
+
+:root[data-theme='light'][data-route='home'] .header .dropdown-item.logout-item:hover {
+  color: #ffd6de !important;
+}

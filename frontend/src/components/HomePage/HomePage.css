@@ -31,11 +31,11 @@
 }
 
 :root[data-theme='light'][data-route='home'] .home-page::before {
-  opacity: 0.34;
+  opacity: 0.42;
 }
 
 :root[data-theme='light'][data-route='home'] .home-page::after {
-  background: linear-gradient(160deg, rgba(6, 10, 34, 0.78), rgba(9, 14, 42, 0.62) 45%, rgba(12, 19, 52, 0.68));
+  background: linear-gradient(160deg, rgba(8, 11, 36, 0.62), rgba(11, 16, 50, 0.45) 45%, rgba(16, 22, 60, 0.52));
 }
 
 .hero-section,
@@ -206,7 +206,7 @@
 }
 
 .contact-section {
-  margin-bottom: 4rem;
+  margin-bottom: 0;
   padding: 2rem 1.4rem;
   border-radius: 1.2rem;
   border: 1px solid rgba(141, 164, 255, 0.34);
