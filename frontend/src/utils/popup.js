@@ -3,25 +3,51 @@ import './popup.css'
 
 const typeConfig = {
   success: {
-    iconColor: '#22c55e',
-    confirmColor: '#22c55e',
-    titleColor: '#dcfce7',
+    iconColor: '#10b981',
+    confirmColor: '#10b981',
+    titleColorDark: '#d1fae5',
+    titleColorLight: '#047857',
   },
   error: {
-    iconColor: '#f43f5e',
-    confirmColor: '#f43f5e',
-    titleColor: '#ffe4e6',
+    iconColor: '#ef4444',
+    confirmColor: '#ef4444',
+    titleColorDark: '#fee2e2',
+    titleColorLight: '#b91c1c',
   },
   warning: {
     iconColor: '#f59e0b',
     confirmColor: '#f59e0b',
-    titleColor: '#fef3c7',
+    titleColorDark: '#fef3c7',
+    titleColorLight: '#92400e',
   },
   info: {
-    iconColor: '#60a5fa',
-    confirmColor: '#4f46e5',
-    titleColor: '#dbeafe',
+    iconColor: '#3b82f6',
+    confirmColor: '#3b82f6',
+    titleColorDark: '#dbeafe',
+    titleColorLight: '#1d4ed8',
   },
+}
+
+const isLightTheme = () => document.documentElement.getAttribute('data-theme') === 'light'
+
+const getThemePalette = (lightMode) => {
+  if (lightMode) {
+    return {
+      background: '#e3ecf6',
+      textColor: '#111827',
+      backdrop: 'rgba(107, 114, 128, 0.35)',
+      cancelColor: '#6b7280',
+      variantClass: 'swal-hub-light',
+    }
+  }
+
+  return {
+    background: 'rgba(10, 11, 34, 0.96)',
+    textColor: '#e7eaff',
+    backdrop: 'rgba(4, 8, 28, 0.82)',
+    cancelColor: '#334155',
+    variantClass: 'swal-hub-dark',
+  }
 }
 
 const isPopupType = (value) => typeof value === 'string' && Boolean(typeConfig[value])
@@ -82,6 +108,9 @@ export const showPopup = (arg1, arg2, arg3) => {
   if (!message) return
 
   const cfg = typeConfig[type] || typeConfig.info
+  const lightMode = isLightTheme()
+  const themePalette = getThemePalette(lightMode)
+  const titleColor = lightMode ? cfg.titleColorLight : cfg.titleColorDark
 
   Swal.fire({
     icon: type,
@@ -92,15 +121,15 @@ export const showPopup = (arg1, arg2, arg3) => {
     timerProgressBar: true,
     showConfirmButton: true,
     allowOutsideClick: true,
-    background: 'rgba(10, 11, 34, 0.96)',
-    color: '#e7eaff',
+    background: themePalette.background,
+    color: themePalette.textColor,
     iconColor: cfg.iconColor,
     confirmButtonColor: cfg.confirmColor,
     width: '32rem',
     padding: '2rem 1.75rem',
-    backdrop: 'rgba(4, 8, 28, 0.82)',
+    backdrop: themePalette.backdrop,
     customClass: {
-      popup: `swal-hub-popup swal-hub-${type}`,
+      popup: `swal-hub-popup swal-hub-${type} ${themePalette.variantClass}`,
       title: 'swal-hub-title',
       htmlContainer: 'swal-hub-text',
       icon: 'swal-hub-icon',
@@ -110,7 +139,7 @@ export const showPopup = (arg1, arg2, arg3) => {
     didOpen: (popup) => {
       const title = popup.querySelector('.swal-hub-title')
       if (title) {
-        title.style.color = cfg.titleColor
+        title.style.color = titleColor
         title.style.fontWeight = '700'
         title.style.fontSize = '1.35rem'
       }
@@ -126,6 +155,9 @@ export const showConfirm = async ({
   icon = 'warning',
 } = {}) => {
   const cfg = typeConfig[icon] || typeConfig.warning
+  const lightMode = isLightTheme()
+  const themePalette = getThemePalette(lightMode)
+  const titleColor = lightMode ? cfg.titleColorLight : cfg.titleColorDark
 
   const result = await Swal.fire({
     title: title || 'Are you sure?',
@@ -136,14 +168,14 @@ export const showConfirm = async ({
     confirmButtonText: confirmText,
     cancelButtonText: cancelText,
     confirmButtonColor: cfg.confirmColor,
-    cancelButtonColor: '#334155',
-    background: 'rgba(10, 11, 34, 0.96)',
-    color: '#e7eaff',
+    cancelButtonColor: themePalette.cancelColor,
+    background: themePalette.background,
+    color: themePalette.textColor,
     width: '32rem',
     padding: '2rem 1.75rem',
-    backdrop: 'rgba(4, 8, 28, 0.82)',
+    backdrop: themePalette.backdrop,
     customClass: {
-      popup: `swal-hub-popup swal-hub-${icon}`,
+      popup: `swal-hub-popup swal-hub-${icon} ${themePalette.variantClass}`,
       title: 'swal-hub-title',
       htmlContainer: 'swal-hub-text',
       icon: 'swal-hub-icon',
@@ -153,7 +185,7 @@ export const showConfirm = async ({
     didOpen: (popup) => {
       const title = popup.querySelector('.swal-hub-title')
       if (title) {
-        title.style.color = cfg.titleColor
+        title.style.color = titleColor
         title.style.fontWeight = '700'
         title.style.fontSize = '1.35rem'
       }

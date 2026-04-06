@@ -5,6 +5,11 @@
   backdrop-filter: blur(10px);
 }
 
+.swal-hub-popup.swal-hub-light {
+  border: 1px solid #e5e7eb !important;
+  box-shadow: 0 16px 30px rgba(17, 24, 39, 0.14), 0 0 0 1px rgba(255, 255, 255, 0.75) !important;
+}
+
 .swal-hub-popup::before {
   content: '';
   position: absolute;
@@ -42,6 +47,10 @@
   line-height: 1.55 !important;
 }
 
+.swal-hub-popup.swal-hub-light .swal-hub-text {
+  color: #111827 !important;
+}
+
 .swal-hub-icon {
   margin-top: 0.2rem !important;
   margin-bottom: 0.8rem !important;
@@ -59,6 +68,11 @@
 .swal-hub-btn:focus,
 .swal-hub-cancel:focus {
   box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.28) !important;
+}
+
+.swal-hub-popup.swal-hub-light .swal-hub-btn:focus,
+.swal-hub-popup.swal-hub-light .swal-hub-cancel:focus {
+  box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.3) !important;
 }
 
 .swal2-actions {

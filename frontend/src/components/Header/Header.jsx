@@ -1,6 +1,6 @@
 import './Header.css'
 import { useEffect, useState } from 'react'
-import { Link, NavLink, useNavigate } from 'react-router-dom'
+import { Link, NavLink, useLocation, useNavigate } from 'react-router-dom'
 import { showPopup } from '../../utils/popup'
 import { clearAuthData } from '../../services/apiClient'
 
@@ -9,9 +9,16 @@ function Header() {
   const [profilePicture, setProfilePicture] = useState('')
   const [isLoggedIn, setIsLoggedIn] = useState(false)
   const [accountType, setAccountType] = useState('guest')
+  const [adminDashboardPath, setAdminDashboardPath] = useState('/admin-dashboard/main')
   const [isDropdownOpen, setIsDropdownOpen] = useState(false)
   const [isScrolled, setIsScrolled] = useState(false)
+  const [theme, setTheme] = useState(() => {
+    const savedTheme = localStorage.getItem('theme')
+    return savedTheme === 'light' ? 'light' : 'dark'
+  })
+  const location = useLocation()
   const navigate = useNavigate()
+  const isHomeRoute = location.pathname === '/'
 
   const toggleMenu = () => {
     setIsMenuOpen(!isMenuOpen)
@@ -32,11 +39,10 @@ function Header() {
     return () => document.removeEventListener('mousedown', handleClickOutside)
   }, [])
 
-  // Force dark mode globally
   useEffect(() => {
-    localStorage.setItem('theme', 'dark')
-    document.documentElement.setAttribute('data-theme', 'dark')
-  }, [])
+    localStorage.setItem('theme', theme)
+    document.documentElement.setAttribute('data-theme', theme)
+  }, [theme])
 
   useEffect(() => {
     const syncSessionState = () => {
@@ -55,12 +61,25 @@ function Header() {
 
       const storedAdmin = localStorage.getItem('currentAdmin')
       if (storedAdmin) {
-        setProfilePicture('')
-        setIsLoggedIn(true)
-        setAccountType('admin')
-        return
+        try {
+          const parsedAdmin = JSON.parse(storedAdmin)
+          const dashboardName = parsedAdmin?.dashboardName || 'main'
+          setAdminDashboardPath(`/admin-dashboard/${dashboardName}`)
+          setProfilePicture('')
+          setIsLoggedIn(true)
+          setAccountType('admin')
+          return
+        } catch {
+          // Fallback to a safe default path when stored admin data is malformed.
+          setAdminDashboardPath('/admin-dashboard/main')
+          setProfilePicture('')
+          setIsLoggedIn(true)
+          setAccountType('admin')
+          return
+        }
       }
 
+      setAdminDashboardPath('/admin-dashboard/main')
       setProfilePicture('')
       setIsLoggedIn(false)
       setAccountType('guest')
@@ -104,6 +123,10 @@ function Header() {
     navigate('/')
   }
 
+  const toggleTheme = () => {
+    setTheme((currentTheme) => (currentTheme === 'dark' ? 'light' : 'dark'))
+  }
+
   return (
     <header className={`header ${isScrolled ? 'scrolled' : ''}`}>
       <div className="header-container">
@@ -121,17 +144,24 @@ function Header() {
                 Home
               </NavLink>
             </li>
-            {isLoggedIn && (
+            {isLoggedIn && accountType === 'student' && (
               <li>
                 <NavLink to="/dashboard" className={({ isActive }) => `nav-link${isActive ? ' active' : ''}`}>
                   Communities
                 </NavLink>
               </li>
             )}
-            {isLoggedIn && (
+            {isLoggedIn && accountType === 'student' && (
               <li>
                 <NavLink to="/notice-summarizer" className={({ isActive }) => `nav-link${isActive ? ' active' : ''}`}>
                   Notices
+                </NavLink>
+              </li>
+            )}
+            {isLoggedIn && accountType === 'admin' && (
+              <li>
+                <NavLink to={adminDashboardPath} className={({ isActive }) => `nav-link${isActive ? ' active' : ''}`}>
+                  Dashboard
                 </NavLink>
               </li>
             )}
@@ -142,6 +172,18 @@ function Header() {
         </nav>
 
         <div className="header-actions">
+          {!isHomeRoute && (
+            <button
+              type="button"
+              className="theme-toggle"
+              onClick={toggleTheme}
+              aria-label={theme === 'dark' ? 'Switch to light mode' : 'Switch to dark mode'}
+              title={theme === 'dark' ? 'Light mode' : 'Dark mode'}
+            >
+              {theme === 'dark' ? '☀' : '🌙'}
+            </button>
+          )}
+
           {isLoggedIn ? (
             <div className="profile-dropdown-container">
               <button
@@ -180,7 +222,7 @@ function Header() {
                 </div>
               )}
             </div>
-          ) : (
+          ) : !isHomeRoute ? (
             <Link
               to="/login"
               className="profile-link"
@@ -188,7 +230,7 @@ function Header() {
             >
               <span>👤</span>
             </Link>
-          )}
+          ) : null}
 
           <button 
             className={`hamburger ${isMenuOpen ? 'active' : ''}`}

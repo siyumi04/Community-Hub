@@ -4,7 +4,9 @@ import { BrowserRouter } from 'react-router-dom'
 import './index.css'
 import App from './App.jsx'
 
-document.documentElement.setAttribute('data-theme', 'dark')
+const savedTheme = localStorage.getItem('theme')
+const initialTheme = savedTheme === 'light' ? 'light' : 'dark'
+document.documentElement.setAttribute('data-theme', initialTheme)
 
 createRoot(document.getElementById('root')).render(
   <StrictMode>

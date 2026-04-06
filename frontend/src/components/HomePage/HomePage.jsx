@@ -6,8 +6,20 @@ function HomePage() {
   const [isLoggedIn, setIsLoggedIn] = useState(false)
 
   useEffect(() => {
-    const storedStudent = localStorage.getItem('currentStudent')
-    setIsLoggedIn(!!storedStudent)
+    const syncAuthState = () => {
+      const storedStudent = localStorage.getItem('currentStudent')
+      const storedAdmin = localStorage.getItem('currentAdmin')
+      setIsLoggedIn(Boolean(storedStudent || storedAdmin))
+    }
+
+    syncAuthState()
+    window.addEventListener('storage', syncAuthState)
+    window.addEventListener('logout', syncAuthState)
+
+    return () => {
+      window.removeEventListener('storage', syncAuthState)
+      window.removeEventListener('logout', syncAuthState)
+    }
   }, [])
 
   return (

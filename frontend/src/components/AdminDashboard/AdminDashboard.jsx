@@ -68,10 +68,6 @@ function AdminDashboard() {
     navigate(targetPath)
   }
 
-  const handleLogoSignout = () => {
-    handleLogout('/')
-  }
-
   const handleNoticeUpdated = () => {
     setNoticeRefreshSignal((prev) => prev + 1)
   }
@@ -89,9 +85,7 @@ function AdminDashboard() {
       {/* Sidebar Navigation */}
       <aside className={`admin-sidebar ${!sidebarOpen ? 'closed' : ''}`}>
         <div className="sidebar-header">
-          <button className="logo-signout-btn" onClick={handleLogoSignout} title="Sign out and go to Home">
-            🎯 Club Dashboard
-          </button>
+          <p className="logo-title">🎯 Club Dashboard</p>
           <button className="toggle-btn" onClick={() => setSidebarOpen(!sidebarOpen)}>
             ☰
           </button>

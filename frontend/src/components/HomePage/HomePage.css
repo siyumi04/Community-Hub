@@ -30,6 +30,14 @@
   pointer-events: none;
 }
 
+:root[data-theme='light'][data-route='home'] .home-page::before {
+  opacity: 0.34;
+}
+
+:root[data-theme='light'][data-route='home'] .home-page::after {
+  background: linear-gradient(160deg, rgba(6, 10, 34, 0.78), rgba(9, 14, 42, 0.62) 45%, rgba(12, 19, 52, 0.68));
+}
+
 .hero-section,
 .features-section,
 .about-section,

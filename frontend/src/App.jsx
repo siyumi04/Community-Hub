@@ -1,4 +1,5 @@
-import { Routes, Route, Navigate } from 'react-router-dom'
+import { useEffect } from 'react'
+import { Routes, Route, Navigate, useLocation } from 'react-router-dom'
 import Header from './components/Header/Header'
 import Footer from './components/Footer/Footer'
 import HomePage from './components/HomePage/HomePage'
@@ -40,6 +41,13 @@ function ProtectedAdminRoute({ children }) {
 }
 
 function App() {
+  const location = useLocation()
+
+  useEffect(() => {
+    const routeTag = location.pathname === '/' ? 'home' : 'inner'
+    document.documentElement.setAttribute('data-route', routeTag)
+  }, [location.pathname])
+
   return (
     <div className="flex flex-col min-h-screen">
       <Header />
