@@ -8,8 +8,6 @@ import UpcomingEvents from '../components/Community/UpcomingEvents';
 import JoinForm from '../components/Community/JoinForm';
 import { showPopup } from '../utils/popup';
 
-const SPORTS_CLUBS = ['cricket', 'hockey'];
-
 const CommunityDetailsPage = () => {
   const { id } = useParams();
   const navigate = useNavigate();
@@ -44,27 +42,6 @@ const CommunityDetailsPage = () => {
   }, [id, navigate]);
 
   const handleJoinClick = () => {
-    // Check sports club restriction before opening join form
-    if (SPORTS_CLUBS.includes(id)) {
-      try {
-        const stored = localStorage.getItem('currentStudent');
-        if (stored) {
-          const student = JSON.parse(stored);
-          const existingSportsClub = (student.joinedCommunities || []).find(
-            (c) => SPORTS_CLUBS.includes(c.communityId) && c.communityId !== id
-          );
-          if (existingSportsClub) {
-            showPopup(
-              `You are already a member of ${existingSportsClub.communityName}. Students can only join one sports club (Cricket or Hockey).`,
-              'error'
-            );
-            return;
-          }
-        }
-      } catch {
-        // ignore
-      }
-    }
     setShowJoinForm(true);
   };
   const handleFormClose = () => setShowJoinForm(false);

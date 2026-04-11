@@ -107,21 +107,6 @@ export const joinCommunity = async (req, res) => {
             });
         }
 
-        // Restrict: student can only join ONE sports club (cricket or hockey, not both)
-        const sportsClubs = ['cricket', 'hockey'];
-        if (sportsClubs.includes(communityId)) {
-            const alreadyInSportsClub = student.joinedCommunities.find(
-                comm => sportsClubs.includes(comm.communityId) && comm.communityId !== communityId
-            );
-
-            if (alreadyInSportsClub) {
-                return res.status(400).json({
-                    success: false,
-                    message: `You are already a member of ${alreadyInSportsClub.communityName}. Students can only join one sports club (Cricket or Hockey).`
-                });
-            }
-        }
-
         // Get or create community
         let community = await Community.findOne({ communityId });
         if (!community) {
