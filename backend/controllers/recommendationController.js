@@ -10,6 +10,15 @@ const getGroqClient = () => {
   return groqClient
 }
 
+// Related keywords for each community — used for smarter matching
+const COMMUNITY_KEYWORDS = {
+  cricket: ['cricket', 'batting', 'bowling', 'wicket', 'match', 'tournament', 'innings', 'umpire', 'pitch'],
+  hockey: ['hockey', 'stick', 'goalkeeper', 'turf', 'penalty', 'dribble', 'field hockey'],
+  environmental: ['environment', 'environmental', 'nature', 'hiking', 'trekking', 'cleanup', 'clean-up', 'recycle', 'sustainability', 'green', 'eco', 'tree', 'planting', 'conservation', 'wildlife', 'climate', 'beach', 'trail', 'outdoor', 'camping'],
+  foc: ['foc', 'faculty', 'computing', 'tech', 'technology', 'hackathon', 'coding', 'programming', 'workshop', 'seminar', 'conference', 'talent'],
+  food: ['food', 'cooking', 'culinary', 'recipe', 'baking', 'chef', 'cuisine', 'tasting', 'beverage', 'nutrition', 'kitchen', 'meal'],
+}
+
 /**
  * GET /api/recommendations/:studentId
  * AI-powered event recommendations based on student skills + joined communities.
@@ -71,28 +80,35 @@ export const getRecommendedEvents = async (req, res) => {
 
     if (process.env.GROQ_API_KEY && (studentSkills.length > 0 || joinedCommunities.length > 0)) {
       try {
-        const prompt = `You are a STRICT event recommendation engine for a university community hub.
+        // Build community context for AI
+        const communityContext = joinedCommunities.map((c) => {
+          const keywords = COMMUNITY_KEYWORDS[c.communityId] || []
+          return `${c.communityName} (related topics: ${keywords.join(', ')})`
+        }).join('; ')
+
+        const prompt = `You are an event recommendation engine for a university community hub.
 
 A student has the following profile:
 - Skills/Interests: ${studentSkills.join(', ')}
-- Joined Communities: ${joinedCommunities.length > 0 ? joinedCommunities.map((c) => c.communityName).join(', ') : 'None yet'}
+- Joined Communities: ${communityContext || 'None yet'}
 
 Here are the upcoming events:
 ${eventSummaries.map((ev) => `[${ev.index}] "${ev.name}" - ${ev.description} (Category: ${ev.category}, Date: ${ev.date}, Location: ${ev.location})`).join('\n')}
 
 IMPORTANT RULES:
-- ONLY include events that DIRECTLY relate to the student's skills or joined communities.
-- If the student's skill is "cricket", ONLY return cricket-related events. Do NOT include hockey, volleyball, cooking, or any unrelated events.
-- If NO events match the student's interests, return an empty array [].
-- Be very strict — a score of 0 means no match at all, do not include those.
+- Include events that relate to the student's skills OR their joined communities.
+- Consider the community's related topics. For example, if a student joined the Environmental Community, events about hiking, nature, trekking, cleanup, sustainability, camping ARE relevant.
+- If a student joined the Cricket Club, cricket events ARE relevant but hockey events are NOT.
+- If NO events match at all, return an empty array [].
+- Do NOT include completely unrelated events.
 
 For each MATCHING event provide:
 1. The event index number
-2. A relevance score from 50 to 100 (only events scoring 50+ should be included)
+2. A relevance score from 50 to 100
 3. A short reason (max 20 words) explaining the match
 
 Return ONLY valid JSON array, sorted by relevance (highest first):
-[{"index":0,"score":95,"reason":"Matches your cricket skills perfectly"}]`
+[{"index":0,"score":95,"reason":"Matches your environmental community interests"}]`
 
         const completion = await getGroqClient().chat.completions.create({
           model: 'llama-3.3-70b-versatile',
@@ -162,12 +178,21 @@ Return ONLY valid JSON array, sorted by relevance (highest first):
           }
         })
 
-        // Check community match (by ID and name)
+        // Check community match (by ID, name, and related keywords)
         communityIds.forEach((cId) => {
+          // Direct ID match
           if (eventText.includes(cId)) {
             score += 35
             reasons.push(cId)
           }
+          // Related keywords match
+          const relatedKeywords = COMMUNITY_KEYWORDS[cId] || []
+          relatedKeywords.forEach((kw) => {
+            if (eventText.includes(kw) && !reasons.includes(kw)) {
+              score += 25
+              reasons.push(kw)
+            }
+          })
         })
         communityNames.forEach((cName) => {
           if (eventText.includes(cName)) {
