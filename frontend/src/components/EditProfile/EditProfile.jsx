@@ -413,6 +413,7 @@ function EditProfile() {
       }
 
       showPopup('Profile updated successfully.', 'success')
+      navigate('/dashboard')
     } catch (err) {
       const fallbackMessage = err?.name === 'TypeError'
         ? 'Could not connect to server. Please check backend is running.'
