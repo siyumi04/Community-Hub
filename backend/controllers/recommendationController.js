@@ -69,7 +69,7 @@ export const getRecommendedEvents = async (req, res) => {
     // 4. Use AI to rank and recommend
     let recommendations = []
 
-    if (process.env.GROQ_API_KEY && studentSkills.length > 0) {
+    if (process.env.GROQ_API_KEY && (studentSkills.length > 0 || joinedCommunities.length > 0)) {
       try {
         const prompt = `You are a STRICT event recommendation engine for a university community hub.
 
@@ -142,9 +142,10 @@ Return ONLY valid JSON array, sorted by relevance (highest first):
 
     // 5. Fallback: keyword-based matching if AI fails or no API key
     // ONLY include events that actually match the student's skills or communities
-    if (recommendations.length === 0 && studentSkills.length > 0) {
+    if (recommendations.length === 0 && (studentSkills.length > 0 || joinedCommunities.length > 0)) {
       const normalizedSkills = studentSkills.map((s) => s.toLowerCase())
       const communityIds = joinedCommunities.map((c) => c.communityId?.toLowerCase()).filter(Boolean)
+      const communityNames = joinedCommunities.map((c) => c.communityName?.toLowerCase()).filter(Boolean)
 
       const matched = []
 
@@ -161,10 +162,17 @@ Return ONLY valid JSON array, sorted by relevance (highest first):
           }
         })
 
-        // Check community match
+        // Check community match (by ID and name)
         communityIds.forEach((cId) => {
           if (eventText.includes(cId)) {
             score += 35
+            reasons.push(cId)
+          }
+        })
+        communityNames.forEach((cName) => {
+          if (eventText.includes(cName)) {
+            score += 35
+            if (!reasons.includes(cName)) reasons.push(cName)
           }
         })
 

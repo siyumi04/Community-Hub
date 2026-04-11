@@ -100,44 +100,74 @@ function Dashboard() {
   const [aiLoading, setAiLoading] = useState(false)
   const [aiError, setAiError] = useState('')
 
-  useEffect(() => {
-    const syncSkills = () => {
-      const storedStudent = localStorage.getItem('currentStudent')
-      if (!storedStudent) {
-        setStudentSkills([])
-        setStudentName('')
-        setStudentId('')
-        setJoinedCommunities([])
-        return
-      }
-
-      try {
-        const parsed = JSON.parse(storedStudent)
-        const skills = Array.isArray(parsed.skills)
-          ? parsed.skills
-          : String(parsed.skills || '')
-              .split(',')
-              .map((item) => item.trim())
-              .filter(Boolean)
-        setStudentSkills(skills)
-        setStudentName(parsed.name ? parsed.name.split(' ')[0] : '')
-        setStudentId(parsed._id || '')
-        setJoinedCommunities(
-          Array.isArray(parsed.joinedCommunities)
-            ? parsed.joinedCommunities.map((c) => c.communityName || c.communityId)
-            : []
-        )
-      } catch {
-        setStudentSkills([])
-      }
+  // Load student data and fetch fresh profile from DB
+  const loadStudentData = async () => {
+    const storedStudent = localStorage.getItem('currentStudent')
+    if (!storedStudent) {
+      setStudentSkills([])
+      setStudentName('')
+      setStudentId('')
+      setJoinedCommunities([])
+      return
     }
 
-    syncSkills()
-    window.addEventListener('student-profile-updated', syncSkills)
-    return () => window.removeEventListener('student-profile-updated', syncSkills)
+    try {
+      const parsed = JSON.parse(storedStudent)
+      const id = parsed._id || ''
+      setStudentName(parsed.name ? parsed.name.split(' ')[0] : '')
+      setStudentId(id)
+
+      // Fetch fresh student data from DB to get latest joinedCommunities
+      if (id) {
+        try {
+          const response = await apiFetch(`/students/${id}`)
+          if (response.ok) {
+            const result = await response.json()
+            const fresh = result?.data
+            if (fresh) {
+              // Update localStorage with fresh data
+              localStorage.setItem('currentStudent', JSON.stringify(fresh))
+
+              const skills = Array.isArray(fresh.skills)
+                ? fresh.skills
+                : String(fresh.skills || '').split(',').map((s) => s.trim()).filter(Boolean)
+              setStudentSkills(skills)
+              setJoinedCommunities(
+                Array.isArray(fresh.joinedCommunities)
+                  ? fresh.joinedCommunities.map((c) => c.communityName || c.communityId)
+                  : []
+              )
+              return
+            }
+          }
+        } catch {
+          // If DB fetch fails, use localStorage data
+        }
+      }
+
+      // Fallback to localStorage data
+      const skills = Array.isArray(parsed.skills)
+        ? parsed.skills
+        : String(parsed.skills || '').split(',').map((s) => s.trim()).filter(Boolean)
+      setStudentSkills(skills)
+      setJoinedCommunities(
+        Array.isArray(parsed.joinedCommunities)
+          ? parsed.joinedCommunities.map((c) => c.communityName || c.communityId)
+          : []
+      )
+    } catch {
+      setStudentSkills([])
+    }
+  }
+
+  useEffect(() => {
+    loadStudentData()
+    window.addEventListener('student-profile-updated', loadStudentData)
+    return () => window.removeEventListener('student-profile-updated', loadStudentData)
   }, [])
 
   // Fetch AI recommendations from backend (only real DB events)
+  // Re-fetches whenever studentId changes
   useEffect(() => {
     if (!studentId) return
 
@@ -165,7 +195,7 @@ function Dashboard() {
   }, [studentId])
 
   const hasRecommendations = aiRecommendations.length > 0
-  const hasNoMatchingEvents = !aiLoading && !hasRecommendations && studentSkills.length > 0
+  const hasNoMatchingEvents = !aiLoading && !hasRecommendations && (studentSkills.length > 0 || joinedCommunities.length > 0)
 
   return (
     <main className="dashboard-page">
