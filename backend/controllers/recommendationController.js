@@ -71,7 +71,7 @@ export const getRecommendedEvents = async (req, res) => {
 
     if (process.env.GROQ_API_KEY && studentSkills.length > 0) {
       try {
-        const prompt = `You are an AI event recommendation engine for a university community hub.
+        const prompt = `You are a STRICT event recommendation engine for a university community hub.
 
 A student has the following profile:
 - Skills/Interests: ${studentSkills.join(', ')}
@@ -80,10 +80,16 @@ A student has the following profile:
 Here are the upcoming events:
 ${eventSummaries.map((ev) => `[${ev.index}] "${ev.name}" - ${ev.description} (Category: ${ev.category}, Date: ${ev.date}, Location: ${ev.location})`).join('\n')}
 
-Rank ALL events by relevance to this student's skills and community interests. For each event, provide:
+IMPORTANT RULES:
+- ONLY include events that DIRECTLY relate to the student's skills or joined communities.
+- If the student's skill is "cricket", ONLY return cricket-related events. Do NOT include hockey, volleyball, cooking, or any unrelated events.
+- If NO events match the student's interests, return an empty array [].
+- Be very strict — a score of 0 means no match at all, do not include those.
+
+For each MATCHING event provide:
 1. The event index number
-2. A relevance score from 0 to 100
-3. A short reason (max 20 words) explaining why this event matches the student
+2. A relevance score from 50 to 100 (only events scoring 50+ should be included)
+3. A short reason (max 20 words) explaining the match
 
 Return ONLY valid JSON array, sorted by relevance (highest first):
 [{"index":0,"score":95,"reason":"Matches your cricket skills perfectly"}]`
@@ -106,7 +112,7 @@ Return ONLY valid JSON array, sorted by relevance (highest first):
 
           if (Array.isArray(parsed)) {
             recommendations = parsed
-              .filter((r) => r.index >= 0 && r.index < upcomingEvents.length)
+              .filter((r) => r.index >= 0 && r.index < upcomingEvents.length && (r.score || 0) >= 40)
               .sort((a, b) => (b.score || 0) - (a.score || 0))
               .map((r) => {
                 const event = upcomingEvents[r.index]
@@ -135,11 +141,14 @@ Return ONLY valid JSON array, sorted by relevance (highest first):
     }
 
     // 5. Fallback: keyword-based matching if AI fails or no API key
-    if (recommendations.length === 0) {
+    // ONLY include events that actually match the student's skills or communities
+    if (recommendations.length === 0 && studentSkills.length > 0) {
       const normalizedSkills = studentSkills.map((s) => s.toLowerCase())
-      const communityIds = joinedCommunities.map((c) => c.communityId?.toLowerCase())
+      const communityIds = joinedCommunities.map((c) => c.communityId?.toLowerCase()).filter(Boolean)
 
-      recommendations = upcomingEvents.map((event) => {
+      const matched = []
+
+      upcomingEvents.forEach((event) => {
         let score = 0
         const reasons = []
 
@@ -147,7 +156,7 @@ Return ONLY valid JSON array, sorted by relevance (highest first):
         const eventText = `${event.eventName} ${event.description} ${event.category}`.toLowerCase()
         normalizedSkills.forEach((skill) => {
           if (eventText.includes(skill)) {
-            score += 25
+            score += 30
             reasons.push(skill)
           }
         })
@@ -155,37 +164,33 @@ Return ONLY valid JSON array, sorted by relevance (highest first):
         // Check community match
         communityIds.forEach((cId) => {
           if (eventText.includes(cId)) {
-            score += 30
+            score += 35
           }
         })
 
-        // Base score for upcoming events
-        score += 10
-
-        const reason =
-          reasons.length > 0
-            ? `Matches your interests: ${reasons.slice(0, 3).join(', ')}`
-            : 'Upcoming event you might enjoy'
-
-        return {
-          _id: event._id,
-          eventName: event.eventName,
-          description: event.description,
-          category: event.category,
-          startDate: event.startDate,
-          endDate: event.endDate,
-          location: event.location,
-          venue: event.venue,
-          eventPost: event.eventPost,
-          eventStatus: event.eventStatus,
-          maxCapacity: event.maxCapacity,
-          registeredMembers: event.registeredMembers,
-          relevanceScore: Math.min(score, 100),
-          aiReason: reason,
+        // ONLY include if there is at least one match (score > 0)
+        if (score > 0) {
+          matched.push({
+            _id: event._id,
+            eventName: event.eventName,
+            description: event.description,
+            category: event.category,
+            startDate: event.startDate,
+            endDate: event.endDate,
+            location: event.location,
+            venue: event.venue,
+            eventPost: event.eventPost,
+            eventStatus: event.eventStatus,
+            maxCapacity: event.maxCapacity,
+            registeredMembers: event.registeredMembers,
+            relevanceScore: Math.min(score, 100),
+            aiReason: `Matches your interests: ${reasons.slice(0, 3).join(', ')}`,
+          })
         }
       })
 
-      recommendations.sort((a, b) => b.relevanceScore - a.relevanceScore)
+      matched.sort((a, b) => b.relevanceScore - a.relevanceScore)
+      recommendations = matched
     }
 
     return res.status(200).json({

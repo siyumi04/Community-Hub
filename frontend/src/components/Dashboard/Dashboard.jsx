@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react'
+import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import './Dashboard.css'
 import { apiFetch } from '../../services/apiClient'
@@ -56,58 +56,6 @@ const communities = [
   },
 ]
 
-// Fallback hardcoded events (used when no DB events are available)
-const fallbackEvents = [
-  {
-    title: 'Campus Cricket Strategy Session',
-    club: 'Cricket Club',
-    dayOfWeek: 1,
-    time: '5:30 PM',
-    icon: '🏏',
-    requiredSkills: ['cricket', 'teamwork', 'leadership'],
-  },
-  {
-    title: 'Hockey Fitness Bootcamp',
-    club: 'Hockey Club',
-    dayOfWeek: 2,
-    time: '6:00 PM',
-    icon: '🏑',
-    requiredSkills: ['hockey', 'fitness', 'teamwork'],
-  },
-  {
-    title: 'Green Campus Cleanup Drive',
-    club: 'Environmental Community',
-    dayOfWeek: 3,
-    time: '4:30 PM',
-    icon: '🌿',
-    requiredSkills: ['environment', 'sustainability', 'community'],
-  },
-  {
-    title: 'FOC Event Planning Sprint',
-    club: 'FOC Event Club',
-    dayOfWeek: 4,
-    time: '3:00 PM',
-    icon: '🎯',
-    requiredSkills: ['event', 'coordination', 'design', 'communication'],
-  },
-  {
-    title: 'Campus Food Fest Preparation',
-    club: 'Food & Beverages Community',
-    dayOfWeek: 5,
-    time: '2:00 PM',
-    icon: '🍜',
-    requiredSkills: ['food', 'beverages', 'hospitality', 'marketing'],
-  },
-  {
-    title: 'Campus Cooking Workshop',
-    club: 'Food & Beverages Community',
-    dayOfWeek: 6,
-    time: '10:00 AM',
-    icon: '🍳',
-    requiredSkills: ['cooking', 'culinary', 'food', 'nutrition'],
-  },
-]
-
 // Category-to-icon mapping for AI events from DB
 const categoryIcons = {
   Sports: '🏆',
@@ -118,17 +66,6 @@ const categoryIcons = {
   Competition: '🏅',
   Workshop: '🔧',
   Other: '🎯',
-}
-
-/** Returns the next real calendar date for a given weekday (0-6) */
-function getNextDate(targetDay) {
-  const today = new Date()
-  const todayDay = today.getDay()
-  let daysAhead = targetDay - todayDay
-  if (daysAhead <= 0) daysAhead += 7
-  const next = new Date(today)
-  next.setDate(today.getDate() + daysAhead)
-  return next
 }
 
 /** Returns "Today", "Tomorrow", or "Wed, Apr 9" etc. */
@@ -162,7 +99,6 @@ function Dashboard() {
   const [aiRecommendations, setAiRecommendations] = useState([])
   const [aiLoading, setAiLoading] = useState(false)
   const [aiError, setAiError] = useState('')
-  const [isAiPowered, setIsAiPowered] = useState(false)
 
   useEffect(() => {
     const syncSkills = () => {
@@ -201,7 +137,7 @@ function Dashboard() {
     return () => window.removeEventListener('student-profile-updated', syncSkills)
   }, [])
 
-  // Fetch AI recommendations when student ID is available
+  // Fetch AI recommendations from backend (only real DB events)
   useEffect(() => {
     if (!studentId) return
 
@@ -214,15 +150,12 @@ function Dashboard() {
 
         if (response.ok && data.success && data.data?.length > 0) {
           setAiRecommendations(data.data)
-          setIsAiPowered(true)
         } else {
           setAiRecommendations([])
-          setIsAiPowered(false)
         }
       } catch (err) {
         console.error('Failed to fetch AI recommendations:', err)
         setAiError('Could not load AI recommendations')
-        setIsAiPowered(false)
       } finally {
         setAiLoading(false)
       }
@@ -231,42 +164,8 @@ function Dashboard() {
     fetchRecommendations()
   }, [studentId])
 
-  // Enrich fallback events with dynamic dates (for when no DB events exist)
-  const enrichedFallbackEvents = useMemo(
-    () =>
-      fallbackEvents.map((ev) => {
-        const date = getNextDate(ev.dayOfWeek)
-        return {
-          ...ev,
-          nextDate: date,
-          dateLabel: formatEventDate(date),
-          daysAway: daysUntil(date),
-          fullDate: date.toLocaleDateString('en-US', {
-            weekday: 'long',
-            month: 'long',
-            day: 'numeric',
-            year: 'numeric',
-          }),
-        }
-      }),
-    []
-  )
-
-  // Fallback: filter by skills when no AI events
-  const fallbackRecommended = useMemo(() => {
-    const normalizedSkills = studentSkills.map((skill) => skill.toLowerCase())
-    if (normalizedSkills.length === 0) return []
-
-    return enrichedFallbackEvents.filter((event) =>
-      event.requiredSkills.some((skill) => normalizedSkills.includes(skill.toLowerCase()))
-    )
-  }, [studentSkills, enrichedFallbackEvents])
-
-  // Determine what events to show
-  const showAiEvents = isAiPowered && aiRecommendations.length > 0
-  const fallbackDisplay =
-    fallbackRecommended.length > 0 ? fallbackRecommended : enrichedFallbackEvents.slice(0, 3)
-  const isPersonalized = showAiEvents || fallbackRecommended.length > 0
+  const hasRecommendations = aiRecommendations.length > 0
+  const hasNoMatchingEvents = !aiLoading && !hasRecommendations && studentSkills.length > 0
 
   return (
     <main className="dashboard-page">
@@ -283,19 +182,14 @@ function Dashboard() {
         <div className="recommendation-header">
           <div className="rec-title-row">
             <h2>
-              {showAiEvents
+              {hasRecommendations
                 ? '🤖 AI-Recommended Events For You'
-                : isPersonalized
-                  ? '✨ Recommended Events For You'
-                  : 'Upcoming Events'}
+                : 'AI Event Recommendations'}
             </h2>
-            {showAiEvents && (
+            {hasRecommendations && (
               <span className="rec-badge ai-badge">
                 <span className="ai-sparkle">✦</span> AI Powered
               </span>
-            )}
-            {!showAiEvents && isPersonalized && (
-              <span className="rec-badge">Based on your skills</span>
             )}
           </div>
 
@@ -349,7 +243,7 @@ function Dashboard() {
         )}
 
         {/* AI Recommended Events from Database */}
-        {showAiEvents && !aiLoading && (
+        {hasRecommendations && !aiLoading && (
           <div className="event-list">
             {aiRecommendations.map((event) => {
               const eventDate = new Date(event.startDate)
@@ -428,48 +322,13 @@ function Dashboard() {
           </div>
         )}
 
-        {/* Fallback Events (when no AI events) */}
-        {!showAiEvents && !aiLoading && (
-          <div className="event-list">
-            {fallbackDisplay.map((event) => {
-              const matchedSkills = studentSkills.filter((s) =>
-                event.requiredSkills.includes(s.toLowerCase())
-              )
-              return (
-                <article className="event-card" key={event.title}>
-                  <div className="event-card-top">
-                    <span className="event-icon">{event.icon}</span>
-                    <span className={`event-countdown ${event.daysAway <= 2 ? 'soon' : ''}`}>
-                      {event.daysAway === 0
-                        ? 'Today!'
-                        : event.daysAway === 1
-                          ? 'Tomorrow'
-                          : `In ${event.daysAway} days`}
-                    </span>
-                  </div>
-
-                  <h3>{event.title}</h3>
-                  <p className="event-club">{event.club}</p>
-
-                  <div className="event-date-row">
-                    <span className="event-date-label">📅 {event.dateLabel}</span>
-                    <span className="event-time">⏰ {event.time}</span>
-                  </div>
-
-                  <p className="event-full-date">{event.fullDate}</p>
-
-                  {matchedSkills.length > 0 && (
-                    <div className="event-matched-skills">
-                      {matchedSkills.map((s) => (
-                        <span key={s} className="matched-skill-tag">
-                          ✓ {s}
-                        </span>
-                      ))}
-                    </div>
-                  )}
-                </article>
-              )
-            })}
+        {/* No matching events message */}
+        {hasNoMatchingEvents && (
+          <div className="no-events-message">
+            <div className="no-events-icon">🔍</div>
+            <h3>No matching events found</h3>
+            <p>There are no upcoming events matching your skills: <strong>{studentSkills.join(', ')}</strong></p>
+            <p>New events matching your interests will appear here automatically when admins create them.</p>
           </div>
         )}
       </section>

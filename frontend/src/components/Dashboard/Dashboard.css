@@ -412,6 +412,38 @@
   text-transform: capitalize;
 }
 
+/* ── No Matching Events ───────────────────── */
+.no-events-message {
+  text-align: center;
+  padding: 3rem 2rem;
+  border-radius: 1.2rem;
+  border: 1px dashed rgba(129, 156, 255, 0.25);
+  background: linear-gradient(160deg, rgba(26, 34, 90, 0.5), rgba(17, 24, 62, 0.4));
+}
+
+.no-events-icon {
+  font-size: 3rem;
+  margin-bottom: 0.8rem;
+  opacity: 0.7;
+}
+
+.no-events-message h3 {
+  margin: 0 0 0.6rem;
+  color: rgba(200, 215, 255, 0.9);
+  font-size: 1.15rem;
+}
+
+.no-events-message p {
+  margin: 0 0 0.4rem;
+  color: rgba(200, 215, 255, 0.55);
+  font-size: 0.9rem;
+  line-height: 1.6;
+}
+
+.no-events-message strong {
+  color: #9ed9ff;
+}
+
 /* ── Community Section ────────────────────── */
 .community-grid-section {
   width: min(1100px, 100% - 2rem);
