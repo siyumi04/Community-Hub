@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import './Dashboard.css'
+import { apiFetch } from '../../services/apiClient'
 import community01 from '../../assets/ITPM images/Community01.jpg'
 import community02 from '../../assets/ITPM images/Community02.jpg'
 import community03 from '../../assets/ITPM images/Community03.jpg'
@@ -55,12 +56,12 @@ const communities = [
   },
 ]
 
-// day: 0=Sun,1=Mon,2=Tue,3=Wed,4=Thu,5=Fri,6=Sat
-const events = [
+// Fallback hardcoded events (used when no DB events are available)
+const fallbackEvents = [
   {
     title: 'Campus Cricket Strategy Session',
     club: 'Cricket Club',
-    dayOfWeek: 1,          // Monday
+    dayOfWeek: 1,
     time: '5:30 PM',
     icon: '🏏',
     requiredSkills: ['cricket', 'teamwork', 'leadership'],
@@ -68,7 +69,7 @@ const events = [
   {
     title: 'Hockey Fitness Bootcamp',
     club: 'Hockey Club',
-    dayOfWeek: 2,          // Tuesday
+    dayOfWeek: 2,
     time: '6:00 PM',
     icon: '🏑',
     requiredSkills: ['hockey', 'fitness', 'teamwork'],
@@ -76,7 +77,7 @@ const events = [
   {
     title: 'Green Campus Cleanup Drive',
     club: 'Environmental Community',
-    dayOfWeek: 3,          // Wednesday
+    dayOfWeek: 3,
     time: '4:30 PM',
     icon: '🌿',
     requiredSkills: ['environment', 'sustainability', 'community'],
@@ -84,7 +85,7 @@ const events = [
   {
     title: 'FOC Event Planning Sprint',
     club: 'FOC Event Club',
-    dayOfWeek: 4,          // Thursday
+    dayOfWeek: 4,
     time: '3:00 PM',
     icon: '🎯',
     requiredSkills: ['event', 'coordination', 'design', 'communication'],
@@ -92,7 +93,7 @@ const events = [
   {
     title: 'Campus Food Fest Preparation',
     club: 'Food & Beverages Community',
-    dayOfWeek: 5,          // Friday
+    dayOfWeek: 5,
     time: '2:00 PM',
     icon: '🍜',
     requiredSkills: ['food', 'beverages', 'hospitality', 'marketing'],
@@ -100,19 +101,31 @@ const events = [
   {
     title: 'Campus Cooking Workshop',
     club: 'Food & Beverages Community',
-    dayOfWeek: 6,          // Saturday
+    dayOfWeek: 6,
     time: '10:00 AM',
     icon: '🍳',
     requiredSkills: ['cooking', 'culinary', 'food', 'nutrition'],
   },
 ]
 
+// Category-to-icon mapping for AI events from DB
+const categoryIcons = {
+  Sports: '🏆',
+  Cultural: '🎭',
+  Academic: '📚',
+  Social: '🤝',
+  Technical: '💻',
+  Competition: '🏅',
+  Workshop: '🔧',
+  Other: '🎯',
+}
+
 /** Returns the next real calendar date for a given weekday (0-6) */
 function getNextDate(targetDay) {
   const today = new Date()
   const todayDay = today.getDay()
   let daysAhead = targetDay - todayDay
-  if (daysAhead <= 0) daysAhead += 7   // always future
+  if (daysAhead <= 0) daysAhead += 7
   const next = new Date(today)
   next.setDate(today.getDate() + daysAhead)
   return next
@@ -142,6 +155,14 @@ function Dashboard() {
   const navigate = useNavigate()
   const [studentSkills, setStudentSkills] = useState([])
   const [studentName, setStudentName] = useState('')
+  const [studentId, setStudentId] = useState('')
+  const [joinedCommunities, setJoinedCommunities] = useState([])
+
+  // AI recommendation state
+  const [aiRecommendations, setAiRecommendations] = useState([])
+  const [aiLoading, setAiLoading] = useState(false)
+  const [aiError, setAiError] = useState('')
+  const [isAiPowered, setIsAiPowered] = useState(false)
 
   useEffect(() => {
     const syncSkills = () => {
@@ -149,6 +170,8 @@ function Dashboard() {
       if (!storedStudent) {
         setStudentSkills([])
         setStudentName('')
+        setStudentId('')
+        setJoinedCommunities([])
         return
       }
 
@@ -162,6 +185,12 @@ function Dashboard() {
               .filter(Boolean)
         setStudentSkills(skills)
         setStudentName(parsed.name ? parsed.name.split(' ')[0] : '')
+        setStudentId(parsed._id || '')
+        setJoinedCommunities(
+          Array.isArray(parsed.joinedCommunities)
+            ? parsed.joinedCommunities.map((c) => c.communityName || c.communityId)
+            : []
+        )
       } catch {
         setStudentSkills([])
       }
@@ -172,31 +201,72 @@ function Dashboard() {
     return () => window.removeEventListener('student-profile-updated', syncSkills)
   }, [])
 
-  // Enrich events with dynamic dates
-  const enrichedEvents = useMemo(() =>
-    events.map((ev) => {
-      const date = getNextDate(ev.dayOfWeek)
-      return {
-        ...ev,
-        nextDate: date,
-        dateLabel: formatEventDate(date),
-        daysAway: daysUntil(date),
-        fullDate: date.toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric', year: 'numeric' }),
+  // Fetch AI recommendations when student ID is available
+  useEffect(() => {
+    if (!studentId) return
+
+    const fetchRecommendations = async () => {
+      setAiLoading(true)
+      setAiError('')
+      try {
+        const response = await apiFetch(`/recommendations/${studentId}`)
+        const data = await response.json()
+
+        if (response.ok && data.success && data.data?.length > 0) {
+          setAiRecommendations(data.data)
+          setIsAiPowered(true)
+        } else {
+          setAiRecommendations([])
+          setIsAiPowered(false)
+        }
+      } catch (err) {
+        console.error('Failed to fetch AI recommendations:', err)
+        setAiError('Could not load AI recommendations')
+        setIsAiPowered(false)
+      } finally {
+        setAiLoading(false)
       }
-    }), []
+    }
+
+    fetchRecommendations()
+  }, [studentId])
+
+  // Enrich fallback events with dynamic dates (for when no DB events exist)
+  const enrichedFallbackEvents = useMemo(
+    () =>
+      fallbackEvents.map((ev) => {
+        const date = getNextDate(ev.dayOfWeek)
+        return {
+          ...ev,
+          nextDate: date,
+          dateLabel: formatEventDate(date),
+          daysAway: daysUntil(date),
+          fullDate: date.toLocaleDateString('en-US', {
+            weekday: 'long',
+            month: 'long',
+            day: 'numeric',
+            year: 'numeric',
+          }),
+        }
+      }),
+    []
   )
 
-  const recommendedEvents = useMemo(() => {
+  // Fallback: filter by skills when no AI events
+  const fallbackRecommended = useMemo(() => {
     const normalizedSkills = studentSkills.map((skill) => skill.toLowerCase())
     if (normalizedSkills.length === 0) return []
 
-    return enrichedEvents.filter((event) =>
-      event.requiredSkills.some((skill) => normalizedSkills.includes(skill.toLowerCase())),
+    return enrichedFallbackEvents.filter((event) =>
+      event.requiredSkills.some((skill) => normalizedSkills.includes(skill.toLowerCase()))
     )
-  }, [studentSkills, enrichedEvents])
+  }, [studentSkills, enrichedFallbackEvents])
 
-  const displayEvents = recommendedEvents.length > 0 ? recommendedEvents : enrichedEvents.slice(0, 3)
-  const isPersonalized = recommendedEvents.length > 0
+  // Determine what events to show
+  const showAiEvents = isAiPowered && aiRecommendations.length > 0
+  const fallbackDisplay =
+    fallbackRecommended.length > 0 ? fallbackRecommended : enrichedFallbackEvents.slice(0, 3)
+  const isPersonalized = showAiEvents || fallbackRecommended.length > 0
 
   return (
     <main className="dashboard-page">
@@ -208,65 +278,200 @@ function Dashboard() {
         <p>Explore communities and join the clubs that match your passion.</p>
       </section>
 
+      {/* ── AI-Powered Recommendations Section ── */}
       <section className="recommendation-section">
         <div className="recommendation-header">
           <div className="rec-title-row">
             <h2>
-              {isPersonalized ? '✨ Recommended Events For You' : 'Upcoming Events'}
+              {showAiEvents
+                ? '🤖 AI-Recommended Events For You'
+                : isPersonalized
+                  ? '✨ Recommended Events For You'
+                  : 'Upcoming Events'}
             </h2>
-            {isPersonalized && (
+            {showAiEvents && (
+              <span className="rec-badge ai-badge">
+                <span className="ai-sparkle">✦</span> AI Powered
+              </span>
+            )}
+            {!showAiEvents && isPersonalized && (
               <span className="rec-badge">Based on your skills</span>
             )}
           </div>
 
-          {studentSkills.length > 0 ? (
-            <div className="skill-list">
-              {studentSkills.map((skill) => (
-                <span key={skill}>{skill}</span>
-              ))}
+          {/* Skills & Communities tags */}
+          {studentSkills.length > 0 || joinedCommunities.length > 0 ? (
+            <div className="profile-context">
+              {studentSkills.length > 0 && (
+                <div className="context-group">
+                  <span className="context-label">Your Skills</span>
+                  <div className="skill-list">
+                    {studentSkills.map((skill) => (
+                      <span key={skill}>{skill}</span>
+                    ))}
+                  </div>
+                </div>
+              )}
+              {joinedCommunities.length > 0 && (
+                <div className="context-group">
+                  <span className="context-label">Your Communities</span>
+                  <div className="community-tag-list">
+                    {joinedCommunities.map((name) => (
+                      <span key={name} className="community-interest-tag">
+                        {name}
+                      </span>
+                    ))}
+                  </div>
+                </div>
+              )}
             </div>
           ) : (
             <p className="no-skill-text">
-              💡 Add skills in your profile to get personalized event recommendations.
+              💡 Add skills in your profile and join communities to get personalized AI event
+              recommendations.
             </p>
           )}
         </div>
 
-        <div className="event-list">
-          {displayEvents.map((event) => {
-            const matchedSkills = studentSkills.filter((s) =>
-              event.requiredSkills.includes(s.toLowerCase())
-            )
-            return (
-              <article className="event-card" key={event.title}>
-                <div className="event-card-top">
-                  <span className="event-icon">{event.icon}</span>
-                  <span className={`event-countdown ${event.daysAway <= 2 ? 'soon' : ''}`}>
-                    {event.daysAway === 0 ? 'Today!' : event.daysAway === 1 ? 'Tomorrow' : `In ${event.daysAway} days`}
-                  </span>
-                </div>
+        {/* Loading state */}
+        {aiLoading && (
+          <div className="ai-loading">
+            <div className="ai-loading-spinner" />
+            <p>AI is analyzing your profile and finding the best events...</p>
+          </div>
+        )}
 
-                <h3>{event.title}</h3>
-                <p className="event-club">{event.club}</p>
+        {/* Error state */}
+        {aiError && !aiLoading && (
+          <div className="ai-error-banner">
+            <span>⚠️</span> {aiError}
+          </div>
+        )}
 
-                <div className="event-date-row">
-                  <span className="event-date-label">📅 {event.dateLabel}</span>
-                  <span className="event-time">⏰ {event.time}</span>
-                </div>
+        {/* AI Recommended Events from Database */}
+        {showAiEvents && !aiLoading && (
+          <div className="event-list">
+            {aiRecommendations.map((event) => {
+              const eventDate = new Date(event.startDate)
+              const days = daysUntil(eventDate)
+              const dateLabel = formatEventDate(eventDate)
+              const icon = categoryIcons[event.category] || '🎯'
 
-                <p className="event-full-date">{event.fullDate}</p>
-
-                {matchedSkills.length > 0 && (
-                  <div className="event-matched-skills">
-                    {matchedSkills.map((s) => (
-                      <span key={s} className="matched-skill-tag">✓ {s}</span>
-                    ))}
+              return (
+                <article className="event-card ai-event-card" key={event._id}>
+                  <div className="event-card-top">
+                    <span className="event-icon">{icon}</span>
+                    <div className="event-card-badges">
+                      {event.relevanceScore >= 70 && (
+                        <span className="relevance-badge high">
+                          {event.relevanceScore}% Match
+                        </span>
+                      )}
+                      {event.relevanceScore >= 40 && event.relevanceScore < 70 && (
+                        <span className="relevance-badge medium">
+                          {event.relevanceScore}% Match
+                        </span>
+                      )}
+                      {event.relevanceScore < 40 && (
+                        <span className="relevance-badge low">
+                          {event.relevanceScore}% Match
+                        </span>
+                      )}
+                      <span className={`event-countdown ${days <= 2 ? 'soon' : ''}`}>
+                        {days === 0
+                          ? 'Today!'
+                          : days === 1
+                            ? 'Tomorrow'
+                            : `In ${days} days`}
+                      </span>
+                    </div>
                   </div>
-                )}
-              </article>
-            )
-          })}
-        </div>
+
+                  <h3>{event.eventName}</h3>
+                  <p className="event-club">{event.category} Event</p>
+
+                  {/* AI Reason */}
+                  <div className="ai-reason">
+                    <span className="ai-reason-icon">🤖</span>
+                    <span>{event.aiReason}</span>
+                  </div>
+
+                  <div className="event-date-row">
+                    <span className="event-date-label">📅 {dateLabel}</span>
+                    <span className="event-time">
+                      ⏰{' '}
+                      {eventDate.toLocaleTimeString('en-US', {
+                        hour: '2-digit',
+                        minute: '2-digit',
+                      })}
+                    </span>
+                  </div>
+
+                  <p className="event-full-date">
+                    {eventDate.toLocaleDateString('en-US', {
+                      weekday: 'long',
+                      month: 'long',
+                      day: 'numeric',
+                      year: 'numeric',
+                    })}
+                  </p>
+
+                  <div className="event-meta-row">
+                    <span className="event-location">📍 {event.venue}</span>
+                    <span className="event-capacity">
+                      👥 {event.registeredMembers}/{event.maxCapacity}
+                    </span>
+                  </div>
+                </article>
+              )
+            })}
+          </div>
+        )}
+
+        {/* Fallback Events (when no AI events) */}
+        {!showAiEvents && !aiLoading && (
+          <div className="event-list">
+            {fallbackDisplay.map((event) => {
+              const matchedSkills = studentSkills.filter((s) =>
+                event.requiredSkills.includes(s.toLowerCase())
+              )
+              return (
+                <article className="event-card" key={event.title}>
+                  <div className="event-card-top">
+                    <span className="event-icon">{event.icon}</span>
+                    <span className={`event-countdown ${event.daysAway <= 2 ? 'soon' : ''}`}>
+                      {event.daysAway === 0
+                        ? 'Today!'
+                        : event.daysAway === 1
+                          ? 'Tomorrow'
+                          : `In ${event.daysAway} days`}
+                    </span>
+                  </div>
+
+                  <h3>{event.title}</h3>
+                  <p className="event-club">{event.club}</p>
+
+                  <div className="event-date-row">
+                    <span className="event-date-label">📅 {event.dateLabel}</span>
+                    <span className="event-time">⏰ {event.time}</span>
+                  </div>
+
+                  <p className="event-full-date">{event.fullDate}</p>
+
+                  {matchedSkills.length > 0 && (
+                    <div className="event-matched-skills">
+                      {matchedSkills.map((s) => (
+                        <span key={s} className="matched-skill-tag">
+                          ✓ {s}
+                        </span>
+                      ))}
+                    </div>
+                  )}
+                </article>
+              )
+            })}
+          </div>
+        )}
       </section>
 
       <section className="community-grid-section">
@@ -276,15 +481,23 @@ function Dashboard() {
         </div>
         <div className="community-grid">
           {communities.map((community) => (
-            <article 
-              className="community-card" 
+            <article
+              className="community-card"
               key={community.id}
               onClick={() => navigate(`/communities/${community.id}`)}
               style={{ cursor: 'pointer' }}
             >
               <div className="community-media">
-                <img className="community-cover" src={community.cover} alt={`${community.name} cover`} />
-                <img className="community-logo" src={community.logo} alt={`${community.name} logo`} />
+                <img
+                  className="community-cover"
+                  src={community.cover}
+                  alt={`${community.name} cover`}
+                />
+                <img
+                  className="community-logo"
+                  src={community.logo}
+                  alt={`${community.name} logo`}
+                />
               </div>
               <span className="community-tag">{community.tag}</span>
               <h2>{community.name}</h2>
@@ -293,7 +506,6 @@ function Dashboard() {
           ))}
         </div>
       </section>
-
     </main>
   )
 }

@@ -10,6 +10,7 @@ import noticeRoutes from './routes/noticeRoutes.js';
 import communityRoutes from './routes/communityRoutes.js';
 import feedbackRoutes from './routes/feedbackRoutes.js';
 import chatRoutes from './routes/chatRoutes.js';
+import recommendationRoutes from './routes/recommendationRoutes.js';
 
 dotenv.config();
 
@@ -45,6 +46,7 @@ app.use('/api/notices', noticeRoutes);
 app.use('/api/communities', communityRoutes);
 app.use('/api/feedback', feedbackRoutes);
 app.use('/api/chat', chatRoutes);
+app.use('/api/recommendations', recommendationRoutes);
 
 // Error Handling Middleware
 app.use((err, req, res, next) => {

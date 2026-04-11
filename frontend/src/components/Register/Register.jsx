@@ -275,13 +275,13 @@ function Register() {
               </div>
             </div>
 
-            {/* Row 3: Skills (Full Width) */}
+            {/* Row 3: Skills & Interests (Full Width) */}
             <div className="form-group">
-              <label>Skills (Comma separated)</label>
+              <label>Skills & Interests (Comma separated) — <span style={{ fontSize: '0.78rem', color: 'rgba(110, 231, 183, 0.85)' }}>🤖 AI uses these to recommend events</span></label>
               <input
                 type="text"
                 name="skills"
-                placeholder="React, Java, Design, Node"
+                placeholder="Cricket, Hockey, Cooking, Design, Environment, Leadership"
                 value={formData.skills}
                 onChange={handleChange}
                 onBlur={() => {
