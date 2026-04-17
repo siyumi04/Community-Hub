@@ -96,18 +96,18 @@ Here are the upcoming events:
 ${eventSummaries.map((ev) => `[${ev.index}] "${ev.name}" - ${ev.description} (Category: ${ev.category}, Date: ${ev.date}, Location: ${ev.location})`).join('\n')}
 
 IMPORTANT RULES:
-- Include events that relate to the student's skills OR their joined communities.
+- Provide recommendations ONLY if the event directly relates to the student's skills OR their joined communities.
 - Consider the community's related topics. For example, if a student joined the Environmental Community, events about hiking, nature, trekking, cleanup, sustainability, camping ARE relevant.
-- If a student joined the Cricket Club, cricket events ARE relevant but hockey events are NOT.
-- If NO events match at all, return an empty array [].
-- Do NOT include completely unrelated events.
+- If a student joined the "Cricket Club", cricket events ARE relevant but hockey events are strictly NOT relevant.
+- IF AN EVENT DOES NOT MATCH, YOU MUST EXCLUDE IT ENTIRELY from your JSON output. Do NOT include it with a low score.
+- Minimum matching score should be 60. Do not return any event with a score below 60.
 
-For each MATCHING event provide:
+For each STRICT MATCHING event provide:
 1. The event index number
-2. A relevance score from 50 to 100
-3. A short reason (max 20 words) explaining the match
+2. A relevance score from 60 to 100
+3. A short reason (max 20 words) explaining exactly how it matches their profile
 
-Return ONLY valid JSON array, sorted by relevance (highest first):
+Return ONLY a valid JSON array of the matched events, sorted by relevance (highest first):
 [{"index":0,"score":95,"reason":"Matches your environmental community interests"}]`
 
         const completion = await getGroqClient().chat.completions.create({
@@ -128,7 +128,7 @@ Return ONLY valid JSON array, sorted by relevance (highest first):
 
           if (Array.isArray(parsed)) {
             recommendations = parsed
-              .filter((r) => r.index >= 0 && r.index < upcomingEvents.length && (r.score || 0) >= 40)
+              .filter((r) => r.index >= 0 && r.index < upcomingEvents.length && (r.score || 0) >= 60)
               .sort((a, b) => (b.score || 0) - (a.score || 0))
               .map((r) => {
                 const event = upcomingEvents[r.index]
