@@ -34,68 +34,33 @@ const validateYearMonth = (year, month) => {
   return { valid: true, normalizedYear, normalizedMonth }
 }
 
-const normalizeSuggestedDate = (dateCandidate, year, month) => {
-  const now = new Date()
-  const monthStart = new Date(Date.UTC(year, month - 1, 1, 0, 0, 0))
-  const monthEnd = new Date(Date.UTC(year, month, 0, 23, 59, 59))
-
-  let normalized = dateCandidate
-  if (!(normalized instanceof Date) || Number.isNaN(normalized.getTime())) {
-    normalized = findSecondSaturday(year, month)
-  }
-
-  if (normalized < monthStart || normalized > monthEnd) {
-    normalized = findSecondSaturday(year, month)
-  }
-
-  if (normalized <= now) {
-    const nextDay = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate() + 1, 9, 0, 0))
-    if (nextDay >= monthStart && nextDay <= monthEnd) {
-      normalized = nextDay
-    }
-  }
-
-  if (normalized <= now) {
-    return null
-  }
-
-  return normalized
-}
-
-const findSecondSaturday = (year, month) => {
-  const firstDay = new Date(Date.UTC(year, month - 1, 1, 9, 0, 0))
-  const firstWeekday = firstDay.getUTCDay()
-  const firstSaturdayDate = ((6 - firstWeekday + 7) % 7) + 1
-  const secondSaturdayDate = firstSaturdayDate + 7
-  return new Date(Date.UTC(year, month - 1, secondSaturdayDate, 9, 0, 0))
-}
-
-const buildFallbackPost = ({ eventName, venue, year, month, startDate }) => {
-  const monthName = new Date(Date.UTC(year, month - 1, 1)).toLocaleString('en-US', { month: 'long', timeZone: 'UTC' })
+const buildFallbackPost = ({ eventName, venue, startDate }) => {
   const dateLabel = startDate.toLocaleDateString('en-US', {
     day: '2-digit',
     month: 'short',
     year: 'numeric',
-    timeZone: 'UTC',
+  })
+  const timeLabel = startDate.toLocaleTimeString('en-US', {
+    hour: 'numeric',
+    minute: '2-digit',
   })
 
   return {
-    eventPost: `${eventName} is scheduled for ${dateLabel} at ${venue}. This date was selected to maximize student availability in ${monthName} ${year}. Join us for an engaging and well-planned community event.`,
+    eventPost: `${eventName} is scheduled for ${dateLabel} at ${timeLabel} at ${venue}. Join us for an engaging and well-planned community event.`,
     suggestedDate: startDate,
   }
 }
 
-const analyzeEventPlan = async ({ eventName, venue, year, month }) => {
-  const fallbackDate = findSecondSaturday(year, month)
-  const fallback = buildFallbackPost({ eventName, venue, year, month, startDate: fallbackDate })
+const analyzeEventPlan = async ({ eventName, venue, date, time }) => {
+  const fallbackDate = new Date(`${date}T${time}:00`)
+  const fallback = buildFallbackPost({ eventName, venue, startDate: fallbackDate })
 
   if (!process.env.GROQ_API_KEY) {
     return fallback
   }
 
   try {
-    const monthName = new Date(Date.UTC(year, month - 1, 1)).toLocaleString('en-US', { month: 'long', timeZone: 'UTC' })
-    const prompt = `You are an event planning assistant.\nGiven this event info:\n- Event: ${eventName}\n- Venue: ${venue}\n- Year: ${year}\n- Month: ${monthName}\nChoose ONE suitable date in this month (YYYY-MM-DD) that is realistic for student attendance, and generate a concise post (max 70 words).\nReturn ONLY valid JSON: {\"date\":\"YYYY-MM-DD\",\"post\":\"...\"}`
+    const prompt = `You are an event planning assistant.\nGiven this event info:\n- Event: ${eventName}\n- Venue: ${venue}\n- Date: ${date}\n- Time: ${time}\nGenerate a concise post promoting this event (max 70 words).\nReturn ONLY valid JSON: {"post":"..."}`
 
     const completion = await getGroqClient().chat.completions.create({
       model: 'llama-3.3-70b-versatile',
@@ -109,13 +74,10 @@ const analyzeEventPlan = async ({ eventName, venue, year, month }) => {
 
     const cleaned = raw.replace(/^```json\s*/i, '').replace(/^```\s*/i, '').replace(/```$/, '').trim()
     const parsed = JSON.parse(cleaned)
-    if (!parsed?.date || !parsed?.post) return fallback
-
-    const suggestedDate = normalizeSuggestedDate(new Date(`${parsed.date}T09:00:00.000Z`), year, month)
-    if (!suggestedDate) return fallback
+    if (!parsed?.post) return fallback
 
     return {
-      suggestedDate,
+      suggestedDate: fallbackDate,
       eventPost: String(parsed.post).trim(),
     }
   } catch {
@@ -126,7 +88,7 @@ const analyzeEventPlan = async ({ eventName, venue, year, month }) => {
 // Create new event
 export const createEvent = async (req, res) => {
   try {
-    const { eventName, venue, year, month } = req.body
+    const { eventName, venue, date, time } = req.body
     const adminId = req.auth?.adminId || req.admin?.id || req.admin?._id
 
     if (!adminId) {
@@ -136,48 +98,41 @@ export const createEvent = async (req, res) => {
       })
     }
 
-    if (!eventName || !venue || !year || !month) {
+    if (!eventName || !venue || !date || !time) {
       return res.status(400).json({
         success: false,
-        message: 'Event name, venue, year, and month are required',
+        message: 'Event name, venue, date, and time are required',
       })
     }
 
-    const validated = validateYearMonth(year, month)
-    if (!validated.valid) {
+    const startDate = new Date(`${date}T${time}:00`)
+    if (isNaN(startDate.getTime())) {
       return res.status(400).json({
         success: false,
-        message: validated.message,
+        message: 'Invalid date or time provided',
       })
     }
 
     const normalizedEventName = String(eventName).trim()
     const normalizedVenue = String(venue).trim()
-    const { normalizedYear, normalizedMonth } = validated
+    const normalizedYear = startDate.getFullYear()
+    const normalizedMonth = startDate.getMonth() + 1
+
     let { suggestedDate, eventPost } = await analyzeEventPlan({
       eventName: normalizedEventName,
       venue: normalizedVenue,
-      year: normalizedYear,
-      month: normalizedMonth,
+      date,
+      time,
     })
 
-    suggestedDate = normalizeSuggestedDate(suggestedDate, normalizedYear, normalizedMonth)
-    if (!suggestedDate) {
-      return res.status(400).json({
-        success: false,
-        message: 'Selected month has no remaining future dates. Please choose a future month.',
-      })
-    }
-
-    const startDate = suggestedDate
-    const endDate = new Date(startDate.getTime() + 2 * 60 * 60 * 1000)
+    const endDate = new Date(suggestedDate.getTime() + 2 * 60 * 60 * 1000)
 
     const event = new Event({
       adminId,
       eventName: normalizedEventName,
       description: eventPost,
       category: 'Other',
-      startDate,
+      startDate: suggestedDate,
       endDate,
       location: normalizedVenue,
       maxCapacity: 150,
@@ -185,7 +140,7 @@ export const createEvent = async (req, res) => {
       year: normalizedYear,
       month: normalizedMonth,
       eventPost,
-      suggestedDate: startDate,
+      suggestedDate: suggestedDate,
       eventStatus: 'upcoming',
     })
 

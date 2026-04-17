@@ -11,8 +11,8 @@ function EventManagement({ admin, onEventUpdated }) {
   const [formData, setFormData] = useState({
     eventName: '',
     venue: '',
-    year: '',
-    month: '',
+    date: '',
+    time: '',
   })
 
   useEffect(() => {
@@ -37,7 +37,7 @@ function EventManagement({ admin, onEventUpdated }) {
 
   const handleCreateEvent = async (e) => {
     e.preventDefault()
-    if (!formData.eventName || !formData.venue || !formData.year || !formData.month) {
+    if (!formData.eventName || !formData.venue || !formData.date || !formData.time) {
       showPopup('error', 'Validation', 'Please fill all required fields')
       return
     }
@@ -54,8 +54,8 @@ function EventManagement({ admin, onEventUpdated }) {
         setFormData({
           eventName: '',
           venue: '',
-          year: '',
-          month: '',
+          date: '',
+          time: '',
         })
         setShowCreateEventForm(false)
         await fetchEvents()
@@ -98,11 +98,13 @@ function EventManagement({ admin, onEventUpdated }) {
 
   const formatDate = (dateStr) => {
     if (!dateStr) return 'N/A'
-    return new Date(dateStr).toLocaleDateString('en-US', {
+    return new Date(dateStr).toLocaleString('en-US', {
       weekday: 'short',
       day: '2-digit',
       month: 'short',
       year: 'numeric',
+      hour: 'numeric',
+      minute: '2-digit',
     })
   }
 
@@ -153,22 +155,16 @@ function EventManagement({ admin, onEventUpdated }) {
             </div>
             <div className="form-row">
               <input
-                type="number"
-                placeholder="Year (e.g. 2026)"
-                value={formData.year}
-                onChange={(e) => setFormData({ ...formData, year: e.target.value })}
-                min="2026"
-                max="2035"
+                type="date"
+                value={formData.date}
+                onChange={(e) => setFormData({ ...formData, date: e.target.value })}
                 required
                 disabled={creating}
               />
               <input
-                type="number"
-                placeholder="Month (1-12)"
-                value={formData.month}
-                onChange={(e) => setFormData({ ...formData, month: e.target.value })}
-                min="1"
-                max="12"
+                type="time"
+                value={formData.time}
+                onChange={(e) => setFormData({ ...formData, time: e.target.value })}
                 required
                 disabled={creating}
               />
@@ -237,10 +233,10 @@ function EventManagement({ admin, onEventUpdated }) {
                   <p className="ai-post-text">{event.eventPost || event.description}</p>
                 </div>
 
-                {/* AI-Suggested Date */}
+                {/* AI-Suggested Date & Time */}
                 <div className="ai-suggested-date">
                   <div className="ai-post-label">
-                    <span className="ai-icon">📅</span> AI Suggested Date
+                    <span className="ai-icon">📅</span> AI Suggested Date & Time
                   </div>
                   <p className="ai-date-text">{formatDate(event.suggestedDate)}</p>
                 </div>
