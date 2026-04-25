@@ -4,7 +4,7 @@ import 'jspdf-autotable'
 import { apiFetch } from '../../../services/apiClient'
 import { showPopup, showConfirm } from '../../../utils/popup'
 
-function MemberManagement({ admin, memberStats }) {
+function MemberManagement({ memberStats }) {
   const [members, setMembers] = useState([])
   const [view, setView] = useState('all') // 'all' or 'pending'
   const [searchTerm, setSearchTerm] = useState('')
@@ -144,7 +144,7 @@ function MemberManagement({ admin, memberStats }) {
       if (response.ok && data.success) {
         setMembers(data.data)
       }
-    } catch (err) {
+    } catch {
       showPopup('error', 'Error', 'Failed to fetch members')
     } finally {
       setLoading(false)
@@ -179,7 +179,7 @@ function MemberManagement({ admin, memberStats }) {
       } else {
         showPopup('error', 'Error', data.message)
       }
-    } catch (err) {
+    } catch {
       showPopup('error', 'Error', 'Failed to add member')
     }
   }
@@ -191,7 +191,7 @@ function MemberManagement({ admin, memberStats }) {
         showPopup('success', 'Success', 'Member approved!')
         fetchMembers()
       }
-    } catch (err) {
+    } catch {
       showPopup('error', 'Error', 'Failed to approve member')
     }
   }
@@ -203,7 +203,7 @@ function MemberManagement({ admin, memberStats }) {
         showPopup('success', 'Success', 'Member rejected!')
         fetchMembers()
       }
-    } catch (err) {
+    } catch {
       showPopup('error', 'Error', 'Failed to reject member')
     }
   }
@@ -218,7 +218,7 @@ function MemberManagement({ admin, memberStats }) {
         showPopup('success', 'Success', `Member promoted to ${newRole}!`)
         fetchMembers()
       }
-    } catch (err) {
+    } catch {
       showPopup('error', 'Error', 'Failed to promote member')
     }
   }
@@ -242,7 +242,7 @@ function MemberManagement({ admin, memberStats }) {
         showPopup('success', 'Success', 'Member removed!')
         fetchMembers()
       }
-    } catch (err) {
+    } catch {
       showPopup('error', 'Error', 'Failed to remove member')
     }
   }
@@ -266,25 +266,8 @@ function MemberManagement({ admin, memberStats }) {
         showPopup('success', 'Success', 'Member banned!')
         fetchMembers()
       }
-    } catch (err) {
+    } catch {
       showPopup('error', 'Error', 'Failed to ban member')
-    }
-  }
-
-  const handleExportCSV = async () => {
-    try {
-      const response = await apiFetch('/members/export/csv')
-      if (response.ok) {
-        const blob = await response.blob()
-        const url = window.URL.createObjectURL(blob)
-        const a = document.createElement('a')
-        a.href = url
-        a.download = 'members.csv'
-        a.click()
-        showPopup('success', 'Success', 'Members list exported!')
-      }
-    } catch (err) {
-      showPopup('error', 'Error', 'Failed to export members')
     }
   }
 
@@ -314,7 +297,7 @@ function MemberManagement({ admin, memberStats }) {
 
       doc.save('members.pdf')
       showPopup('success', 'Success', 'Members PDF exported!')
-    } catch (err) {
+    } catch {
       showPopup('error', 'Error', 'Failed to export PDF')
     }
   }

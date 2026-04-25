@@ -204,11 +204,24 @@ export const getPublicNotices = async (req, res) => {
     const notices = await Notice.find({
       isActive: true,
       $or: [{ expiryDate: { $gt: now } }, { expiryDate: null }],
-    }).sort({ createdAt: -1 })
+    })
+      .sort({ createdAt: -1 })
+      .populate('adminId', 'dashboardName')
+
+    const data = notices.map((notice) => ({
+      _id: notice._id,
+      title: notice.title,
+      content: notice.content,
+      category: notice.category,
+      priority: notice.priority,
+      createdAt: notice.createdAt,
+      expiryDate: notice.expiryDate,
+      organizerName: notice.adminId?.dashboardName || '',
+    }))
 
     res.status(200).json({
       success: true,
-      data: notices,
+      data,
     })
   } catch (err) {
     res.status(500).json({

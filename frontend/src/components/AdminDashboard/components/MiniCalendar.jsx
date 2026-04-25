@@ -12,20 +12,20 @@ function MiniCalendar() {
   const endDate = new Date(lastDay.setDate(lastDay.getDate() + (6 - lastDay.getDay())))
 
   useEffect(() => {
-    fetchEvents()
-  }, [])
-
-  const fetchEvents = async () => {
-    try {
-      const response = await apiFetch('/events')
-      const data = await response.json()
-      if (response.ok && data.success) {
-        setEvents(data.data)
+    const loadEvents = async () => {
+      try {
+        const response = await apiFetch('/events')
+        const data = await response.json()
+        if (response.ok && data.success) {
+          setEvents(data.data)
+        }
+      } catch (err) {
+        console.error('Failed to fetch events:', err)
       }
-    } catch (err) {
-      console.error('Failed to fetch events:', err)
     }
-  }
+
+    loadEvents()
+  }, [])
 
   const getEventsForDate = (date) => {
     return events.filter((event) => {

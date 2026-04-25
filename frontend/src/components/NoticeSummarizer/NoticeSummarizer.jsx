@@ -47,7 +47,7 @@ function NoticeSummarizer() {
         } else {
           setNoticesError(data.message || 'Failed to load notices')
         }
-      } catch (err) {
+      } catch {
         setNoticesError('Unable to connect to server')
       } finally {
         setNoticesLoading(false)

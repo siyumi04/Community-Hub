@@ -1,42 +1,107 @@
 import { useState, useEffect } from 'react'
-import { API_BASE_URL } from '../../utils/constants'
+import { apiFetch } from '../../services/apiClient'
 
-const NoticeBoard = () => {
-  const [notices, setNotices] = useState([])
+const resolveCommunityIdFromDashboard = (dashboardName = '') => {
+  const normalized = String(dashboardName).toLowerCase().replace(/[^a-z0-9]+/g, ' ').trim()
+  if (!normalized) return ''
+  if (normalized.includes('cricket')) return 'cricket'
+  if (normalized.includes('hockey')) return 'hockey'
+  if (normalized.includes('environmental') || normalized.includes('enviromental')) return 'environmental'
+  if (normalized.includes('foc')) return 'foc'
+  if (normalized.includes('food')) return 'food'
+  return ''
+}
+
+const formatDate = (value) => {
+  const date = new Date(value)
+  if (Number.isNaN(date.getTime())) return 'TBA'
+  return date.toLocaleDateString('en-US', {
+    month: 'short',
+    day: 'numeric',
+    year: 'numeric',
+  })
+}
+
+const formatWeekdayDay = (value) => {
+  const date = new Date(value)
+  if (Number.isNaN(date.getTime())) return 'Date TBA'
+  return date.toLocaleDateString('en-US', {
+    weekday: 'short',
+    month: 'short',
+    day: 'numeric',
+  })
+}
+
+const formatTime = (value) => {
+  const date = new Date(value)
+  if (Number.isNaN(date.getTime())) return 'TBA'
+  return date.toLocaleTimeString('en-US', {
+    hour: '2-digit',
+    minute: '2-digit',
+  })
+}
+
+const daysUntil = (value) => {
+  const date = new Date(value)
+  if (Number.isNaN(date.getTime())) return null
+  const today = new Date()
+  today.setHours(0, 0, 0, 0)
+  const target = new Date(date)
+  target.setHours(0, 0, 0, 0)
+  const diff = Math.round((target - today) / (1000 * 60 * 60 * 24))
+  return Number.isFinite(diff) ? diff : null
+}
+
+const NoticeBoard = ({ communityId = '' }) => {
+  const [eventPosts, setEventPosts] = useState([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState(null)
 
   useEffect(() => {
-    const fetchNotices = async () => {
+    const fetchEventPosts = async () => {
       try {
         setLoading(true)
-        const response = await fetch(`${API_BASE_URL}/notices/public`)
+        setError(null)
+        const response = await apiFetch(`/events/public?communityId=${encodeURIComponent(communityId)}&limit=12`)
         const data = await response.json()
 
         if (response.ok && data.success) {
-          setNotices(data.data)
+          const incoming = Array.isArray(data.data) ? data.data : []
+          const filtered = incoming.filter((event) => {
+            const eventCommunityId =
+              event.organizerCommunityId ||
+              resolveCommunityIdFromDashboard(event.organizerName || '')
+            return eventCommunityId && eventCommunityId === communityId
+          })
+          setEventPosts(filtered)
         } else {
-          setError(data.message || 'Failed to load notices')
+          setError(data.message || 'Failed to load event posts')
         }
-      } catch (err) {
+      } catch {
         setError('Unable to connect to server')
       } finally {
         setLoading(false)
       }
     }
 
-    fetchNotices()
-  }, [])
+    if (!communityId) {
+      setEventPosts([])
+      setLoading(false)
+      return
+    }
+
+    fetchEventPosts()
+  }, [communityId])
 
   if (loading) {
     return (
       <div>
         <div className="flex items-center gap-3 mb-6">
           <div className="w-1.5 h-8 bg-indigo-400 rounded-full" />
-          <h2 className="text-2xl font-bold text-white tracking-tight">Admin Notices</h2>
+          <h2 className="text-2xl font-bold text-white tracking-tight">Event Posts</h2>
         </div>
         <div className="flex items-center justify-center py-12">
-          <div className="text-indigo-300 text-sm animate-pulse">Loading notices...</div>
+          <div className="text-indigo-300 text-sm animate-pulse">Loading event posts...</div>
         </div>
       </div>
     )
@@ -47,7 +112,7 @@ const NoticeBoard = () => {
       <div>
         <div className="flex items-center gap-3 mb-6">
           <div className="w-1.5 h-8 bg-indigo-400 rounded-full" />
-          <h2 className="text-2xl font-bold text-white tracking-tight">Admin Notices</h2>
+          <h2 className="text-2xl font-bold text-white tracking-tight">Event Posts</h2>
         </div>
         <div className="flex items-center justify-center py-12">
           <div className="text-red-400 text-sm">{error}</div>
@@ -56,26 +121,18 @@ const NoticeBoard = () => {
     )
   }
 
-  if (notices.length === 0) {
+  if (eventPosts.length === 0) {
     return (
       <div>
         <div className="flex items-center gap-3 mb-6">
           <div className="w-1.5 h-8 bg-indigo-400 rounded-full" />
-          <h2 className="text-2xl font-bold text-white tracking-tight">Admin Notices</h2>
+          <h2 className="text-2xl font-bold text-white tracking-tight">Event Posts</h2>
         </div>
         <div className="flex items-center justify-center py-12">
-          <div className="text-slate-400 text-sm">No notices available at the moment.</div>
+          <div className="text-slate-400 text-sm">No event posts available for this community.</div>
         </div>
       </div>
     )
-  }
-
-  // Map priority to color accents
-  const priorityColors = {
-    Urgent: 'linear-gradient(90deg, #ef4444, #f97316)',
-    High: 'linear-gradient(90deg, #f59e0b, #ef4444)',
-    Medium: 'linear-gradient(90deg, #6366f1, #a855f7)',
-    Low: 'linear-gradient(90deg, #22d3ee, #6366f1)',
   }
 
   return (
@@ -83,56 +140,64 @@ const NoticeBoard = () => {
       {/* Section Title */}
       <div className="flex items-center gap-3 mb-6">
         <div className="w-1.5 h-8 bg-indigo-400 rounded-full" />
-        <h2 className="text-2xl font-bold text-white tracking-tight">Admin Notices</h2>
+        <h2 className="text-2xl font-bold text-white tracking-tight">Event Posts</h2>
         <span className="ml-auto text-xs text-indigo-400 font-medium bg-indigo-500/10 px-3 py-1 rounded-full">
-          {notices.length} {notices.length === 1 ? 'notice' : 'notices'}
+          {eventPosts.length} {eventPosts.length === 1 ? 'post' : 'posts'}
         </span>
       </div>
 
       <div className="grid grid-cols-3 gap-5">
-        {notices.slice(0, 6).map((notice) => (
-          <div
-            key={notice._id}
-            className="rounded-xl overflow-hidden border border-indigo-700/40 shadow-lg transition-transform duration-200 hover:scale-[1.02] hover:shadow-xl"
-            style={{ background: 'linear-gradient(160deg, #1e2660 0%, #2A265A 80%, #1a1a4a 100%)' }}
-          >
-            {/* Top accent stripe based on priority */}
+        {eventPosts.slice(0, 6).map((event) => {
+          const remainingDays = daysUntil(event.startDate)
+          return (
             <div
-              className="h-1 w-full"
-              style={{ background: priorityColors[notice.priority] || priorityColors.Medium }}
-            />
-            <div className="p-5">
-              <div className="flex items-start justify-between gap-2 mb-2">
-                <h3 className="font-bold text-sm text-indigo-200 uppercase tracking-wider">
-                  {notice.title}
+              key={event._id}
+              className="rounded-2xl overflow-hidden border border-cyan-400/35 shadow-lg transition-transform duration-200 hover:scale-[1.02] hover:shadow-xl"
+              style={{ background: 'linear-gradient(160deg, rgba(10, 35, 56, 0.95), rgba(14, 30, 78, 0.92))' }}
+            >
+              <div className="p-5">
+                <div className="flex items-center justify-between gap-3">
+                  <span className="text-2xl leading-none">🎯</span>
+                  <div className="flex items-center gap-2">
+                    <span className="text-[11px] px-3 py-1 rounded-full border border-emerald-400/40 bg-emerald-400/15 text-emerald-300 font-semibold">
+                      Club Event
+                    </span>
+                    <span className="text-[11px] px-3 py-1 rounded-full border border-blue-300/40 bg-blue-400/10 text-blue-200 font-semibold">
+                      {remainingDays === null ? 'Upcoming' : remainingDays <= 0 ? 'Today' : `In ${remainingDays} days`}
+                    </span>
+                  </div>
+                </div>
+
+                <h3 className="text-2xl font-extrabold text-white mt-3 leading-tight">
+                  {event.eventName}
                 </h3>
-                {notice.priority === 'Urgent' && (
-                  <span className="text-xs bg-red-500/20 text-red-400 px-2 py-0.5 rounded-full font-semibold shrink-0">
-                    ⚠ Urgent
-                  </span>
-                )}
-                {notice.priority === 'High' && (
-                  <span className="text-xs bg-amber-500/20 text-amber-400 px-2 py-0.5 rounded-full font-semibold shrink-0">
-                    High
-                  </span>
-                )}
+                <p className="text-sky-200/90 text-sm mt-1">
+                  {event.category || 'Community Event'}
+                </p>
+
+                <div className="mt-4 rounded-xl border border-cyan-300/25 bg-cyan-300/5 px-4 py-3">
+                  <p className="text-cyan-100/90 text-sm italic">
+                    {event.eventPost || event.description || 'Join this event and connect with your community members.'}
+                  </p>
+                </div>
+
+                <div className="mt-4 flex items-center gap-4 text-slate-200/95 text-sm font-medium">
+                  <span>🗓️ {formatWeekdayDay(event.startDate)}</span>
+                  <span>⏰ {formatTime(event.startDate)}</span>
+                </div>
+
+                <p className="text-slate-300/70 text-xs mt-2">
+                  {formatDate(event.startDate)}
+                </p>
+
+                <div className="mt-4 pt-3 border-t border-slate-400/20 flex items-center justify-between text-sm text-slate-300/85">
+                  <span>📍 {event.venue || event.location || 'Venue TBA'}</span>
+                  <span>👥 {event.registeredMembers || 0}/{event.maxCapacity || 150}</span>
+                </div>
               </div>
-              {/* Divider */}
-              <div className="w-10 h-px bg-indigo-400/40 mb-3" />
-              <p className="text-slate-300 text-xs leading-relaxed">
-                {notice.content}
-              </p>
-              {/* Date */}
-              <p className="text-indigo-500 text-[10px] mt-3">
-                {new Date(notice.createdAt).toLocaleDateString('en-US', {
-                  month: 'short',
-                  day: 'numeric',
-                  year: 'numeric',
-                })}
-              </p>
             </div>
-          </div>
-        ))}
+          )
+        })}
       </div>
     </div>
   )

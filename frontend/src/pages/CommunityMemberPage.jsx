@@ -110,9 +110,9 @@ const CommunityMemberPage = () => {
           <UpcomingEvents events={community.events} communityId={community.id} />
         </div>
 
-        {/* Admin Notices */}
+        {/* Event Posts */}
         <div className="rounded-2xl p-8" style={{ background: 'linear-gradient(160deg, #0f172a 0%, #1e1b4b 100%)' }}>
-          <NoticeBoard />
+          <NoticeBoard communityId={community.id} />
         </div>
 
       </div>

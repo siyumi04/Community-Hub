@@ -57,7 +57,7 @@ const ChatPage = () => {
       } else {
         showPopup('Error', data.message || 'Failed to send message', 'error');
       }
-    } catch (err) {
+    } catch {
       showPopup('Error', 'Something went wrong. Please try again.', 'error');
     } finally {
       setSending(false);

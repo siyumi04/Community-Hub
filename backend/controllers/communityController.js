@@ -48,38 +48,66 @@ const DASHBOARD_ALIAS_TO_COMMUNITY_ID = {
     cricket: 'cricket',
     'cricket club': 'cricket',
     'cricket dashboard': 'cricket',
+    'cricket admin dashboard': 'cricket',
+    'cricket club dashboard': 'cricket',
+    'cricket community': 'cricket',
     hockey: 'hockey',
+    hokey: 'hockey',
     'hockey club': 'hockey',
+    'hokey club': 'hockey',
     'hockey dashboard': 'hockey',
+    'hokey dashboard': 'hockey',
+    'hockey admin dashboard': 'hockey',
+    'hokey admin dashboard': 'hockey',
+    'hockey club dashboard': 'hockey',
+    'hokey club dashboard': 'hockey',
+    'hockey community': 'hockey',
+    'hokey community': 'hockey',
     environmental: 'environmental',
     'environmental community': 'environmental',
+    'enviromental community': 'environmental',
     'environmental club': 'environmental',
+    'enviromental club': 'environmental',
     'environmental dashboard': 'environmental',
+    'enviromental dashboard': 'environmental',
+    'environmental admin dashboard': 'environmental',
+    'environmental club dashboard': 'environmental',
+    'enviromental club dashboard': 'environmental',
     foc: 'foc',
     'foc event club': 'foc',
     'foc club': 'foc',
     'foc dashboard': 'foc',
+    'foc admin dashboard': 'foc',
+    'foc club dashboard': 'foc',
+    'foc community': 'foc',
     food: 'food',
     'food community': 'food',
     'food and beverages community': 'food',
     'food beverages community': 'food',
     'food and beverage community': 'food',
-    'food dashboard': 'food'
+    'food dashboard': 'food',
+    'food admin dashboard': 'food',
+    'food community dashboard': 'food',
+    'food and beverages dashboard': 'food'
 };
 
-const resolveCommunityIdForAdmin = (admin) => {
-    if (!admin) return '';
+const resolveCommunityIdForAdmin = (admin, dashboardNameHint = '') => {
+    if (!admin && !dashboardNameHint) return '';
 
     // 1) Exact legacy mapping first (keeps previous behavior)
-    if (admin.dashboardName && COMMUNITY_ID_BY_DASHBOARD[admin.dashboardName]) {
+    if (admin?.dashboardName && COMMUNITY_ID_BY_DASHBOARD[admin.dashboardName]) {
         return COMMUNITY_ID_BY_DASHBOARD[admin.dashboardName];
+    }
+    if (dashboardNameHint && COMMUNITY_ID_BY_DASHBOARD[dashboardNameHint]) {
+        return COMMUNITY_ID_BY_DASHBOARD[dashboardNameHint];
     }
 
     // 2) Normalize and match known aliases
     const candidates = [
-        admin.dashboardName,
-        admin.username,
-        admin.email
+        admin?.dashboardName,
+        admin?.username,
+        admin?.email,
+        dashboardNameHint
     ].filter(Boolean);
 
     for (const candidate of candidates) {
@@ -93,13 +121,44 @@ const resolveCommunityIdForAdmin = (admin) => {
         // Handle values like "cricket_admin_hub", "food-club-admin", etc.
         const tokens = normalized.split(/\s+/).filter(Boolean);
         if (tokens.includes('cricket')) return 'cricket';
-        if (tokens.includes('hockey')) return 'hockey';
+        if (tokens.includes('hockey') || tokens.includes('hokey')) return 'hockey';
         if (tokens.includes('environmental')) return 'environmental';
         if (tokens.includes('foc')) return 'foc';
         if (tokens.includes('food')) return 'food';
     }
 
     return '';
+};
+
+const resolveCommunityIdForAdminWithFallback = async (admin) => {
+    const mappedCommunityId = resolveCommunityIdForAdmin(admin);
+    if (mappedCommunityId) {
+        return mappedCommunityId;
+    }
+
+    return '';
+};
+
+const resolveCommunityIdForAdminRequest = async (admin, dashboardNameHint = '') => {
+    const mappedCommunityId = resolveCommunityIdForAdmin(admin, dashboardNameHint);
+    if (mappedCommunityId) {
+        return mappedCommunityId;
+    }
+
+    // Fallback for custom dashboard names: if there is exactly one pending
+    // community globally, use it so admin can still process requests.
+    const pendingCommunityIds = await CommunityMember.distinct('communityId', { status: 'pending' });
+    if (pendingCommunityIds.length === 1) {
+        return pendingCommunityIds[0];
+    }
+
+    return '';
+};
+
+const getCommunityIdHintFromRequest = (req) => {
+    const raw = String(req.query?.communityId || req.body?.communityId || '').trim().toLowerCase();
+    const allowed = ['cricket', 'hockey', 'environmental', 'foc', 'food'];
+    return allowed.includes(raw) ? raw : '';
 };
 
 const ACTIVE_MEMBER_STATUSES = ['approved', 'active'];
@@ -376,7 +435,9 @@ export const getAdminMembershipRequests = async (req, res) => {
             });
         }
 
-        const communityId = resolveCommunityIdForAdmin(admin);
+        const dashboardNameHint = String(req.query?.dashboardName || '');
+        const hintedCommunityId = getCommunityIdHintFromRequest(req);
+        const communityId = await resolveCommunityIdForAdminRequest(admin, dashboardNameHint) || hintedCommunityId;
         if (!communityId) {
             return res.status(400).json({
                 success: false,
@@ -427,8 +488,10 @@ export const approveMembershipRequest = async (req, res) => {
             });
         }
 
-        const adminCommunityId = resolveCommunityIdForAdmin(admin);
-        if (!adminCommunityId || request.communityId !== adminCommunityId) {
+        const dashboardNameHint = String(req.query?.dashboardName || req.body?.dashboardName || '');
+        const hintedCommunityId = getCommunityIdHintFromRequest(req);
+        const adminCommunityId = await resolveCommunityIdForAdminRequest(admin, dashboardNameHint) || hintedCommunityId;
+        if (adminCommunityId && request.communityId !== adminCommunityId) {
             return res.status(403).json({
                 success: false,
                 message: 'You are not authorized to review this request'
@@ -538,8 +601,10 @@ export const rejectMembershipRequest = async (req, res) => {
             });
         }
 
-        const adminCommunityId = resolveCommunityIdForAdmin(admin);
-        if (!adminCommunityId || request.communityId !== adminCommunityId) {
+        const dashboardNameHint = String(req.query?.dashboardName || req.body?.dashboardName || '');
+        const hintedCommunityId = getCommunityIdHintFromRequest(req);
+        const adminCommunityId = await resolveCommunityIdForAdminRequest(admin, dashboardNameHint) || hintedCommunityId;
+        if (adminCommunityId && request.communityId !== adminCommunityId) {
             return res.status(403).json({
                 success: false,
                 message: 'You are not authorized to review this request'

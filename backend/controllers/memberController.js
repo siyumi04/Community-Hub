@@ -1,7 +1,23 @@
-import mongoose from 'mongoose'
 import Member from '../models/Member.js'
+import CommunityMember from '../models/CommunityMember.js'
+import Admin from '../models/Admin.js'
 
 const getAdminId = (req) => req.auth?.adminId || req.admin?.id || req.admin?._id
+
+const resolveCommunityIdFromAdmin = (admin = {}) => {
+  const raw = [admin.dashboardName, admin.username, admin.email]
+    .filter(Boolean)
+    .join(' ')
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, ' ')
+
+  if (raw.includes('cricket')) return 'cricket'
+  if (raw.includes('hockey') || raw.includes('hokey')) return 'hockey'
+  if (raw.includes('environmental') || raw.includes('enviromental')) return 'environmental'
+  if (raw.includes('foc')) return 'foc'
+  if (raw.includes('food')) return 'food'
+  return ''
+}
 
 // Get all members for an admin
 export const getMembers = async (req, res) => {
@@ -329,24 +345,38 @@ export const exportMembersCSV = async (req, res) => {
 export const getMemberStats = async (req, res) => {
   try {
     const adminId = getAdminId(req)
+    if (!adminId) {
+      return res.status(401).json({
+        success: false,
+        message: 'Admin authentication required',
+      })
+    }
 
-    const stats = await Member.aggregate([
-      { $match: { adminId: new mongoose.Types.ObjectId(adminId) } },
-      {
-        $group: {
-          _id: null,
-          total: { $sum: 1 },
-          approved: { $sum: { $cond: [{ $eq: ['$status', 'approved'] }, 1, 0] } },
-          pending: { $sum: { $cond: [{ $eq: ['$status', 'pending'] }, 1, 0] } },
-          rejected: { $sum: { $cond: [{ $eq: ['$status', 'rejected'] }, 1, 0] } },
-          banned: { $sum: { $cond: [{ $eq: ['$status', 'banned'] }, 1, 0] } },
-        },
-      },
+    const admin = await Admin.findById(adminId).lean()
+    const communityId = resolveCommunityIdFromAdmin(admin || {})
+
+    if (!communityId) {
+      return res.status(200).json({
+        success: true,
+        data: { total: 0, approved: 0, pending: 0, rejected: 0, banned: 0 },
+      })
+    }
+
+    const [approved, pending, rejected] = await Promise.all([
+      CommunityMember.countDocuments({ communityId, status: { $in: ['approved', 'active'] } }),
+      CommunityMember.countDocuments({ communityId, status: 'pending' }),
+      CommunityMember.countDocuments({ communityId, status: 'rejected' }),
     ])
 
     res.status(200).json({
       success: true,
-      data: stats[0] || { total: 0, approved: 0, pending: 0, rejected: 0, banned: 0 },
+      data: {
+        total: approved,
+        approved,
+        pending,
+        rejected,
+        banned: 0,
+      },
     })
   } catch (err) {
     res.status(500).json({

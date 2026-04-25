@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react'
+import { useParams } from 'react-router-dom'
 import { apiFetch } from '../../../services/apiClient'
 import { showPopup, showConfirm } from '../../../utils/popup'
 
@@ -35,7 +36,19 @@ function FieldRow({ label, children }) {
   )
 }
 
-function MemberApprovals() {
+const resolveCommunityIdFromDashboardName = (dashboardName = '') => {
+  const normalized = String(dashboardName).toLowerCase().replace(/[^a-z0-9]+/g, ' ').trim()
+  if (!normalized) return ''
+  if (normalized.includes('cricket')) return 'cricket'
+  if (normalized.includes('hockey') || normalized.includes('hokey')) return 'hockey'
+  if (normalized.includes('environmental') || normalized.includes('enviromental')) return 'environmental'
+  if (normalized.includes('foc')) return 'foc'
+  if (normalized.includes('food')) return 'food'
+  return ''
+}
+
+function MemberApprovals({ admin }) {
+  const { dashboardName: dashboardNameFromRoute } = useParams()
   const [requests, setRequests] = useState([])
   const [loading, setLoading] = useState(true)
   const [processingId, setProcessingId] = useState('')
@@ -43,7 +56,13 @@ function MemberApprovals() {
   const fetchRequests = async () => {
     try {
       setLoading(true)
-      const response = await apiFetch('/communities/admin/member-requests')
+      const effectiveDashboard = admin?.dashboardName || dashboardNameFromRoute || ''
+      const communityIdHint = resolveCommunityIdFromDashboardName(effectiveDashboard)
+      const search = new URLSearchParams()
+      if (effectiveDashboard) search.set('dashboardName', effectiveDashboard)
+      if (communityIdHint) search.set('communityId', communityIdHint)
+      const query = search.toString() ? `?${search.toString()}` : ''
+      const response = await apiFetch(`/communities/admin/member-requests${query}`)
       const data = await response.json()
       if (!response.ok || !data.success) {
         throw new Error(data.message || 'Failed to fetch membership requests')
@@ -63,7 +82,13 @@ function MemberApprovals() {
   const handleApprove = async (requestId) => {
     try {
       setProcessingId(requestId)
-      const response = await apiFetch(`/communities/admin/member-requests/${requestId}/approve`, {
+      const effectiveDashboard = admin?.dashboardName || dashboardNameFromRoute || ''
+      const communityIdHint = resolveCommunityIdFromDashboardName(effectiveDashboard)
+      const search = new URLSearchParams()
+      if (effectiveDashboard) search.set('dashboardName', effectiveDashboard)
+      if (communityIdHint) search.set('communityId', communityIdHint)
+      const query = search.toString() ? `?${search.toString()}` : ''
+      const response = await apiFetch(`/communities/admin/member-requests/${requestId}/approve${query}`, {
         method: 'PATCH',
       })
       const data = await response.json()
@@ -91,7 +116,13 @@ function MemberApprovals() {
 
     try {
       setProcessingId(requestId)
-      const response = await apiFetch(`/communities/admin/member-requests/${requestId}/reject`, {
+      const effectiveDashboard = admin?.dashboardName || dashboardNameFromRoute || ''
+      const communityIdHint = resolveCommunityIdFromDashboardName(effectiveDashboard)
+      const search = new URLSearchParams()
+      if (effectiveDashboard) search.set('dashboardName', effectiveDashboard)
+      if (communityIdHint) search.set('communityId', communityIdHint)
+      const query = search.toString() ? `?${search.toString()}` : ''
+      const response = await apiFetch(`/communities/admin/member-requests/${requestId}/reject${query}`, {
         method: 'PATCH',
       })
       const data = await response.json()

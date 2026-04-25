@@ -7,6 +7,11 @@ const eventSchema = new mongoose.Schema(
       ref: 'Admin',
       required: true,
     },
+    // Explicit club ownership for reliable community filtering.
+    communityId: {
+      type: String,
+      enum: ['cricket', 'hockey', 'environmental', 'foc', 'food'],
+    },
     eventName: {
       type: String,
       required: true,

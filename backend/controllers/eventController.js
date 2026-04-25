@@ -1,4 +1,5 @@
 import Event from '../models/Event.js'
+import Admin from '../models/Admin.js'
 import mongoose from 'mongoose'
 import Groq from 'groq-sdk'
 
@@ -11,6 +12,30 @@ const getGroqClient = () => {
 }
 
 const toInt = (value) => Number.parseInt(String(value), 10)
+
+const resolveCommunityIdFromAdmin = (admin = {}) => {
+  const candidates = [admin.dashboardName, admin.username, admin.email].filter(Boolean)
+  const combined = candidates.join(' ')
+  const normalized = String(combined).toLowerCase().replace(/[^a-z0-9]+/g, ' ').trim()
+  if (!normalized) return ''
+  if (normalized.includes('cricket')) return 'cricket'
+  if (normalized.includes('hockey') || normalized.includes('hokey')) return 'hockey'
+  if (normalized.includes('environmental') || normalized.includes('enviromental')) return 'environmental'
+  if (normalized.includes('foc')) return 'foc'
+  if (normalized.includes('food')) return 'food'
+  return ''
+}
+
+const ensureEventCommunityId = async (eventDoc) => {
+  if (!eventDoc) return ''
+  if (eventDoc.communityId) return String(eventDoc.communityId)
+
+  const mappedCommunityId = resolveCommunityIdFromAdmin(eventDoc.adminId || {})
+  if (mappedCommunityId) {
+    await Event.updateOne({ _id: eventDoc._id }, { $set: { communityId: mappedCommunityId } })
+  }
+  return mappedCommunityId
+}
 
 const validateYearMonth = (year, month) => {
   const normalizedYear = toInt(year)
@@ -127,7 +152,10 @@ export const createEvent = async (req, res) => {
 
     const endDate = new Date(suggestedDate.getTime() + 2 * 60 * 60 * 1000)
 
-    const event = new Event({
+    const adminProfile = await Admin.findById(adminId).select('dashboardName username email')
+    const communityId = resolveCommunityIdFromAdmin(adminProfile || {})
+
+    const eventPayload = {
       adminId,
       eventName: normalizedEventName,
       description: eventPost,
@@ -142,7 +170,14 @@ export const createEvent = async (req, res) => {
       eventPost,
       suggestedDate: suggestedDate,
       eventStatus: 'upcoming',
-    })
+    }
+
+    // Set explicit ownership only when mapping resolves.
+    if (communityId) {
+      eventPayload.communityId = communityId
+    }
+
+    const event = new Event(eventPayload)
 
     await event.save()
     res.status(201).json({
@@ -192,18 +227,24 @@ export const getEvents = async (req, res) => {
 export const getPublicUpcomingEvents = async (req, res) => {
   try {
     const now = new Date()
+    const communityIdQuery = String(req.query.communityId || '').trim().toLowerCase()
+    const validCommunityIds = ['cricket', 'hockey', 'environmental', 'foc', 'food']
+    const requestedCommunityId = validCommunityIds.includes(communityIdQuery) ? communityIdQuery : ''
     const limit = Number.parseInt(String(req.query.limit || 6), 10)
     const normalizedLimit = Number.isNaN(limit) ? 6 : Math.min(Math.max(limit, 1), 12)
 
-    const events = await Event.find({
+    const rawEvents = await Event.find({
       eventStatus: 'upcoming',
       startDate: { $gte: now },
     })
       .sort({ startDate: 1 })
-      .limit(normalizedLimit)
-      .populate('adminId', 'dashboardName')
+      .populate('adminId', 'dashboardName username email')
 
-    const data = events.map((event) => ({
+    const mappedEvents = []
+    for (const event of rawEvents) {
+      const organizerCommunityId = (event.communityId && String(event.communityId)) || await ensureEventCommunityId(event)
+      mappedEvents.push({
+      organizerCommunityId,
       _id: event._id,
       eventName: event.eventName,
       eventPost: event.eventPost,
@@ -217,7 +258,14 @@ export const getPublicUpcomingEvents = async (req, res) => {
       registeredMembers: event.registeredMembers,
       maxCapacity: event.maxCapacity,
       createdAt: event.createdAt,
-    }))
+      })
+    }
+
+    const filteredByCommunity = requestedCommunityId
+      ? mappedEvents.filter((event) => event.organizerCommunityId === requestedCommunityId)
+      : mappedEvents
+
+    const data = filteredByCommunity.slice(0, normalizedLimit)
 
     res.status(200).json({
       success: true,

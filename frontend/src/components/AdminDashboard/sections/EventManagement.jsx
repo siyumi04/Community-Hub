@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react'
 import { apiFetch } from '../../../services/apiClient'
 import { showPopup, showConfirm } from '../../../utils/popup'
 
-function EventManagement({ admin, onEventUpdated }) {
+function EventManagement({ onEventUpdated }) {
   const [events, setEvents] = useState([])
   const [view, setView] = useState('upcoming') // 'upcoming', 'past'
   const [loading, setLoading] = useState(true)
@@ -28,7 +28,7 @@ function EventManagement({ admin, onEventUpdated }) {
       if (response.ok && data.success) {
         setEvents(data.data)
       }
-    } catch (err) {
+    } catch {
       showPopup('error', 'Error', 'Failed to fetch events')
     } finally {
       setLoading(false)
@@ -65,7 +65,7 @@ function EventManagement({ admin, onEventUpdated }) {
       } else {
         showPopup('error', 'Error', data.message)
       }
-    } catch (err) {
+    } catch {
       showPopup('error', 'Error', 'Failed to create event')
     } finally {
       setCreating(false)
@@ -91,7 +91,7 @@ function EventManagement({ admin, onEventUpdated }) {
           onEventUpdated()
         }
       }
-    } catch (err) {
+    } catch {
       showPopup('error', 'Error', 'Failed to delete event')
     }
   }

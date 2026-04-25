@@ -2,8 +2,9 @@ import mongoose from 'mongoose'
 import nodemailer from 'nodemailer'
 import Event from '../models/Event.js'
 import Notice from '../models/Notice.js'
-import Member from '../models/Member.js'
 import Feedback from '../models/Feedback.js'
+import CommunityMember from '../models/CommunityMember.js'
+import Admin from '../models/Admin.js'
 
 const EVENT_STATUSES = ['upcoming', 'ongoing', 'completed', 'cancelled']
 const NOTICE_PRIORITIES = ['Low', 'Medium', 'High', 'Urgent']
@@ -33,6 +34,21 @@ const monthKey = (dateValue) => {
   const d = new Date(dateValue)
   if (Number.isNaN(d.getTime())) return ''
   return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`
+}
+
+const resolveCommunityIdFromAdmin = (admin = {}) => {
+  const raw = [admin.dashboardName, admin.username, admin.email]
+    .filter(Boolean)
+    .join(' ')
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, ' ')
+
+  if (raw.includes('cricket')) return 'cricket'
+  if (raw.includes('hockey') || raw.includes('hokey')) return 'hockey'
+  if (raw.includes('environmental') || raw.includes('enviromental')) return 'environmental'
+  if (raw.includes('foc')) return 'foc'
+  if (raw.includes('food')) return 'food'
+  return ''
 }
 
 const buildMailTransporter = () => {
@@ -69,14 +85,21 @@ export const getAnalyticsSummary = async (req, res) => {
 
     const adminObjectId = toObjectId(adminId)
 
-    const [events, notices, members, feedback] = await Promise.all([
+    const [adminProfile, events, notices, feedback] = await Promise.all([
+      Admin.findById(adminObjectId).lean(),
       Event.find({ adminId: adminObjectId }).lean(),
       Notice.find({ adminId: adminObjectId }).lean(),
-      Member.find({ adminId: adminObjectId }).lean(),
       Feedback.find({ adminId: adminObjectId }).lean(),
     ])
 
-    const approvedMembers = members.filter((member) => member.status === 'approved')
+    const communityId = resolveCommunityIdFromAdmin(adminProfile || {})
+    const communityMemberships = communityId
+      ? await CommunityMember.find({ communityId }).lean()
+      : []
+
+    const approvedMemberships = communityMemberships.filter(
+      (membership) => membership.status === 'approved' || membership.status === 'active',
+    )
 
     const eventsByStatus = EVENT_STATUSES.map((status) => ({
       status,
@@ -126,8 +149,8 @@ export const getAnalyticsSummary = async (req, res) => {
       if (monthLookup[key]) monthLookup[key].noticesCreated += 1
     })
 
-    approvedMembers.forEach((member) => {
-      const sourceDate = member.approvedDate || member.joinedDate || member.createdAt
+    approvedMemberships.forEach((member) => {
+      const sourceDate = member.reviewedAt || member.joinedAt || member.createdAt
       const key = monthKey(sourceDate)
       if (monthLookup[key]) monthLookup[key].membersApproved += 1
     })
@@ -184,8 +207,8 @@ export const getAnalyticsSummary = async (req, res) => {
       success: true,
       data: {
         overview: {
-          totalMembers: members.length,
-          approvedMembers: approvedMembers.length,
+          totalMembers: approvedMemberships.length,
+          approvedMembers: approvedMemberships.length,
           totalEvents: events.length,
           upcomingEvents: eventsByStatus.find((item) => item.status === 'upcoming')?.count || 0,
           totalNotices: notices.length,

@@ -4,6 +4,20 @@ import autoTable from 'jspdf-autotable'
 import { apiFetch } from '../../../services/apiClient'
 import { showPopup } from '../../../utils/popup'
 
+const runAutoTable = (doc, options) => {
+  if (typeof autoTable === 'function') {
+    autoTable(doc, options)
+    return
+  }
+
+  if (typeof doc?.autoTable === 'function') {
+    doc.autoTable(options)
+    return
+  }
+
+  throw new Error('PDF table engine is unavailable')
+}
+
 function AnalyticsBoard({ admin }) {
   const [analytics, setAnalytics] = useState(null)
   const [loading, setLoading] = useState(true)
@@ -45,6 +59,24 @@ function AnalyticsBoard({ admin }) {
     })
   }
 
+  const safeFilePart = (value, fallback = 'community') => {
+    const normalized = String(value || fallback).trim().toLowerCase().replace(/[^a-z0-9_-]+/g, '-')
+    const collapsed = normalized.replace(/-+/g, '-').replace(/^-|-$/g, '')
+    return collapsed || fallback
+  }
+
+  const downloadPdf = (doc, filename) => {
+    const blob = doc.output('blob')
+    const url = URL.createObjectURL(blob)
+    const link = document.createElement('a')
+    link.href = url
+    link.download = filename
+    document.body.appendChild(link)
+    link.click()
+    document.body.removeChild(link)
+    setTimeout(() => URL.revokeObjectURL(url), 1000)
+  }
+
   const buildReportDoc = () => {
     if (!analytics) return null
 
@@ -56,8 +88,12 @@ function AnalyticsBoard({ admin }) {
     doc.text(`Dashboard: ${admin?.dashboardName || 'Admin Dashboard'}`, 40, 70)
     doc.text(`Generated: ${new Date().toLocaleString()}`, 40, 86)
 
-    const overview = analytics.overview || {}
-    autoTable(doc, {
+    const overview = analytics?.overview || {}
+    const eventPerformance = Array.isArray(analytics?.eventPerformance) ? analytics.eventPerformance : []
+    const noticePerformance = Array.isArray(analytics?.noticePerformance) ? analytics.noticePerformance : []
+    const monthlyTrend = Array.isArray(analytics?.monthlyTrend) ? analytics.monthlyTrend : []
+    const eventsByStatus = Array.isArray(analytics?.eventsByStatus) ? analytics.eventsByStatus : []
+    runAutoTable(doc, {
       startY: 108,
       head: [['KPI', 'Value']],
       body: [
@@ -75,8 +111,8 @@ function AnalyticsBoard({ admin }) {
       headStyles: { fillColor: [79, 70, 229] },
     })
 
-    const events = (analytics.eventPerformance || []).slice(0, 8)
-    autoTable(doc, {
+    const events = eventPerformance.slice(0, 8)
+    runAutoTable(doc, {
       startY: (doc.lastAutoTable?.finalY || 108) + 16,
       head: [['Event', 'Status', 'Registered', 'Attended', 'Attendance %', 'Avg Rating']],
       body: events.map((event) => [
@@ -91,8 +127,8 @@ function AnalyticsBoard({ admin }) {
       headStyles: { fillColor: [30, 41, 59] },
     })
 
-    const notices = (analytics.noticePerformance || []).slice(0, 8)
-    autoTable(doc, {
+    const notices = noticePerformance.slice(0, 8)
+    runAutoTable(doc, {
       startY: (doc.lastAutoTable?.finalY || 108) + 16,
       head: [['Notice Title', 'Priority', 'Views', 'Status', 'Created']],
       body: notices.map((notice) => [
@@ -110,15 +146,20 @@ function AnalyticsBoard({ admin }) {
   }
 
   const handleExportPDF = () => {
-    const doc = buildReportDoc()
-    if (!doc) {
-      showPopup('warning', 'No Data', 'Analytics is still loading. Please try again.')
-      return
-    }
+    try {
+      const doc = buildReportDoc()
+      if (!doc) {
+        showPopup('warning', 'No Data', 'Analytics is still loading. Please try again.')
+        return
+      }
 
-    const stamp = new Date().toISOString().slice(0, 10)
-    doc.save(`${admin?.dashboardName || 'club'}-analytics-${stamp}.pdf`)
-    showPopup('success', 'Exported', 'Analytics report downloaded successfully.')
+      const stamp = new Date().toISOString().slice(0, 10)
+      const fileName = `${safeFilePart(admin?.dashboardName, 'club')}-analytics-${stamp}.pdf`
+      downloadPdf(doc, fileName)
+      showPopup('success', 'Exported', 'Analytics report downloaded successfully.')
+    } catch (err) {
+      showPopup('error', 'Export Failed', err.message || 'Unable to generate the analytics PDF.')
+    }
   }
 
   const handleEmailReport = async (e) => {
@@ -163,8 +204,8 @@ function AnalyticsBoard({ admin }) {
     }
   }
 
-  const eventStatusChartStyle = useMemo(() => {
-    const statuses = analytics?.eventsByStatus || []
+    const eventStatusChartStyle = useMemo(() => {
+    const statuses = Array.isArray(analytics?.eventsByStatus) ? analytics.eventsByStatus : []
     const total = statuses.reduce((sum, item) => sum + Number(item.count || 0), 0)
     if (total === 0) {
       return { background: 'conic-gradient(#334155 0 100%)' }
@@ -249,8 +290,12 @@ function AnalyticsBoard({ admin }) {
               </div>
               <div className="chart-container">
                 <div className="simple-chart analytics-trend-chart">
-                  {analytics.monthlyTrend.map((month) => {
-                    const max = Math.max(...analytics.monthlyTrend.map((item) => item.eventsCreated + item.noticesCreated + item.membersApproved), 1)
+                  {(Array.isArray(analytics.monthlyTrend) ? analytics.monthlyTrend : []).map((month) => {
+                    const max = Math.max(
+                      ...(Array.isArray(analytics.monthlyTrend) ? analytics.monthlyTrend : [])
+                        .map((item) => item.eventsCreated + item.noticesCreated + item.membersApproved),
+                      1,
+                    )
                     const total = month.eventsCreated + month.noticesCreated + month.membersApproved
                     const height = Math.max((total / max) * 100, total > 0 ? 12 : 4)
                     return (

@@ -54,6 +54,34 @@ const resolveCommunityIdForAdmin = (admin = {}) => {
 
 const COMMUNITY_IDS = Object.keys(COMMUNITY_KEYWORDS)
 
+const normalizeSkills = (rawSkills) => {
+  if (Array.isArray(rawSkills)) {
+    return rawSkills
+      .map((skill) => String(skill || '').trim())
+      .filter(Boolean)
+  }
+
+  if (typeof rawSkills === 'string') {
+    return rawSkills
+      .split(',')
+      .map((skill) => String(skill || '').trim())
+      .filter(Boolean)
+  }
+
+  return []
+}
+
+const normalizeJoinedCommunities = (rawJoinedCommunities) => {
+  if (!Array.isArray(rawJoinedCommunities)) return []
+
+  return rawJoinedCommunities
+    .map((item) => ({
+      communityId: String(item?.communityId || '').trim().toLowerCase(),
+      communityName: String(item?.communityName || '').trim(),
+    }))
+    .filter((item) => item.communityId || item.communityName)
+}
+
 const inferCommunitiesFromSkills = (skills = []) => {
   const normalizedSkills = skills.map((skill) => normalizeValue(skill)).filter(Boolean)
   const inferred = new Set()
@@ -124,11 +152,8 @@ export const getRecommendedEvents = async (req, res) => {
     }
 
     // 3. Prepare student context
-    const studentSkills = student.skills || []
-    const joinedCommunities = (student.joinedCommunities || []).map((c) => ({
-      communityId: c.communityId,
-      communityName: c.communityName,
-    }))
+    const studentSkills = normalizeSkills(student.skills)
+    const joinedCommunities = normalizeJoinedCommunities(student.joinedCommunities)
     const skillDerivedCommunityIds = inferCommunitiesFromSkills(studentSkills)
 
     // Build event summaries for AI
@@ -306,11 +331,17 @@ Return ONLY a valid JSON array of the matched events, sorted by relevance (highe
     }
 
     // 6. Deterministic safety net:
-    // If a student has a community-related skill (e.g. "cricket"),
-    // always include upcoming events owned by that community admin.
-    if (skillDerivedCommunityIds.length > 0) {
+    // Always include upcoming events owned by communities related to either:
+    // - student's joined communities
+    // - student's community-related skills
+    const joinedCommunityIds = joinedCommunities
+      .map((c) => String(c.communityId || '').trim().toLowerCase())
+      .filter(Boolean)
+    const deterministicCommunityIds = Array.from(new Set([...joinedCommunityIds, ...skillDerivedCommunityIds]))
+
+    if (deterministicCommunityIds.length > 0) {
       const deterministicMatches = []
-      const matchedSet = new Set(skillDerivedCommunityIds)
+      const matchedSet = new Set(deterministicCommunityIds)
 
       upcomingEvents.forEach((event) => {
         const organizerCommunityId = resolveCommunityIdForAdmin(event.adminId || {})
@@ -330,7 +361,9 @@ Return ONLY a valid JSON array of the matched events, sorted by relevance (highe
           maxCapacity: event.maxCapacity,
           registeredMembers: event.registeredMembers,
           relevanceScore: 90,
-          aiReason: `Matches your ${organizerCommunityId} skill`,
+          aiReason: joinedCommunityIds.includes(organizerCommunityId)
+            ? `Matches your joined ${organizerCommunityId} community`
+            : `Matches your ${organizerCommunityId} skill`,
         })
       })
 

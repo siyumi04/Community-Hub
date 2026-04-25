@@ -28,7 +28,7 @@ const UpcomingEvents = ({ events = [], communityId }) => {
       {/* Section Title */}
       <div className="flex items-center gap-3 mb-6">
         <div className="w-1.5 h-8 rounded-full" style={{ background: strip }} />
-        <h2 className="text-2xl font-bold text-white tracking-tight">Upcoming Events</h2>
+        <h2 className="text-2xl font-bold text-white tracking-tight">Upcomming Opportunities</h2>
       </div>
 
       <div className="grid grid-cols-4 gap-5">

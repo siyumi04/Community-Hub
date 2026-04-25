@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react'
 import { apiFetch } from '../../../services/apiClient'
 import { showPopup } from '../../../utils/popup'
 
-function NoticeManagement({ admin, onNoticeUpdated }) {
+function NoticeManagement({ onNoticeUpdated }) {
   const [notices, setNotices] = useState([])
   const [loading, setLoading] = useState(true)
   const [showCreateForm, setShowCreateForm] = useState(false)
@@ -24,7 +24,7 @@ function NoticeManagement({ admin, onNoticeUpdated }) {
       if (response.ok && data.success) {
         setNotices(data.data)
       }
-    } catch (err) {
+    } catch {
       showPopup('error', 'Error', 'Failed to fetch notices')
     } finally {
       setLoading(false)
@@ -63,7 +63,7 @@ function NoticeManagement({ admin, onNoticeUpdated }) {
       } else {
         showPopup('error', 'Error', data.message)
       }
-    } catch (err) {
+    } catch {
       showPopup('error', 'Error', 'Failed to create notice')
     }
   }
@@ -78,7 +78,7 @@ function NoticeManagement({ admin, onNoticeUpdated }) {
           onNoticeUpdated()
         }
       }
-    } catch (err) {
+    } catch {
       showPopup('error', 'Error', 'Failed to archive notice')
     }
   }
