@@ -99,6 +99,7 @@ function Dashboard() {
   const [aiRecommendations, setAiRecommendations] = useState([])
   const [aiLoading, setAiLoading] = useState(false)
   const [aiError, setAiError] = useState('')
+  const [noUpcomingEvents, setNoUpcomingEvents] = useState(false)
 
   // Load student data and fetch fresh profile from DB
   const loadStudentData = async () => {
@@ -174,6 +175,7 @@ function Dashboard() {
     const fetchRecommendations = async () => {
       setAiLoading(true)
       setAiError('')
+      setNoUpcomingEvents(false)
       try {
         const response = await apiFetch(`/recommendations/${studentId}`)
         const data = await response.json()
@@ -182,6 +184,10 @@ function Dashboard() {
           setAiRecommendations(data.data)
         } else {
           setAiRecommendations([])
+          const message = String(data?.message || '').toLowerCase()
+          if (message.includes('no upcoming events available')) {
+            setNoUpcomingEvents(true)
+          }
         }
       } catch (err) {
         console.error('Failed to fetch AI recommendations:', err)
@@ -195,7 +201,11 @@ function Dashboard() {
   }, [studentId])
 
   const hasRecommendations = aiRecommendations.length > 0
-  const hasNoMatchingEvents = !aiLoading && !hasRecommendations && (studentSkills.length > 0 || joinedCommunities.length > 0)
+  const hasNoMatchingEvents =
+    !aiLoading &&
+    !hasRecommendations &&
+    !noUpcomingEvents &&
+    (studentSkills.length > 0 || joinedCommunities.length > 0)
 
   return (
     <main className="dashboard-page">
@@ -359,6 +369,16 @@ function Dashboard() {
             <h3>No matching events found</h3>
             <p>There are no upcoming events matching your skills: <strong>{studentSkills.join(', ')}</strong></p>
             <p>New events matching your interests will appear here automatically when admins create them.</p>
+          </div>
+        )}
+
+        {/* No upcoming events in DB */}
+        {!aiLoading && !hasRecommendations && noUpcomingEvents && (
+          <div className="no-events-message">
+            <div className="no-events-icon">📅</div>
+            <h3>No upcoming events created yet</h3>
+            <p>There are currently no upcoming events in the database.</p>
+            <p>Ask a community admin to create an upcoming event, then recommendations will appear here.</p>
           </div>
         )}
       </section>
