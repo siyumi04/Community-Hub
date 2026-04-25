@@ -1,9 +1,12 @@
 import { Link } from 'react-router-dom'
 import { useState, useEffect } from 'react'
+import { apiFetch } from '../../services/apiClient'
 import './HomePage.css'
 
 function HomePage() {
   const [isLoggedIn, setIsLoggedIn] = useState(false)
+  const [upcomingEvents, setUpcomingEvents] = useState([])
+  const [eventsLoading, setEventsLoading] = useState(true)
 
   useEffect(() => {
     const syncAuthState = () => {
@@ -22,6 +25,39 @@ function HomePage() {
     }
   }, [])
 
+  useEffect(() => {
+    const fetchUpcomingEvents = async () => {
+      try {
+        setEventsLoading(true)
+        const response = await apiFetch('/events/public?limit=6')
+        const payload = await response.json()
+
+        if (response.ok && payload.success) {
+          setUpcomingEvents(payload.data || [])
+        } else {
+          setUpcomingEvents([])
+        }
+      } catch {
+        setUpcomingEvents([])
+      } finally {
+        setEventsLoading(false)
+      }
+    }
+
+    fetchUpcomingEvents()
+  }, [])
+
+  const formatEventDate = (dateValue) => {
+    if (!dateValue) return 'Date TBD'
+    return new Date(dateValue).toLocaleString('en-US', {
+      weekday: 'short',
+      month: 'short',
+      day: '2-digit',
+      hour: 'numeric',
+      minute: '2-digit',
+    })
+  }
+
   return (
     <main className="home-page">
       <section className="hero-section" id="home">
@@ -38,6 +74,37 @@ function HomePage() {
             </div>
           )}
         </div>
+      </section>
+
+      <section className="events-showcase-section" id="events">
+        <div className="section-title">
+          <h2>Upcoming Events From Campus Clubs</h2>
+          <p>Freshly posted by club admins. Explore what is happening next and join what matches your interests.</p>
+        </div>
+
+        {eventsLoading ? (
+          <div className="events-state-card">Loading upcoming events...</div>
+        ) : upcomingEvents.length === 0 ? (
+          <div className="events-state-card">No upcoming events yet. Check back soon for new club announcements.</div>
+        ) : (
+          <div className="events-showcase-grid">
+            {upcomingEvents.map((event) => (
+              <article key={event._id} className="home-event-card">
+                <div className="home-event-card-header">
+                  <span className="home-event-badge">{event.category || 'Event'}</span>
+                  <span className="home-event-club">{event.organizerName}</span>
+                </div>
+                <h3>{event.eventName}</h3>
+                <p className="home-event-post">{event.eventPost || event.description}</p>
+                <div className="home-event-meta">
+                  <p>🗓️ {formatEventDate(event.startDate)}</p>
+                  <p>📍 {event.venue || event.location || 'Venue TBD'}</p>
+                  <p>👥 {event.registeredMembers || 0}/{event.maxCapacity || 0} seats filled</p>
+                </div>
+              </article>
+            ))}
+          </div>
+        )}
       </section>
 
       <section className="features-section" id="services">

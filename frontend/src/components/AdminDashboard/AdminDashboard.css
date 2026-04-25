@@ -958,6 +958,26 @@
   border-color: #b91c1c;
 }
 
+:root[data-theme='light'] .table-subtext,
+:root[data-theme='light'] .status-legend-item {
+  color: #475569;
+}
+
+:root[data-theme='light'] .status-donut::after {
+  background: #eef4fb;
+  border-color: rgba(148, 163, 184, 0.36);
+}
+
+:root[data-theme='light'] .email-report-form textarea {
+  background: rgba(247, 250, 255, 0.95);
+  border-color: rgba(148, 163, 184, 0.35);
+  color: #1e293b;
+}
+
+:root[data-theme='light'] .email-report-form textarea:focus {
+  border-color: rgba(79, 70, 229, 0.45);
+}
+
 .action-btn.reject {
   background: rgba(239, 68, 68, 0.2);
   border-color: rgba(239, 68, 68, 0.4);
@@ -1055,6 +1075,113 @@
 .analytics-card:hover {
   background: rgba(255, 255, 255, 0.12);
   border-color: rgba(255, 255, 255, 0.2);
+}
+
+.analytics-grid {
+  display: grid;
+  grid-template-columns: 2fr 1fr;
+  gap: 20px;
+  margin-bottom: 25px;
+}
+
+.analytics-trend-chart {
+  gap: 12px;
+}
+
+.table-subtext {
+  color: rgba(255, 255, 255, 0.55);
+  font-size: 0.8rem;
+  margin-top: 4px;
+}
+
+.status-donut-wrap {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 20px;
+  padding: 10px 0;
+}
+
+.status-donut {
+  width: 180px;
+  height: 180px;
+  border-radius: 50%;
+  position: relative;
+}
+
+.status-donut::after {
+  content: '';
+  position: absolute;
+  inset: 28px;
+  border-radius: 50%;
+  background: #141832;
+  border: 1px solid rgba(255, 255, 255, 0.14);
+}
+
+.status-legend {
+  width: 100%;
+  display: grid;
+  gap: 8px;
+}
+
+.status-legend-item {
+  display: grid;
+  grid-template-columns: auto 1fr auto;
+  align-items: center;
+  gap: 8px;
+  color: rgba(255, 255, 255, 0.82);
+  font-size: 0.9rem;
+}
+
+.legend-dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+}
+
+.status-upcoming .legend-dot {
+  background: #38bdf8;
+}
+
+.status-ongoing .legend-dot {
+  background: #f59e0b;
+}
+
+.status-completed .legend-dot {
+  background: #22c55e;
+}
+
+.status-cancelled .legend-dot {
+  background: #ef4444;
+}
+
+.status-legend-item .legend-label {
+  text-transform: capitalize;
+}
+
+.report-actions-card {
+  display: grid;
+  gap: 16px;
+}
+
+.email-report-form {
+  display: grid;
+  gap: 12px;
+}
+
+.email-report-form textarea {
+  padding: 12px 14px;
+  border-radius: 8px;
+  min-height: 96px;
+  resize: vertical;
+  border: 2px solid rgba(255, 255, 255, 0.15);
+  background: rgba(255, 255, 255, 0.08);
+  color: #ffffff;
+}
+
+.email-report-form textarea:focus {
+  outline: none;
+  border-color: rgba(255, 255, 255, 0.35);
 }
 
 .chart-container {
@@ -2075,6 +2202,10 @@
   }
 
   .overview-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .analytics-grid {
     grid-template-columns: 1fr;
   }
 

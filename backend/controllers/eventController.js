@@ -188,6 +188,50 @@ export const getEvents = async (req, res) => {
   }
 }
 
+// Get upcoming events for public home/community surfaces (no auth required)
+export const getPublicUpcomingEvents = async (req, res) => {
+  try {
+    const now = new Date()
+    const limit = Number.parseInt(String(req.query.limit || 6), 10)
+    const normalizedLimit = Number.isNaN(limit) ? 6 : Math.min(Math.max(limit, 1), 12)
+
+    const events = await Event.find({
+      eventStatus: 'upcoming',
+      startDate: { $gte: now },
+    })
+      .sort({ startDate: 1 })
+      .limit(normalizedLimit)
+      .populate('adminId', 'dashboardName')
+
+    const data = events.map((event) => ({
+      _id: event._id,
+      eventName: event.eventName,
+      eventPost: event.eventPost,
+      description: event.description,
+      category: event.category,
+      startDate: event.startDate,
+      endDate: event.endDate,
+      venue: event.venue || event.location,
+      location: event.location,
+      organizerName: event.adminId?.dashboardName || 'Community Club',
+      registeredMembers: event.registeredMembers,
+      maxCapacity: event.maxCapacity,
+      createdAt: event.createdAt,
+    }))
+
+    res.status(200).json({
+      success: true,
+      data,
+      message: 'Public upcoming events retrieved successfully',
+    })
+  } catch (err) {
+    res.status(500).json({
+      success: false,
+      message: err.message || 'Failed to fetch public upcoming events',
+    })
+  }
+}
+
 // Get single event details
 export const getEventDetails = async (req, res) => {
   try {

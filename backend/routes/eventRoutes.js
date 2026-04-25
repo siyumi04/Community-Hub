@@ -2,6 +2,7 @@ import express from 'express'
 import {
   createEvent,
   getEvents,
+  getPublicUpcomingEvents,
   getEventDetails,
   updateEvent,
   deleteEvent,
@@ -12,7 +13,10 @@ import { verifyAdminToken } from '../middleware/authMiddleware.js'
 
 const router = express.Router()
 
-// Apply auth middleware to all routes
+// Public routes (no auth required)
+router.get('/public', getPublicUpcomingEvents)
+
+// Apply auth middleware to all routes below
 router.use(verifyAdminToken)
 
 // Get routes
