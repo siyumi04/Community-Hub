@@ -4,9 +4,13 @@ import {
     getCommunityById,
     joinCommunity,
     getCommunityMembers,
-    leaveCommunity
+    leaveCommunity,
+    getMembershipRequestStatus,
+    getAdminMembershipRequests,
+    approveMembershipRequest,
+    rejectMembershipRequest
 } from '../controllers/communityController.js';
-import { protect } from '../middleware/authMiddleware.js';
+import { protect, verifyAdminToken } from '../middleware/authMiddleware.js';
 
 const router = express.Router();
 
@@ -18,6 +22,14 @@ router.get('/:communityId', getCommunityById);
 
 // POST join community
 router.post('/join', joinCommunity);
+
+// Student request status by community
+router.get('/:communityId/request-status/:studentId', protect, getMembershipRequestStatus);
+
+// Admin membership approvals
+router.get('/admin/member-requests', verifyAdminToken, getAdminMembershipRequests);
+router.patch('/admin/member-requests/:requestId/approve', verifyAdminToken, approveMembershipRequest);
+router.patch('/admin/member-requests/:requestId/reject', verifyAdminToken, rejectMembershipRequest);
 
 // GET community members
 router.get('/:communityId/members', getCommunityMembers);

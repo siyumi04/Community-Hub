@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { COMMUNITY_FORM_FIELDS } from '../../utils/constants';
 import { apiFetch } from '../../services/apiClient';
@@ -20,7 +20,7 @@ const COMMUNITY_BUTTON = {
   food:          { bg: '#ea580c', hover: '#f97316' },
 };
 
-const JoinForm = ({ communityId, communityName, onClose, onSuccess }) => {
+const JoinForm = ({ communityId, communityName, onClose, onSubmitted }) => {
   const borderColor = COMMUNITY_BORDER[communityId] || '#6366f1';
   const buttonColors = COMMUNITY_BUTTON[communityId] || { bg: '#4f46e5', hover: '#6366f1' };
   const navigate = useNavigate();
@@ -41,48 +41,70 @@ const JoinForm = ({ communityId, communityName, onClose, onSuccess }) => {
 
   // Success popup state
   const [showSuccess, setShowSuccess] = useState(false);
+  const [profileLoading, setProfileLoading] = useState(true);
 
   // Get community-specific config
   const communityConfig = COMMUNITY_FORM_FIELDS[communityId] || {};
   const uniqueFieldsList = communityConfig.uniqueFields || [];
 
   // Validation functions
-  const validateFullName = (value) => {
-    return /^[a-zA-Z\s]{3,}$/.test(value);
-  };
+  const validateFullName = (value) => value.trim().length >= 2;
 
-  const validateStudentId = (value) => {
-    return /^(IT|EN|BS|HS)\d{8}$/i.test(value);
-  };
+  const validateStudentId = (value) => value.trim().length > 0;
 
-  const getStudentIdPrefix = (value) => {
-    const match = value.match(/^([a-z]{2})/i);
-    return match ? match[1].toUpperCase() : '';
-  };
-
-
-
-  const validateEmail = (value, studentIdValue = studentId) => {
-    const prefix = getStudentIdPrefix(studentIdValue).toLowerCase();
-    const pattern = `^[^\s@]+@my\\.sliit\\.lk$`;
-    const baseValid = new RegExp(pattern).test(value);
-    
-    if (!baseValid) return false;
-    
-    // Check if email starts with the same prefix as student ID
-    if (studentIdValue) {
-      return value.toLowerCase().startsWith(prefix);
-    }
-    return true;
-  };
+  const validateEmail = (value) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value);
 
   const validatePhone = (value) => {
     return /^\d{10}$/.test(value);
   };
 
-  const validateMinLength = (value, min) => {
-    return value.trim().length >= min;
-  };
+  useEffect(() => {
+    const loadStudentDetails = async () => {
+      const storedStudent = localStorage.getItem('currentStudent');
+      if (!storedStudent) {
+        setProfileLoading(false);
+        return;
+      }
+
+      try {
+        const parsedStudent = JSON.parse(storedStudent);
+        const studentDocId = parsedStudent._id || parsedStudent.id;
+
+        const localName = parsedStudent.name || parsedStudent.fullName || '';
+        const localItNumber = parsedStudent.itNumber || parsedStudent.studentId || '';
+        const localEmail = parsedStudent.email || '';
+
+        setFullName(localName);
+        setStudentId(localItNumber.toUpperCase());
+        setEmail(localEmail);
+
+        if (!studentDocId) {
+          return;
+        }
+
+        const response = await apiFetch(`/students/${studentDocId}`);
+        if (!response.ok) {
+          return;
+        }
+
+        const result = await response.json();
+        const studentData = result?.data;
+        if (!studentData) {
+          return;
+        }
+
+        setFullName(studentData.name || localName);
+        setStudentId((studentData.itNumber || localItNumber || '').toUpperCase());
+        setEmail(studentData.email || localEmail);
+      } catch {
+        // Keep best-effort values from localStorage if parsing/fetch fails.
+      } finally {
+        setProfileLoading(false);
+      }
+    };
+
+    loadStudentDetails();
+  }, []);
 
   // Field-level validation
   const isFieldValid = (fieldName, value) => {
@@ -194,29 +216,14 @@ const JoinForm = ({ communityId, communityName, onClose, onSuccess }) => {
         return;
       }
 
-      // Update localStorage with the new joined community
-      const updatedStudent = {
-        ...currentStudent,
-        joinedCommunities: [
-          ...(currentStudent.joinedCommunities || []),
-          {
-            communityId,
-            communityName,
-            memberId: result.data.memberId,
-            year: result.data.year,
-            joinedAt: new Date().toISOString(),
-          },
-        ],
-      };
-      localStorage.setItem('currentStudent', JSON.stringify(updatedStudent));
-      window.dispatchEvent(new Event('student-profile-updated'));
-
-      // Show success popup, then navigate after delay
+      // Show success popup, then close and refresh parent state
       setShowSuccess(true);
       setTimeout(() => {
         setShowSuccess(false);
         onClose(false);
-        navigate(`/communities/${communityId}/member`);
+        if (typeof onSubmitted === 'function') {
+          onSubmitted('pending');
+        }
       }, 2500);
     } catch (error) {
       showPopup(error.message || 'An error occurred while joining the community', 'error');
@@ -274,10 +281,9 @@ const JoinForm = ({ communityId, communityName, onClose, onSuccess }) => {
                 value={fullName}
                 onChange={(e) => setFullName(e.target.value)}
                 onBlur={() => handleBlur('fullName')}
-                placeholder="e.g. John Doe"
-                className={`w-full px-4 py-2 border-2 rounded-lg focus:outline-none transition backdrop-blur-sm ${
-                  fullName ? 'text-white not-italic' : ''
-                } ${
+                placeholder={profileLoading ? 'Loading profile...' : 'Auto-fetched from your account'}
+                readOnly
+                className={`w-full px-4 py-2 border-2 rounded-lg focus:outline-none transition backdrop-blur-sm text-slate-300 italic ${
                   isFieldValid('fullName', fullName) === true
                     ? 'border-green-500'
                     : isFieldValid('fullName', fullName) === false
@@ -288,13 +294,12 @@ const JoinForm = ({ communityId, communityName, onClose, onSuccess }) => {
                   background: 'rgba(30, 41, 59, 0.3)',
                   backdropFilter: 'blur(8px)',
                   WebkitBackdropFilter: 'blur(8px)',
-                  fontStyle: fullName ? 'normal' : 'italic',
-                  color: fullName ? '#f1f5f9' : '#cbd5e1',
+                  color: '#94a3b8',
                 }}
               />
               {isFieldValid('fullName', fullName) === false && (
                 <p className="text-red-500 text-sm mt-1">
-                  Full name must be at least 3 letters (letters only)
+                  Full name is required
                 </p>
               )}
             </div>
@@ -309,11 +314,10 @@ const JoinForm = ({ communityId, communityName, onClose, onSuccess }) => {
                 value={studentId}
                 onChange={(e) => handleStudentIdChange(e.target.value)}
                 onBlur={() => handleBlur('studentId')}
-                placeholder="e.g. IT21123456"
+                placeholder={profileLoading ? 'Loading profile...' : 'Auto-fetched from your account'}
                 maxLength="10"
-                className={`w-full px-4 py-2 border-2 rounded-lg focus:outline-none transition backdrop-blur-sm ${
-                  studentId ? 'text-white not-italic' : ''
-                } ${
+                readOnly
+                className={`w-full px-4 py-2 border-2 rounded-lg focus:outline-none transition backdrop-blur-sm text-slate-300 italic ${
                   isFieldValid('studentId', studentId) === true
                     ? 'border-green-500'
                     : isFieldValid('studentId', studentId) === false
@@ -324,13 +328,12 @@ const JoinForm = ({ communityId, communityName, onClose, onSuccess }) => {
                   background: 'rgba(30, 41, 59, 0.3)',
                   backdropFilter: 'blur(8px)',
                   WebkitBackdropFilter: 'blur(8px)',
-                  fontStyle: studentId ? 'normal' : 'italic',
-                  color: studentId ? '#f1f5f9' : '#cbd5e1',
+                  color: '#94a3b8',
                 }}
               />
               {isFieldValid('studentId', studentId) === false && (
                 <p className="text-red-500 text-sm mt-1">
-                  Format: IT/EN/BS/HS + 8 digits (10 chars total)
+                  Student ID is required
                 </p>
               )}
             </div>
@@ -345,10 +348,9 @@ const JoinForm = ({ communityId, communityName, onClose, onSuccess }) => {
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 onBlur={() => handleBlur('email')}
-                placeholder={studentId ? `${getStudentIdPrefix(studentId).toLowerCase()}21xxxxxx@my.sliit.lk` : "e.g. it21xxxxxx@my.sliit.lk"}
-                className={`w-full px-4 py-2 border-2 rounded-lg focus:outline-none transition backdrop-blur-sm ${
-                  email ? 'text-white not-italic' : ''
-                } ${
+                placeholder={profileLoading ? 'Loading profile...' : 'Auto-fetched from your account'}
+                readOnly
+                className={`w-full px-4 py-2 border-2 rounded-lg focus:outline-none transition backdrop-blur-sm text-slate-300 italic ${
                   isFieldValid('email', email) === true
                     ? 'border-green-500'
                     : isFieldValid('email', email) === false
@@ -359,13 +361,12 @@ const JoinForm = ({ communityId, communityName, onClose, onSuccess }) => {
                   background: 'rgba(30, 41, 59, 0.3)',
                   backdropFilter: 'blur(8px)',
                   WebkitBackdropFilter: 'blur(8px)',
-                  fontStyle: email ? 'normal' : 'italic',
-                  color: email ? '#f1f5f9' : '#cbd5e1',
+                  color: '#94a3b8',
                 }}
               />
               {isFieldValid('email', email) === false && (
                 <p className="text-red-500 text-sm mt-1">
-                  Must match ID prefix and end with @my.sliit.lk
+                  Please provide a valid email
                 </p>
               )}
             </div>
@@ -706,9 +707,9 @@ const JoinForm = ({ communityId, communityName, onClose, onSuccess }) => {
                 Request Submitted!
               </h3>
               <p className="text-slate-500 text-sm">
-                Your request to join <span className="font-semibold text-indigo-600">{communityName}</span> has been sent.
+                Your request to join <span className="font-semibold text-indigo-600">{communityName}</span> is pending admin approval.
               </p>
-              <p className="text-slate-400 text-xs mt-2">Redirecting you now...</p>
+              <p className="text-slate-400 text-xs mt-2">You can track status on this page.</p>
             </div>
 
             {/* Progress bar */}

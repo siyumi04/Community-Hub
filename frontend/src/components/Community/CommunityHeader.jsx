@@ -6,7 +6,19 @@ const FALLBACK_GRADIENTS = {
   food:          'linear-gradient(135deg, #7c2d12 0%, #c2410c 100%)',
 };
 
-const CommunityHeader = ({ name, logoUrl, bgImageUrl, onJoin, onLeave, communityId, showJoinButton = true, showLeaveButton = false, leaving = false }) => {
+const CommunityHeader = ({
+  name,
+  logoUrl,
+  bgImageUrl,
+  onJoin,
+  onLeave,
+  communityId,
+  showJoinButton = true,
+  showLeaveButton = false,
+  leaving = false,
+  joinButtonText = 'Join Community',
+  joinButtonDisabled = false,
+}) => {
   const fallback = FALLBACK_GRADIENTS[communityId] || 'linear-gradient(135deg, #1e293b, #334155)';
 
   return (
@@ -43,9 +55,10 @@ const CommunityHeader = ({ name, logoUrl, bgImageUrl, onJoin, onLeave, community
           {showJoinButton && (
             <button
               onClick={onJoin}
-              className="bg-indigo-600 hover:bg-indigo-500 text-white px-8 py-2.5 rounded-full font-semibold shadow-lg transition-all text-sm tracking-wide"
+              disabled={joinButtonDisabled}
+              className="bg-indigo-600 hover:bg-indigo-500 disabled:opacity-70 disabled:cursor-not-allowed text-white px-8 py-2.5 rounded-full font-semibold shadow-lg transition-all text-sm tracking-wide"
             >
-              Join Community
+              {joinButtonText}
             </button>
           )}
 

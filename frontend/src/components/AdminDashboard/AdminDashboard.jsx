@@ -7,38 +7,27 @@ import MemberManagement from './sections/MemberManagement'
 import EventManagement from './sections/EventManagement'
 import NoticeManagement from './sections/NoticeManagement'
 import AnalyticsBoard from './sections/AnalyticsBoard'
+import MemberApprovals from './sections/MemberApprovals'
 
 function AdminDashboard() {
   const { dashboardName } = useParams()
   const navigate = useNavigate()
-  const [admin, setAdmin] = useState(null)
+  const [admin] = useState(() => {
+    const storedAdmin = localStorage.getItem('currentAdmin')
+    if (!storedAdmin) return null
+    try {
+      return JSON.parse(storedAdmin)
+    } catch {
+      return null
+    }
+  })
   const [activeTab, setActiveTab] = useState('overview')
   const [sidebarOpen, setSidebarOpen] = useState(true)
   const [memberStats, setMemberStats] = useState(null)
   const [eventStats, setEventStats] = useState(null)
   const [noticeRefreshSignal, setNoticeRefreshSignal] = useState(0)
 
-  useEffect(() => {
-    const storedAdmin = localStorage.getItem('currentAdmin')
-    if (!storedAdmin) {
-      navigate('/login')
-      return
-    }
-
-    try {
-      const adminData = JSON.parse(storedAdmin)
-      if (adminData.dashboardName !== dashboardName) {
-        navigate('/login')
-        return
-      }
-      setAdmin(adminData)
-      fetchStats()
-    } catch (err) {
-      navigate('/login')
-    }
-  }, [dashboardName, navigate])
-
-  const fetchStats = async () => {
+  async function fetchStats() {
     try {
       const [memberRes, eventRes] = await Promise.all([
         apiFetch('/members/stats'),
@@ -58,6 +47,24 @@ function AdminDashboard() {
       console.error('Failed to fetch stats:', err)
     }
   }
+
+  useEffect(() => {
+    if (!admin) {
+      navigate('/login')
+      return
+    }
+
+    if (admin.dashboardName !== dashboardName) {
+      navigate('/login')
+      return
+    }
+
+    const statsLoadTimer = setTimeout(() => {
+      fetchStats()
+    }, 0)
+
+    return () => clearTimeout(statsLoadTimer)
+  }, [admin, dashboardName, navigate])
 
   const handleLogout = (redirectPath = '/') => {
     const targetPath = typeof redirectPath === 'string' ? redirectPath : '/'
@@ -103,6 +110,12 @@ function AdminDashboard() {
             onClick={() => setActiveTab('members')}
           >
             <span>👥 Members</span>
+          </button>
+          <button
+            className={`nav-item ${activeTab === 'member-approvals' ? 'active' : ''}`}
+            onClick={() => setActiveTab('member-approvals')}
+          >
+            <span>✅ Member Approvals</span>
           </button>
           <button
             className={`nav-item ${activeTab === 'events' ? 'active' : ''}`}
@@ -157,6 +170,7 @@ function AdminDashboard() {
             />
           )}
           {activeTab === 'members' && <MemberManagement admin={admin} memberStats={memberStats} />}
+          {activeTab === 'member-approvals' && <MemberApprovals admin={admin} />}
           {activeTab === 'events' && <EventManagement admin={admin} onEventUpdated={handleEventUpdated} />}
           {activeTab === 'notices' && <NoticeManagement admin={admin} onNoticeUpdated={handleNoticeUpdated} />}
           {activeTab === 'analytics' && <AnalyticsBoard admin={admin} />}

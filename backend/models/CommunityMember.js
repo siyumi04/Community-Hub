@@ -53,8 +53,21 @@ const communityMemberSchema = new mongoose.Schema({
     },
     status: {
         type: String,
-        enum: ['active', 'left'],
-        default: 'active'
+        enum: ['pending', 'approved', 'rejected', 'left', 'active'],
+        default: 'pending'
+    },
+    reviewedAt: {
+        type: Date,
+        default: null
+    },
+    reviewedBy: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'Admin',
+        default: null
+    },
+    rejectionReason: {
+        type: String,
+        default: ''
     },
     joinedAt: {
         type: Date,
