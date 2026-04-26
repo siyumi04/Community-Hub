@@ -23,17 +23,25 @@ const memberSchema = new mongoose.Schema(
       type: String,
       required: true,
     },
+    phone: {
+      type: String,
+      default: '',
+    },
+    yearOfStudy: {
+      type: String,
+      default: '',
+    },
     // Legacy field kept for backward compatibility, not required
     sport: {
       type: String,
     },
     mainType: {
       type: String,
-      required: true,
+      default: '',
     },
     category: {
       type: String,
-      required: true,
+      default: '',
     },
     status: {
       type: String,

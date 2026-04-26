@@ -4,6 +4,10 @@ import Admin from '../models/Admin.js'
 
 const getAdminId = (req) => req.auth?.adminId || req.admin?.id || req.admin?._id
 
+const VALID_YEAR_OF_STUDY = ['Year 1', 'Year 2', 'Year 3', 'Year 4']
+
+const isValidPhone = (value) => /^\d{10}$/.test(String(value || '').trim())
+
 const resolveCommunityIdFromAdmin = (admin = {}) => {
   const raw = [admin.dashboardName, admin.username, admin.email]
     .filter(Boolean)
@@ -62,24 +66,42 @@ export const getPendingRequests = async (req, res) => {
   }
 }
 
-// Add new member
+// Add new member (phone + year of study only; no mainType/category/role)
 export const addMember = async (req, res) => {
   try {
+    const body = req.body && typeof req.body === 'object' ? req.body : {}
     const {
       name,
       email,
       itNumber,
-      mainType,
-      category,
-      role,
+      phone,
+      yearOfStudy,
       notes,
-    } = req.body
+    } = body
     const adminId = getAdminId(req)
 
-    if (!name || !email || !itNumber || !mainType || !category || !role) {
+    const phoneDigits = String(phone || '').replace(/\D/g, '')
+    const year = String(yearOfStudy || '').trim()
+
+    if (!name || !email || !itNumber || !phoneDigits || !year) {
       return res.status(400).json({
         success: false,
-        message: 'Name, email, IT number, main type, category, and role are required',
+        message:
+          'Please provide full name, email, IT number, a 10-digit phone number, and year of study (Year 1–4).',
+      })
+    }
+
+    if (!isValidPhone(phoneDigits)) {
+      return res.status(400).json({
+        success: false,
+        message: 'Phone number must be exactly 10 digits',
+      })
+    }
+
+    if (!VALID_YEAR_OF_STUDY.includes(year)) {
+      return res.status(400).json({
+        success: false,
+        message: 'Please select a valid year of study (Year 1–4)',
       })
     }
 
@@ -93,15 +115,14 @@ export const addMember = async (req, res) => {
 
     const member = new Member({
       adminId,
-      name,
-      email,
-      itNumber,
-      mainType,
-      category,
-      sport: mainType === 'sport' ? category : undefined,
+      name: String(name).trim(),
+      email: String(email).trim().toLowerCase(),
+      itNumber: String(itNumber).trim().toUpperCase(),
+      phone: phoneDigits,
+      yearOfStudy: year,
       notes,
       status: 'pending',
-      role,
+      role: 'Member',
     })
 
     await member.save()
@@ -118,13 +139,13 @@ export const addMember = async (req, res) => {
   }
 }
 
-// Update basic member details (name, email, itNumber, mainType, category, role, notes)
+// Update basic member details (name, email, itNumber, phone, yearOfStudy, notes)
 export const updateMember = async (req, res) => {
   try {
     const { memberId } = req.params
     const adminId = getAdminId(req)
 
-    const allowedFields = ['name', 'email', 'itNumber', 'mainType', 'category', 'role', 'notes']
+    const allowedFields = ['name', 'email', 'itNumber', 'phone', 'yearOfStudy', 'notes']
     const updates = {}
 
     allowedFields.forEach((field) => {
@@ -146,10 +167,25 @@ export const updateMember = async (req, res) => {
     if (updates.itNumber) {
       updates.itNumber = String(updates.itNumber).trim().toUpperCase()
     }
-
-    // keep legacy sport in sync when mainType/category change
-    if (updates.mainType && updates.category && updates.mainType === 'sport') {
-      updates.sport = updates.category
+    if (Object.prototype.hasOwnProperty.call(updates, 'phone')) {
+      const digits = String(updates.phone || '').replace(/\D/g, '')
+      if (!isValidPhone(digits)) {
+        return res.status(400).json({
+          success: false,
+          message: 'Phone number must be exactly 10 digits',
+        })
+      }
+      updates.phone = digits
+    }
+    if (Object.prototype.hasOwnProperty.call(updates, 'yearOfStudy')) {
+      const y = String(updates.yearOfStudy || '').trim()
+      if (!VALID_YEAR_OF_STUDY.includes(y)) {
+        return res.status(400).json({
+          success: false,
+          message: 'Please select a valid year of study (Year 1–4)',
+        })
+      }
+      updates.yearOfStudy = y
     }
 
     const member = await Member.findOneAndUpdate(
@@ -324,10 +360,10 @@ export const exportMembersCSV = async (req, res) => {
     const adminId = getAdminId(req)
     const members = await Member.find({ adminId, status: 'approved' })
 
-    let csv = 'Name,Email,IT Number,Sport,Role,Joined Date\n'
+    let csv = 'Name,Email,IT Number,Phone,Year of Study,Role,Joined Date\n'
     members.forEach((member) => {
       const joinDate = new Date(member.joinedDate).toLocaleDateString()
-      csv += `"${member.name}","${member.email}","${member.itNumber}","${member.sport}","${member.role}","${joinDate}"\n`
+      csv += `"${member.name}","${member.email}","${member.itNumber}","${member.phone || ''}","${member.yearOfStudy || ''}","${member.role}","${joinDate}"\n`
     })
 
     res.header('Content-Type', 'text/csv')

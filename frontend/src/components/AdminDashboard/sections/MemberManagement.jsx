@@ -4,6 +4,16 @@ import 'jspdf-autotable'
 import { apiFetch } from '../../../services/apiClient'
 import { showPopup, showConfirm } from '../../../utils/popup'
 
+const YEAR_OPTIONS = ['Year 1', 'Year 2', 'Year 3', 'Year 4']
+
+/** Inline option styles help Windows/Chrome native dropdown contrast */
+const YEAR_OPTION_PLACEHOLDER_STYLE = { backgroundColor: '#1e293b', color: '#cbd5e1' }
+const YEAR_OPTION_STYLE = { backgroundColor: '#1e293b', color: '#f1f5f9' }
+
+const isValidPhoneDigits = (value) => /^\d{10}$/.test(String(value || '').replace(/\D/g, ''))
+
+const isValidEmail = (value) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(String(value || '').trim())
+
 function MemberManagement({ memberStats }) {
   const [members, setMembers] = useState([])
   const [view, setView] = useState('all') // 'all' or 'pending'
@@ -16,120 +26,10 @@ function MemberManagement({ memberStats }) {
     name: '',
     email: '',
     itNumber: '',
-    mainType: '',
-    category: '',
-    role: '',
+    phone: '',
+    yearOfStudy: '',
     notes: '',
   })
-  // Main type configuration: Sport, Club, Society, Committee, etc.
-  const MAIN_TYPE_CONFIG = [
-    {
-      id: 'sport',
-      label: 'Sport',
-      categories: [
-        {
-          id: 'cricket',
-          label: 'Cricket',
-          roles: ['Batsman', 'Bowler', 'All-rounder', 'Wicket Keeper'],
-        },
-        {
-          id: 'football',
-          label: 'Football',
-          roles: ['Forward', 'Midfielder', 'Defender', 'Goalkeeper'],
-        },
-        {
-          id: 'basketball',
-          label: 'Basketball',
-          roles: ['Point Guard', 'Shooting Guard', 'Small Forward', 'Power Forward', 'Center'],
-        },
-        {
-          id: 'volleyball',
-          label: 'Volleyball',
-          roles: ['Spiker', 'Setter', 'Libero', 'Blocker'],
-        },
-        {
-          id: 'hockey',
-          label: 'Hockey',
-          roles: ['Forward', 'Midfielder', 'Defender', 'Goalkeeper'],
-        },
-        {
-          id: 'badminton',
-          label: 'Badminton',
-          roles: ['Singles', 'Doubles', 'Mixed Doubles'],
-        },
-        {
-          id: 'rugby',
-          label: 'Rugby',
-          roles: ['Prop', 'Hooker', 'Lock', 'Flanker', 'Scrum-half', 'Fly-half', 'Centre', 'Wing', 'Fullback'],
-        },
-        {
-          id: 'athletics',
-          label: 'Athletics',
-          roles: ['Sprinter', 'Middle-distance', 'Long-distance', 'Thrower', 'Jumper'],
-        },
-        {
-          id: 'swimming',
-          label: 'Swimming',
-          roles: ['Freestyle', 'Backstroke', 'Breaststroke', 'Butterfly', 'Medley'],
-        },
-        {
-          id: 'table-tennis',
-          label: 'Table Tennis',
-          roles: ['Singles', 'Doubles', 'Mixed Doubles'],
-        },
-      ],
-    },
-    {
-      id: 'club',
-      label: 'Club',
-      categories: [
-        {
-          id: 'drama-club',
-          label: 'Drama Club',
-          roles: ['Member', 'Secretary', 'Treasurer', 'President'],
-        },
-        {
-          id: 'music-club',
-          label: 'Music Club',
-          roles: ['Member', 'Lead', 'Secretary', 'President'],
-        },
-      ],
-    },
-    {
-      id: 'society',
-      label: 'Society',
-      categories: [
-        {
-          id: 'it-society',
-          label: 'IT Society',
-          roles: ['Member', 'Committee Member', 'Vice President', 'President'],
-        },
-      ],
-    },
-    {
-      id: 'committee',
-      label: 'Committee',
-      categories: [
-        {
-          id: 'student-council',
-          label: 'Student Council',
-          roles: ['Member', 'Coordinator', 'Secretary', 'President'],
-        },
-      ],
-    },
-  ]
-
-  const selectedMainType = MAIN_TYPE_CONFIG.find((t) => t.id === formData.mainType)
-  const selectedCategory = selectedMainType?.categories.find((c) => c.id === formData.category)
-
-  const selectedEditMainType =
-    editData && editData.mainType
-      ? MAIN_TYPE_CONFIG.find((t) => t.id === editData.mainType)
-      : null
-  const selectedEditCategory =
-    selectedEditMainType && editData?.category
-      ? selectedEditMainType.categories.find((c) => c.id === editData.category)
-      : null
 
   useEffect(() => {
     fetchMembers()
@@ -153,27 +53,52 @@ function MemberManagement({ memberStats }) {
 
   const handleAddMember = async (e) => {
     e.preventDefault()
-    if (
-      !formData.name ||
-      !formData.email ||
-      !formData.itNumber ||
-      !formData.mainType ||
-      !formData.category ||
-      !formData.role
-    ) {
-      showPopup('error', 'Validation', 'Please fill all required fields including type, category and role')
+    const name = formData.name.trim()
+    const email = formData.email.trim()
+    const itNumber = formData.itNumber.trim()
+    const phoneDigits = formData.phone.replace(/\D/g, '')
+    const yearOfStudy = formData.yearOfStudy.trim()
+
+    if (!name || !email || !itNumber || !phoneDigits || !yearOfStudy) {
+      showPopup('error', 'Validation', 'Please fill name, email, IT number, phone number, and year of study.')
+      return
+    }
+    if (!isValidEmail(email)) {
+      showPopup('error', 'Validation', 'Please enter a valid email address.')
+      return
+    }
+    if (!isValidPhoneDigits(phoneDigits)) {
+      showPopup('error', 'Validation', 'Phone number must be exactly 10 digits.')
+      return
+    }
+    if (!YEAR_OPTIONS.includes(yearOfStudy)) {
+      showPopup('error', 'Validation', 'Please select a valid year of study (Year 1–4).')
       return
     }
 
     try {
       const response = await apiFetch('/members/add', {
         method: 'POST',
-        body: JSON.stringify(formData),
+        body: JSON.stringify({
+          name,
+          email,
+          itNumber,
+          phone: phoneDigits,
+          yearOfStudy,
+          notes: formData.notes,
+        }),
       })
       const data = await response.json()
       if (response.ok) {
         showPopup('success', 'Success', 'Member added successfully')
-        setFormData({ name: '', email: '', itNumber: '', mainType: '', category: '', role: '', notes: '' })
+        setFormData({
+          name: '',
+          email: '',
+          itNumber: '',
+          phone: '',
+          yearOfStudy: '',
+          notes: '',
+        })
         setShowAddMemberForm(false)
         fetchMembers()
       } else {
@@ -284,14 +209,16 @@ function MemberManagement({ memberStats }) {
       const tableBody = members.map((member) => [
         member.name,
         member.email,
-        member.mainType || '',
+        member.itNumber || '',
+        member.phone || '',
+        member.yearOfStudy || '',
         member.role || 'Member',
         new Date(member.joinedDate).toLocaleDateString(),
       ])
 
       doc.autoTable({
         startY: 22,
-        head: [['Name', 'Email', 'Type', 'Role', 'Joined Date']],
+        head: [['Name', 'Email', 'IT No.', 'Phone', 'Year', 'Role', 'Joined']],
         body: tableBody,
       })
 
@@ -382,57 +309,32 @@ function MemberManagement({ memberStats }) {
               onChange={(e) => setFormData({ ...formData, itNumber: e.target.value })}
               required
             />
-            <div className="form-row">
-              <select
-                value={formData.mainType}
-                onChange={(e) =>
-                  setFormData({
-                    ...formData,
-                    mainType: e.target.value,
-                    category: '',
-                    role: '',
-                  })}
-                required
-              >
-                <option value="">Select Main Type</option>
-                {MAIN_TYPE_CONFIG.map((type) => (
-                  <option key={type.id} value={type.id}>
-                    {type.label}
-                  </option>
-                ))}
-              </select>
-              <select
-                value={formData.category}
-                onChange={(e) =>
-                  setFormData({
-                    ...formData,
-                    category: e.target.value,
-                    role: '',
-                  })}
-                required
-                disabled={!selectedMainType}
-              >
-                <option value="">Select Category</option>
-                {selectedMainType?.categories.map((cat) => (
-                  <option key={cat.id} value={cat.id}>
-                    {cat.label}
-                  </option>
-                ))}
-              </select>
-              <select
-                value={formData.role}
-                onChange={(e) => setFormData({ ...formData, role: e.target.value })}
-                required
-                disabled={!selectedCategory}
-              >
-                <option value="">Select Role</option>
-                {selectedCategory?.roles.map((role) => (
-                  <option key={role} value={role}>
-                    {role}
-                  </option>
-                ))}
-              </select>
-            </div>
+            <input
+              type="tel"
+              inputMode="numeric"
+              placeholder="Phone number (10 digits)"
+              value={formData.phone}
+              maxLength={15}
+              onChange={(e) =>
+                setFormData({ ...formData, phone: e.target.value.replace(/\D/g, '').slice(0, 10) })
+              }
+              required
+            />
+            <select
+              className="admin-member-year-select"
+              value={formData.yearOfStudy}
+              onChange={(e) => setFormData({ ...formData, yearOfStudy: e.target.value })}
+              required
+            >
+              <option value="" style={YEAR_OPTION_PLACEHOLDER_STYLE}>
+                Select year of study
+              </option>
+              {YEAR_OPTIONS.map((y) => (
+                <option key={y} value={y} style={YEAR_OPTION_STYLE}>
+                  {y}
+                </option>
+              ))}
+            </select>
             <textarea
               placeholder="Notes (optional)"
               value={formData.notes}
@@ -472,7 +374,8 @@ function MemberManagement({ memberStats }) {
                 <th>Name</th>
                 <th>Email</th>
                 <th>IT Number</th>
-                <th>Type</th>
+                <th>Phone</th>
+                <th>Year of study</th>
                 <th>Status</th>
                 <th>Role</th>
                 <th>Joined Date</th>
@@ -485,7 +388,8 @@ function MemberManagement({ memberStats }) {
                   <td>{member.name}</td>
                   <td>{member.email}</td>
                   <td>{member.itNumber}</td>
-                  <td>{member.mainType || member.sport || '-'}</td>
+                  <td>{member.phone || '-'}</td>
+                  <td>{member.yearOfStudy || '-'}</td>
                   <td>
                     <span className={`badge badge-${member.status}`}>
                       {member.status.charAt(0).toUpperCase() + member.status.slice(1)}
@@ -522,9 +426,8 @@ function MemberManagement({ memberStats }) {
                               name: member.name || '',
                               email: member.email || '',
                               itNumber: member.itNumber || '',
-                              mainType: member.mainType || (member.sport ? 'sport' : ''),
-                              category: member.category || member.sport || '',
-                              role: member.role || '',
+                              phone: (member.phone || '').replace(/\D/g, '').slice(0, 10),
+                              yearOfStudy: member.yearOfStudy || '',
                               notes: member.notes || '',
                             })
                           }}
@@ -572,10 +475,26 @@ function MemberManagement({ memberStats }) {
           <form
             onSubmit={async (e) => {
               e.preventDefault()
+              const phoneDigits = (editData.phone || '').replace(/\D/g, '').slice(0, 10)
+              if (!isValidPhoneDigits(phoneDigits)) {
+                showPopup('error', 'Validation', 'Phone number must be exactly 10 digits.')
+                return
+              }
+              if (!YEAR_OPTIONS.includes(editData.yearOfStudy)) {
+                showPopup('error', 'Validation', 'Please select a valid year of study (Year 1–4).')
+                return
+              }
+              if (!isValidEmail(editData.email)) {
+                showPopup('error', 'Validation', 'Please enter a valid email address.')
+                return
+              }
               try {
                 const response = await apiFetch(`/members/${editingMember._id}`, {
                   method: 'PATCH',
-                  body: JSON.stringify(editData),
+                  body: JSON.stringify({
+                    ...editData,
+                    phone: phoneDigits,
+                  }),
                 })
                 const data = await response.json()
                 if (!response.ok || !data.success) {
@@ -611,57 +530,35 @@ function MemberManagement({ memberStats }) {
               onChange={(e) => setEditData({ ...editData, itNumber: e.target.value })}
               required
             />
-            <div className="form-row">
-              <select
-                value={editData.mainType}
-                onChange={(e) =>
-                  setEditData({
-                    ...editData,
-                    mainType: e.target.value,
-                    category: '',
-                    role: '',
-                  })}
-                required
-              >
-                <option value="">Select Main Type</option>
-                {MAIN_TYPE_CONFIG.map((type) => (
-                  <option key={type.id} value={type.id}>
-                    {type.label}
-                  </option>
-                ))}
-              </select>
-              <select
-                value={editData.category}
-                onChange={(e) =>
-                  setEditData({
-                    ...editData,
-                    category: e.target.value,
-                    role: '',
-                  })}
-                required
-                disabled={!selectedEditMainType}
-              >
-                <option value="">Select Category</option>
-                {selectedEditMainType?.categories.map((cat) => (
-                  <option key={cat.id} value={cat.id}>
-                    {cat.label}
-                  </option>
-                ))}
-              </select>
-              <select
-                value={editData.role}
-                onChange={(e) => setEditData({ ...editData, role: e.target.value })}
-                required
-                disabled={!selectedEditCategory}
-              >
-                <option value="">Select Role</option>
-                {selectedEditCategory?.roles.map((role) => (
-                  <option key={role} value={role}>
-                    {role}
-                  </option>
-                ))}
-              </select>
-            </div>
+            <input
+              type="tel"
+              inputMode="numeric"
+              placeholder="Phone number (10 digits)"
+              value={editData.phone}
+              maxLength={15}
+              onChange={(e) =>
+                setEditData({
+                  ...editData,
+                  phone: e.target.value.replace(/\D/g, '').slice(0, 10),
+                })
+              }
+              required
+            />
+            <select
+              className="admin-member-year-select"
+              value={editData.yearOfStudy}
+              onChange={(e) => setEditData({ ...editData, yearOfStudy: e.target.value })}
+              required
+            >
+              <option value="" style={YEAR_OPTION_PLACEHOLDER_STYLE}>
+                Select year of study
+              </option>
+              {YEAR_OPTIONS.map((y) => (
+                <option key={y} value={y} style={YEAR_OPTION_STYLE}>
+                  {y}
+                </option>
+              ))}
+            </select>
             <textarea
               placeholder="Notes (optional)"
               value={editData.notes}
