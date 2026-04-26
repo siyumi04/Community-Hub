@@ -2,6 +2,7 @@ import Community from '../models/Community.js';
 import Student from '../models/Student.js';
 import CommunityMember from '../models/CommunityMember.js';
 import Admin from '../models/Admin.js';
+import Member from '../models/Member.js';
 
 // Utility function to generate member ID
 const generateMemberId = (communityId, sequenceNumber) => {
@@ -557,6 +558,28 @@ export const approveMembershipRequest = async (req, res) => {
         request.rejectionReason = '';
         request.joinedAt = new Date();
         await request.save();
+
+        // Sync with the Member collection so they appear on the Members page
+        const existingMember = await Member.findOne({ adminId, email: request.email });
+        if (!existingMember) {
+            await Member.create({
+                adminId,
+                studentId: request.studentId,
+                name: request.fullName,
+                email: request.email,
+                itNumber: request.studentNumber || '',
+                phone: request.phone,
+                yearOfStudy: request.year,
+                status: 'approved',
+                role: 'Member',
+                joinedDate: new Date(),
+                approvedDate: new Date()
+            });
+        } else if (existingMember.status !== 'approved') {
+            existingMember.status = 'approved';
+            existingMember.approvedDate = new Date();
+            await existingMember.save();
+        }
 
         return res.status(200).json({
             success: true,
