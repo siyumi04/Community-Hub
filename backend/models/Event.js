@@ -1,0 +1,126 @@
+import mongoose from 'mongoose'
+
+const eventSchema = new mongoose.Schema(
+  {
+    adminId: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: 'Admin',
+      required: true,
+    },
+    // Explicit club ownership for reliable community filtering.
+    communityId: {
+      type: String,
+      enum: ['cricket', 'hockey', 'environmental', 'foc', 'food'],
+    },
+    eventName: {
+      type: String,
+      required: true,
+    },
+    description: {
+      type: String,
+      required: true,
+    },
+    category: {
+      type: String,
+      enum: ['Sports', 'Cultural', 'Academic', 'Social', 'Technical', 'Competition', 'Workshop', 'Other'],
+      default: 'Other',
+    },
+    startDate: {
+      type: Date,
+      required: true,
+    },
+    endDate: {
+      type: Date,
+      required: true,
+    },
+    location: {
+      type: String,
+      required: true,
+    },
+    venue: {
+      type: String,
+      required: true,
+    },
+    year: {
+      type: Number,
+      required: true,
+      min: 2024,
+      max: 2100,
+    },
+    month: {
+      type: Number,
+      required: true,
+      min: 1,
+      max: 12,
+    },
+    suggestedDate: {
+      type: Date,
+      required: true,
+    },
+    eventPost: {
+      type: String,
+      required: true,
+    },
+    maxCapacity: {
+      type: Number,
+      required: true,
+    },
+    registeredMembers: {
+      type: Number,
+      default: 0,
+    },
+    attendanceCount: {
+      type: Number,
+      default: 0,
+    },
+    registeredList: [
+      {
+        memberId: {
+          type: mongoose.Schema.Types.ObjectId,
+          ref: 'Member',
+        },
+        name: String,
+        qrCode: String,
+        attended: {
+          type: Boolean,
+          default: false,
+        },
+      },
+    ],
+    eventStatus: {
+      type: String,
+      enum: ['upcoming', 'ongoing', 'completed', 'cancelled'],
+      default: 'upcoming',
+    },
+    qrCode: {
+      type: String, // URL to QR code image
+    },
+    feedbackCollected: {
+      type: Boolean,
+      default: false,
+    },
+    likes: [
+      {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'Student',
+      },
+    ],
+    unlikes: [
+      {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'Student',
+      },
+    ],
+    createdAt: {
+      type: Date,
+      default: Date.now,
+    },
+    updatedAt: {
+      type: Date,
+      default: Date.now,
+    },
+  },
+  { timestamps: true }
+)
+
+export default mongoose.model('Event', eventSchema)

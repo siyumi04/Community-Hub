@@ -1,0 +1,214 @@
+.login-container {
+  min-height: 100vh;
+  display: grid;
+  place-items: center;
+  padding: 24px;
+  background:
+    radial-gradient(circle at 18% 14%, rgba(93, 87, 192, 0.35), transparent 28%),
+    radial-gradient(circle at 82% 22%, rgba(88, 70, 178, 0.32), transparent 32%),
+    linear-gradient(145deg, #0f1130 0%, #17153d 45%, #2b2864 100%);
+}
+
+.login-wrapper {
+  width: 100%;
+  max-width: 560px;
+}
+
+.login-card {
+  background: linear-gradient(160deg, rgba(12, 12, 43, 0.95) 0%, rgba(9, 10, 35, 0.92) 100%);
+  border: 1px solid rgba(125, 132, 241, 0.26);
+  border-radius: 20px;
+  padding: 38px;
+  box-shadow: 0 22px 60px rgba(6, 9, 38, 0.6);
+  backdrop-filter: blur(10px);
+}
+
+.login-head {
+  text-align: center;
+  margin-bottom: 18px;
+}
+
+.login-head h1 {
+  margin: 0;
+  color: #f8f9ff;
+  font-size: 2.3rem;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+}
+
+.login-head p {
+  margin: 8px 0 0;
+  color: rgba(224, 229, 255, 0.7);
+  font-size: 1rem;
+}
+
+.login-role-switch {
+  background: rgba(255, 255, 255, 0.07);
+  border: 1px solid rgba(151, 156, 243, 0.26);
+  border-radius: 11px;
+  padding: 4px;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 4px;
+  margin-bottom: 16px;
+}
+
+.role-btn {
+  border: 0;
+  border-radius: 8px;
+  padding: 9px 12px;
+  font-size: 0.86rem;
+  font-weight: 600;
+  color: rgba(229, 234, 255, 0.72);
+  background: transparent;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.role-btn.active {
+  background: rgba(110, 127, 255, 0.23);
+  color: #ffffff;
+  box-shadow: 0 6px 14px rgba(67, 92, 255, 0.22);
+}
+
+.login-form {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.form-group {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.form-group label {
+  font-size: 0.8rem;
+  color: rgba(224, 229, 255, 0.9);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  font-weight: 700;
+}
+
+.form-group input {
+  border: 1px solid rgba(143, 151, 240, 0.24);
+  border-radius: 10px;
+  padding: 13px 14px;
+  font-size: 1rem;
+  color: #f6f8ff;
+  background: rgba(255, 255, 255, 0.07);
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.form-group input::placeholder {
+  color: rgba(230, 235, 255, 0.4);
+}
+
+.form-group input:focus {
+  outline: none;
+  border-color: rgba(110, 127, 255, 0.85);
+  box-shadow: 0 0 0 3px rgba(84, 108, 255, 0.22);
+}
+
+.form-group input.input-error {
+  border-color: #ff7c98;
+  background: rgba(255, 113, 146, 0.12);
+}
+
+.field-error {
+  margin: 0;
+  color: #ffc0cf;
+  font-size: 0.78rem;
+  font-weight: 600;
+}
+
+.login-options {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+.remember-me {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 0.82rem;
+  color: rgba(227, 232, 255, 0.76);
+  user-select: none;
+}
+
+.remember-me input[type='checkbox'] {
+  accent-color: #7e8eff;
+}
+
+.forgot-password {
+  font-size: 0.82rem;
+  text-decoration: none;
+  color: #8f9eff;
+  font-weight: 600;
+}
+
+.forgot-password:hover {
+  text-decoration: underline;
+}
+
+.login-btn {
+  border: 0;
+  border-radius: 11px;
+  padding: 14px;
+  background: linear-gradient(120deg, #6982ff 0%, #855ed2 100%);
+  color: #fff;
+  font-size: 1rem;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+  cursor: pointer;
+  transition: transform 0.15s ease, box-shadow 0.2s ease;
+}
+
+.login-btn:hover:not(:disabled) {
+  transform: translateY(-1px);
+  box-shadow: 0 12px 24px rgba(105, 130, 255, 0.38);
+}
+
+.login-btn:disabled {
+  opacity: 0.7;
+  cursor: not-allowed;
+}
+
+.section-footer {
+  margin: 4px 0 0;
+  text-align: center;
+  color: rgba(223, 230, 255, 0.72);
+  font-size: 0.86rem;
+}
+
+.register-link {
+  color: #8f9eff;
+  text-decoration: none;
+  font-weight: 700;
+}
+
+.register-link:hover {
+  text-decoration: underline;
+}
+
+@media (max-width: 520px) {
+  .login-container {
+    padding: 14px;
+  }
+
+  .login-card {
+    padding: 24px;
+    border-radius: 16px;
+  }
+
+  .remember-me {
+    font-size: 0.76rem;
+  }
+
+  .forgot-password {
+    font-size: 0.76rem;
+  }
+}

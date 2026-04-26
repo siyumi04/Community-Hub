@@ -1,67 +1,49 @@
 @import "tailwindcss";
 
 :root {
-  --text: #6b6375;
-  --text-h: #08060d;
-  --bg: #fff;
-  --border: #e5e4e7;
-  --code-bg: #f4f3ec;
-  --accent: #aa3bff;
-  --accent-bg: rgba(170, 59, 255, 0.1);
-  --accent-border: rgba(170, 59, 255, 0.5);
-  --social-bg: rgba(244, 243, 236, 0.5);
-  --shadow:
-    rgba(0, 0, 0, 0.1) 0 10px 15px -3px, rgba(0, 0, 0, 0.05) 0 4px 6px -2px;
+  --font-base: 'Nunito', 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  --font-display: 'Sora', 'Trebuchet MS', sans-serif;
+  --font-mono: 'Cascadia Code', Consolas, 'Courier New', monospace;
 
-  --sans: system-ui, 'Segoe UI', Roboto, sans-serif;
-  --heading: system-ui, 'Segoe UI', Roboto, sans-serif;
-  --mono: ui-monospace, Consolas, monospace;
+  --app-bg:
+    radial-gradient(circle at 12% 6%, rgba(84, 172, 255, 0.2), transparent 28%),
+    radial-gradient(circle at 92% 12%, rgba(80, 98, 255, 0.24), transparent 26%),
+    linear-gradient(185deg, #080c22 0%, #0d1335 45%, #141f4f 100%);
+  --surface-1: rgba(13, 22, 63, 0.86);
+  --surface-2: rgba(20, 30, 80, 0.82);
+  --surface-border: rgba(139, 171, 255, 0.26);
+  --text-main: #eaf0ff;
+  --text-muted: rgba(220, 228, 255, 0.74);
+  --heading: #ffffff;
+  --accent-1: #4ba6ff;
+  --accent-2: #7a66ff;
+  --accent-soft: rgba(77, 166, 255, 0.16);
+  --danger: #ff9fbc;
+  --success: #9af0c3;
+  --input-bg: rgba(255, 255, 255, 0.04);
+  --input-border: rgba(131, 161, 255, 0.28);
+  --shadow-lg: 0 22px 40px rgba(6, 10, 36, 0.35);
+}
 
-  font: 18px/145% var(--sans);
-  letter-spacing: 0.18px;
-  color-scheme: light dark;
-  color: var(--text);
-  background: var(--bg);
+
+body {
+  margin: 0;
+  min-height: 100vh;
+  color: var(--text-main);
+  background: var(--app-bg);
+  font-family: var(--font-base);
   font-synthesis: none;
   text-rendering: optimizeLegibility;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
-
-  @media (max-width: 1024px) {
-    font-size: 16px;
-  }
-}
-
-@media (prefers-color-scheme: dark) {
-  :root {
-    --text: #9ca3af;
-    --text-h: #f3f4f6;
-    --bg: #16171d;
-    --border: #2e303a;
-    --code-bg: #1f2028;
-    --accent: #c084fc;
-    --accent-bg: rgba(192, 132, 252, 0.15);
-    --accent-border: rgba(192, 132, 252, 0.5);
-    --social-bg: rgba(47, 48, 58, 0.5);
-    --shadow:
-      rgba(0, 0, 0, 0.4) 0 10px 15px -3px, rgba(0, 0, 0, 0.25) 0 4px 6px -2px;
-  }
-
-  #social .button-icon {
-    filter: invert(1) brightness(2);
-  }
-}
-
-body {
-  margin: 0;
+  transition: background 0.35s ease, color 0.35s ease;
 }
 
 #root {
-  width: 1126px;
+  width: 100%;
   max-width: 100%;
-  margin: 0 auto;
-  text-align: center;
-  border-inline: 1px solid var(--border);
+  margin: 0;
+  text-align: left;
   min-height: 100svh;
   display: flex;
   flex-direction: column;
@@ -69,45 +51,438 @@ body {
 }
 
 h1,
-h2 {
-  font-family: var(--heading);
-  font-weight: 500;
-  color: var(--text-h);
+h2,
+h3,
+h4 {
+  font-family: var(--font-display);
+  color: var(--heading);
 }
 
-h1 {
-  font-size: 56px;
-  letter-spacing: -1.68px;
-  margin: 32px 0;
-  @media (max-width: 1024px) {
-    font-size: 36px;
-    margin: 20px 0;
-  }
-}
-h2 {
-  font-size: 24px;
-  line-height: 118%;
-  letter-spacing: -0.24px;
-  margin: 0 0 8px;
-  @media (max-width: 1024px) {
-    font-size: 20px;
-  }
-}
 p {
   margin: 0;
 }
 
-code,
-.counter {
-  font-family: var(--mono);
-  display: inline-flex;
-  border-radius: 4px;
-  color: var(--text-h);
+code {
+  font-family: var(--font-mono);
 }
 
-code {
-  font-size: 15px;
-  line-height: 135%;
-  padding: 4px 8px;
-  background: var(--code-bg);
+:root[data-theme='light'] {
+  --primary: #4f46e5;
+  --primary-hover: #4338ca;
+  --secondary: #06b6d4;
+  --bg-main: #eaf1f8;
+  --bg-section: #dde7f2;
+  --bg-surface: #f2f6fb;
+  --bg-header: #d6e2ef;
+  --bg-footer: #cedceb;
+  --gradient-header: linear-gradient(135deg, #d7e3ef 0%, #c7d8ea 52%, #bed1e5 100%);
+  --gradient-footer: linear-gradient(135deg, #cfdeed 0%, #c2d4e8 52%, #b9cde3 100%);
+  --text-main: #111827;
+  --text-secondary: #475569;
+  --text-muted-light: #9ca3af;
+  --text-disabled: #d1d5db;
+  --button-primary: #4f46e5;
+  --button-text: #ffffff;
+  --button-secondary-bg: #e0f2fe;
+  --button-secondary-text: #0369a1;
+  --button-danger: #ef4444;
+  --border-color: #e5e7eb;
+  --input-border-color: #d1d5db;
+  --focus-color: #6366f1;
+  --status-success: #10b981;
+  --status-error: #ef4444;
+  --status-warning: #f59e0b;
+  --status-info: #3b82f6;
+  --module-maintenance: #3b82f6;
+  --module-facilities: #10b981;
+  --module-notifications: #8b5cf6;
+  --module-booking: #f59e0b;
+  --card-hover-bg: #e7eef6;
+  --card-shadow: 0 10px 24px rgba(15, 23, 42, 0.08);
+
+  --app-bg: linear-gradient(180deg, #eaf1f8 0%, #dde7f2 100%);
+  --surface-1: #f2f6fb;
+  --surface-2: #e7eef6;
+  --surface-border: #e5e7eb;
+  --heading: #111827;
+  --accent-1: #4f46e5;
+  --accent-2: #06b6d4;
+  --accent-soft: rgba(79, 70, 229, 0.1);
+  --danger: #ef4444;
+  --success: #10b981;
+  --input-bg: #f7faff;
+  --input-border: #d1d5db;
+  --shadow-lg: var(--card-shadow);
+}
+
+:root[data-theme='light'] body,
+:root[data-theme='light'] .home-page,
+:root[data-theme='light'] .dashboard-page,
+:root[data-theme='light'] .edit-profile-page,
+:root[data-theme='light'] .notice-page,
+:root[data-theme='light'] .login-container,
+:root[data-theme='light'] .register-container,
+:root[data-theme='light'] .forgot-password-container,
+:root[data-theme='light'] .create-account-container,
+:root[data-theme='light'] .admin-dashboard,
+:root[data-theme='light'] .admin-main {
+  background: var(--bg-main) !important;
+  color: var(--text-main) !important;
+}
+
+:root[data-theme='light'] .features-section,
+:root[data-theme='light'] .about-section,
+:root[data-theme='light'] .contact-section,
+:root[data-theme='light'] .recommendation-section,
+:root[data-theme='light'] .community-grid-section {
+  background: var(--bg-section) !important;
+}
+
+:root[data-theme='light'] h1,
+:root[data-theme='light'] h2,
+:root[data-theme='light'] h3,
+:root[data-theme='light'] h4,
+:root[data-theme='light'] .header-logo h1,
+:root[data-theme='light'] .admin-top-bar h1,
+:root[data-theme='light'] .overview-greeting,
+:root[data-theme='light'] .rec-title-row h2,
+:root[data-theme='light'] .panel-header h2,
+:root[data-theme='light'] .register-header h2,
+:root[data-theme='light'] .login-head h1,
+:root[data-theme='light'] .forgot-password-header h2,
+:root[data-theme='light'] .tab-header h1,
+:root[data-theme='light'] .section-title h2,
+:root[data-theme='light'] .dashboard-hero h1,
+:root[data-theme='light'] .community-section-header h2 {
+  color: var(--text-main) !important;
+}
+
+:root[data-theme='light'] p,
+:root[data-theme='light'] label,
+:root[data-theme='light'] li,
+:root[data-theme='light'] th,
+:root[data-theme='light'] td,
+:root[data-theme='light'] a,
+:root[data-theme='light'] .section-title p,
+:root[data-theme='light'] .hero-subtext,
+:root[data-theme='light'] .section-subtitle,
+:root[data-theme='light'] .dashboard-hero p,
+:root[data-theme='light'] .community-section-header p,
+:root[data-theme='light'] .forgot-password-header p,
+:root[data-theme='light'] .register-header p,
+:root[data-theme='light'] .tab-header p,
+:root[data-theme='light'] .admin-top-bar p,
+:root[data-theme='light'] .overview-sub,
+:root[data-theme='light'] .footer-section p,
+:root[data-theme='light'] .footer-links a,
+:root[data-theme='light'] .footer-contact a,
+:root[data-theme='light'] .footer-contact span,
+:root[data-theme='light'] .footer-bottom-content,
+:root[data-theme='light'] .footer-legal a {
+  color: var(--text-secondary) !important;
+}
+
+:root[data-theme='light'] .footer-section h3,
+:root[data-theme='light'] .footer-section h4,
+:root[data-theme='light'] .footer-brand h3 {
+  color: var(--text-main) !important;
+}
+
+:root[data-theme='light'] .feature-card,
+:root[data-theme='light'] .event-card,
+:root[data-theme='light'] .community-card,
+:root[data-theme='light'] .edit-profile-card,
+:root[data-theme='light'] .register-card,
+:root[data-theme='light'] .login-card,
+:root[data-theme='light'] .forgot-password-card,
+:root[data-theme='light'] .notice-panel,
+:root[data-theme='light'] .create-account-card,
+:root[data-theme='light'] .contact-section,
+:root[data-theme='light'] .community-badge,
+:root[data-theme='light'] .summary-output,
+:root[data-theme='light'] .stat-card,
+:root[data-theme='light'] .overview-chip,
+:root[data-theme='light'] .tab-navigation,
+:root[data-theme='light'] .notice-textarea,
+:root[data-theme='light'] .btn-clear,
+:root[data-theme='light'] .profile-dropdown-menu,
+:root[data-theme='light'] .footer-bottom {
+  background: var(--bg-surface) !important;
+  border-color: var(--border-color) !important;
+  box-shadow: var(--card-shadow) !important;
+}
+
+:root[data-theme='light'] .feature-card:hover,
+:root[data-theme='light'] .event-card:hover,
+:root[data-theme='light'] .community-card:hover,
+:root[data-theme='light'] .stat-card:hover,
+:root[data-theme='light'] .notice-panel:hover,
+:root[data-theme='light'] .community-badge:hover {
+  background: var(--card-hover-bg) !important;
+}
+
+:root[data-theme='light'] .tab-btn,
+:root[data-theme='light'] .role-btn,
+:root[data-theme='light'] .char-counter,
+:root[data-theme='light'] .footer-bottom-content,
+:root[data-theme='light'] .footer-legal a,
+:root[data-theme='light'] .separator,
+:root[data-theme='light'] .admin-club,
+:root[data-theme='light'] .nav-item,
+:root[data-theme='light'] .badge-label,
+:root[data-theme='light'] .field-hint,
+:root[data-theme='light'] .image-name,
+:root[data-theme='light'] .remember-me,
+:root[data-theme='light'] .back-to-login,
+:root[data-theme='light'] .section-footer {
+  color: var(--text-secondary) !important;
+}
+
+:root[data-theme='light'] .text-disabled,
+:root[data-theme='light'] [disabled],
+:root[data-theme='light'] .btn:disabled,
+:root[data-theme='light'] .register-btn:disabled,
+:root[data-theme='light'] .login-btn:disabled,
+:root[data-theme='light'] .reset-btn:disabled {
+  color: var(--text-disabled) !important;
+}
+
+:root[data-theme='light'] input,
+:root[data-theme='light'] textarea,
+:root[data-theme='light'] select,
+:root[data-theme='light'] .form-group input,
+:root[data-theme='light'] .edit-group input,
+:root[data-theme='light'] .edit-group textarea,
+:root[data-theme='light'] .forgot-password-form input,
+:root[data-theme='light'] .notice-textarea {
+  background: var(--input-bg) !important;
+  color: var(--text-main) !important;
+  border-color: var(--input-border-color) !important;
+}
+
+:root[data-theme='light'] input::placeholder,
+:root[data-theme='light'] textarea::placeholder,
+:root[data-theme='light'] .notice-textarea::placeholder,
+:root[data-theme='light'] .form-group input::placeholder,
+:root[data-theme='light'] .edit-group input::placeholder,
+:root[data-theme='light'] .edit-group textarea::placeholder,
+:root[data-theme='light'] .forgot-password-form input::placeholder {
+  color: var(--text-muted-light) !important;
+}
+
+:root[data-theme='light'] input:focus,
+:root[data-theme='light'] textarea:focus,
+:root[data-theme='light'] select:focus,
+:root[data-theme='light'] .form-group input:focus,
+:root[data-theme='light'] .edit-group input:focus,
+:root[data-theme='light'] .edit-group textarea:focus,
+:root[data-theme='light'] .forgot-password-form input:focus,
+:root[data-theme='light'] .notice-textarea:focus {
+  border-color: var(--focus-color) !important;
+  box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.2) !important;
+}
+
+:root[data-theme='light'] .primary-cta,
+:root[data-theme='light'] .register-btn,
+:root[data-theme='light'] .login-btn,
+:root[data-theme='light'] .save-profile-btn,
+:root[data-theme='light'] .reset-btn,
+:root[data-theme='light'] .btn-summarize,
+:root[data-theme='light'] .btn-primary,
+:root[data-theme='light'] .tab-btn.active,
+:root[data-theme='light'] .nav-item.active {
+  background: var(--button-primary) !important;
+  color: var(--button-text) !important;
+  border-color: var(--button-primary) !important;
+}
+
+:root[data-theme='light'] .btn-danger,
+:root[data-theme='light'] .delete-account-btn,
+:root[data-theme='light'] .logout-btn {
+  background: var(--button-danger) !important;
+  color: #ffffff !important;
+  border-color: var(--button-danger) !important;
+}
+
+:root[data-theme='light'] .primary-cta:hover,
+:root[data-theme='light'] .register-btn:hover,
+:root[data-theme='light'] .login-btn:hover,
+:root[data-theme='light'] .save-profile-btn:hover,
+:root[data-theme='light'] .reset-btn:hover,
+:root[data-theme='light'] .btn-summarize:hover,
+:root[data-theme='light'] .btn-primary:hover,
+:root[data-theme='light'] .tab-btn.active:hover,
+:root[data-theme='light'] .nav-item.active:hover {
+  background: var(--primary-hover) !important;
+  border-color: var(--primary-hover) !important;
+}
+
+:root[data-theme='light'] .secondary-cta,
+:root[data-theme='light'] .btn-secondary,
+:root[data-theme='light'] .upload-photo-btn,
+:root[data-theme='light'] .btn-copy,
+:root[data-theme='light'] .social-link,
+:root[data-theme='light'] .rec-badge,
+:root[data-theme='light'] .skill-list span,
+:root[data-theme='light'] .event-countdown,
+:root[data-theme='light'] .about-tags span,
+:root[data-theme='light'] .badge-value,
+:root[data-theme='light'] .community-badge-header {
+  background: var(--button-secondary-bg) !important;
+  color: var(--button-secondary-text) !important;
+  border-color: #bae6fd !important;
+}
+
+:root[data-theme='light'] .footer {
+  background: var(--gradient-footer) !important;
+  color: var(--text-secondary) !important;
+  border-top: 1px solid var(--border-color) !important;
+}
+
+:root[data-theme='light'] .footer-bottom {
+  background: linear-gradient(135deg, #c7d7e8 0%, #b8cce2 100%) !important;
+}
+
+:root[data-theme='light'] .footer::before,
+:root[data-theme='light'] .footer-divider {
+  background: linear-gradient(90deg, transparent, #e5e7eb, transparent) !important;
+}
+
+:root[data-theme='light'] .footer-links a:hover,
+:root[data-theme='light'] .footer-contact a:hover,
+:root[data-theme='light'] .register-link,
+:root[data-theme='light'] .login-link,
+:root[data-theme='light'] .forgot-password,
+:root[data-theme='light'] .back-to-login a,
+:root[data-theme='light'] .nav-item:hover {
+  color: var(--primary) !important;
+}
+
+:root[data-theme='light'] .swal-hub-popup {
+  border-color: var(--border-color) !important;
+  box-shadow: 0 16px 32px rgba(17, 24, 39, 0.14) !important;
+}
+
+:root[data-theme='light'] .swal-hub-text {
+  color: var(--text-main) !important;
+}
+
+:root[data-theme='light'] .btn-secondary,
+:root[data-theme='light'] .secondary-cta {
+  background: var(--button-secondary-bg) !important;
+  color: var(--button-secondary-text) !important;
+  border-color: #bae6fd !important;
+}
+
+:root[data-theme='light'] .module-maintenance {
+  color: var(--module-maintenance) !important;
+}
+
+:root[data-theme='light'] .module-facilities {
+  color: var(--module-facilities) !important;
+}
+
+:root[data-theme='light'] .module-notifications {
+  color: var(--module-notifications) !important;
+}
+
+:root[data-theme='light'] .module-booking {
+  color: var(--module-booking) !important;
+}
+
+/* Keep Home page in dark style even when light theme is selected */
+:root[data-theme='light'] .home-page {
+  color: #f7f8ff !important;
+  background:
+    radial-gradient(circle at 10% 15%, rgba(125, 91, 255, 0.25), transparent 35%),
+    radial-gradient(circle at 85% 20%, rgba(64, 190, 255, 0.2), transparent 30%),
+    linear-gradient(180deg, #0a0820 0%, #11163a 46%, #141a46 100%) !important;
+}
+
+:root[data-theme='light'] .home-page .eyebrow {
+  color: #8ecbff !important;
+}
+
+:root[data-theme='light'] .home-page .hero-content h1,
+:root[data-theme='light'] .home-page .section-title h2,
+:root[data-theme='light'] .home-page .feature-card h3,
+:root[data-theme='light'] .home-page .about-content h2,
+:root[data-theme='light'] .home-page .contact-section h2 {
+  color: #ffffff !important;
+}
+
+:root[data-theme='light'] .home-page .hero-subtext {
+  color: rgba(233, 236, 255, 0.84) !important;
+}
+
+:root[data-theme='light'] .home-page .section-title p,
+:root[data-theme='light'] .home-page .feature-card p,
+:root[data-theme='light'] .home-page .about-content p,
+:root[data-theme='light'] .home-page .contact-section p {
+  color: rgba(222, 230, 255, 0.78) !important;
+}
+
+:root[data-theme='light'] .home-page .feature-card {
+  background: linear-gradient(180deg, rgba(23, 29, 72, 0.9), rgba(17, 22, 55, 0.85)) !important;
+  border: 1px solid rgba(125, 143, 255, 0.25) !important;
+  box-shadow: none !important;
+}
+
+:root[data-theme='light'] .home-page .about-tags span {
+  border: 1px solid rgba(136, 158, 255, 0.33) !important;
+  background: rgba(112, 134, 255, 0.14) !important;
+  color: #dce7ff !important;
+}
+
+:root[data-theme='light'] .home-page .contact-section {
+  border: 1px solid rgba(141, 164, 255, 0.34) !important;
+  background: linear-gradient(130deg, rgba(86, 118, 255, 0.25), rgba(69, 182, 255, 0.2)) !important;
+}
+
+:root[data-theme='light'][data-route='home'] .features-section,
+:root[data-theme='light'][data-route='home'] .about-section {
+  background: transparent !important;
+}
+
+:root[data-theme='light'][data-route='home'] .contact-section {
+  background: linear-gradient(130deg, rgba(86, 118, 255, 0.25), rgba(69, 182, 255, 0.2)) !important;
+}
+
+:root[data-theme='light'] .home-page .primary-cta {
+  color: #ffffff !important;
+  background: linear-gradient(135deg, #4fa9ff 0%, #7d5bff 100%) !important;
+  border-color: transparent !important;
+}
+
+:root[data-theme='light'] .home-page .primary-cta:hover {
+  background: linear-gradient(135deg, #4fa9ff 0%, #7d5bff 100%) !important;
+}
+
+:root[data-theme='light'] .home-page .secondary-cta {
+  color: #dce4ff !important;
+  border: 1px solid rgba(210, 221, 255, 0.28) !important;
+  background: rgba(255, 255, 255, 0.04) !important;
+}
+
+/* Lock Home header text to dark-theme palette even when global theme is light. */
+:root[data-theme='light'][data-route='home'] .header,
+:root[data-theme='light'][data-route='home'] .header a,
+:root[data-theme='light'][data-route='home'] .header .header-logo h1,
+:root[data-theme='light'][data-route='home'] .header .nav-link,
+:root[data-theme='light'][data-route='home'] .header .dropdown-item {
+  color: #ffffff !important;
+}
+
+:root[data-theme='light'][data-route='home'] .header .nav-link:hover,
+:root[data-theme='light'][data-route='home'] .header .nav-link.active,
+:root[data-theme='light'][data-route='home'] .header .dropdown-item:hover {
+  color: #00f0ff !important;
+}
+
+:root[data-theme='light'][data-route='home'] .header .dropdown-item.logout-item {
+  color: #ffb1c4 !important;
+}
+
+:root[data-theme='light'][data-route='home'] .header .dropdown-item.logout-item:hover {
+  color: #ffd6de !important;
 }

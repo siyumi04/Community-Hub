@@ -255,3 +255,93 @@
     margin-left: 0;
   }
 }
+
+:root[data-theme='light'] .footer {
+  background: var(--gradient-footer) !important;
+  border-top: 1px solid #e5e7eb;
+}
+
+:root[data-theme='light'] .footer-top,
+:root[data-theme='light'] .footer-bottom {
+  background: var(--gradient-footer) !important;
+}
+
+:root[data-theme='light'] .footer-bottom {
+  background: linear-gradient(135deg, #c7d7e8 0%, #b8cce2 100%) !important;
+}
+
+:root[data-theme='light'] .footer-divider,
+:root[data-theme='light'] .footer::before {
+  background: linear-gradient(90deg, transparent, #d1d5db, transparent) !important;
+}
+
+/* Keep Home route footer dark even when light theme is active */
+:root[data-theme='light'][data-route='home'] .footer {
+  background: linear-gradient(135deg, #0f0c29 0%, #302b63 50%, #24243e 100%) !important;
+  color: #bbb !important;
+  border-top: none;
+}
+
+:root[data-theme='light'][data-route='home'] .footer-top,
+:root[data-theme='light'][data-route='home'] .footer-bottom {
+  background: transparent !important;
+}
+
+:root[data-theme='light'][data-route='home'] .footer-bottom {
+  background: rgba(0, 0, 0, 0.3) !important;
+}
+
+:root[data-theme='light'][data-route='home'] .footer::before {
+  background: linear-gradient(90deg, transparent, #667eea, #f093fb, transparent) !important;
+}
+
+:root[data-theme='light'][data-route='home'] .footer-divider {
+  background: linear-gradient(90deg, transparent, #333, transparent) !important;
+}
+
+:root[data-theme='light'][data-route='home'] .footer-section h3,
+:root[data-theme='light'][data-route='home'] .footer-section h4 {
+  color: #ffffff !important;
+}
+
+:root[data-theme='light'][data-route='home'] .footer-tagline,
+:root[data-theme='light'][data-route='home'] .footer-links a,
+:root[data-theme='light'][data-route='home'] .footer-contact a,
+:root[data-theme='light'][data-route='home'] .footer-contact span,
+:root[data-theme='light'][data-route='home'] .footer-bottom-content,
+:root[data-theme='light'][data-route='home'] .footer-legal a {
+  color: #bbb !important;
+}
+
+:root[data-theme='light'][data-route='home'] .social-link {
+  background: linear-gradient(135deg, rgba(102, 126, 234, 0.2), rgba(240, 147, 251, 0.2));
+  color: #00f0ff;
+  border-color: rgba(0, 240, 255, 0.3);
+}
+
+:root[data-theme='light'][data-route='home'] .social-link:hover {
+  background: linear-gradient(135deg, #667eea, #f093fb);
+  color: #ffffff;
+  border-color: transparent;
+}
+
+:root[data-theme='light'][data-route='home'] .footer-links a:hover,
+:root[data-theme='light'][data-route='home'] .footer-contact a:hover,
+:root[data-theme='light'][data-route='home'] .footer-legal a:hover {
+  color: #00f0ff !important;
+}
+
+:root[data-route='home'] .footer {
+  margin-top: 0 !important;
+}
+
+
+
+
+
+
+
+
+
+
+

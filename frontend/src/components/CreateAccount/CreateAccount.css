@@ -1,0 +1,264 @@
+.create-account-container {
+  min-height: 100vh;
+  display: grid;
+  place-items: center;
+  padding: 24px;
+  background:
+    radial-gradient(circle at 18% 14%, rgba(93, 87, 192, 0.35), transparent 28%),
+    radial-gradient(circle at 82% 22%, rgba(88, 70, 178, 0.32), transparent 32%),
+    linear-gradient(145deg, #0f1130 0%, #17153d 45%, #2b2864 100%);
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}
+
+.create-account-card {
+  background: linear-gradient(160deg, rgba(12, 12, 43, 0.95) 0%, rgba(9, 10, 35, 0.92) 100%);
+  border: 1px solid rgba(125, 132, 241, 0.26);
+  border-radius: 20px;
+  box-shadow: 0 22px 60px rgba(6, 9, 38, 0.6);
+  backdrop-filter: blur(10px);
+  width: 100%;
+  max-width: 700px;
+  overflow: hidden;
+  animation: slideUp 0.5s ease-out;
+}
+
+@keyframes slideUp {
+  from {
+    opacity: 0;
+    transform: translateY(30px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* ==================== TAB CONTENT ==================== */
+.tab-content {
+  padding: 38px 34px;
+  animation: fadeIn 0.3s ease-in;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+.tab-header {
+  text-align: center;
+  margin-bottom: 28px;
+}
+
+.tab-header h1 {
+  margin: 0 0 8px 0;
+  color: #f8f9ff;
+  font-size: 2.1rem;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+}
+
+.tab-header p {
+  margin: 0;
+  color: rgba(224, 229, 255, 0.7);
+  font-size: 1rem;
+}
+
+/* ==================== FORM STYLES ==================== */
+.register-form {
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+}
+
+.form-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+}
+
+@media (max-width: 600px) {
+  .form-row {
+    grid-template-columns: 1fr;
+  }
+}
+
+.form-group {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.form-group label {
+  font-size: 0.8rem;
+  color: rgba(224, 229, 255, 0.9);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  font-weight: 700;
+}
+
+.form-group input[type='text'],
+.form-group input[type='email'],
+.form-group input[type='password'] {
+  border: 1px solid rgba(143, 151, 240, 0.24);
+  border-radius: 10px;
+  padding: 13px 14px;
+  font-size: 1rem;
+  color: #f6f8ff;
+  background: rgba(255, 255, 255, 0.07);
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+  font-family: inherit;
+}
+
+.form-group input::placeholder {
+  color: rgba(230, 235, 255, 0.4);
+}
+
+.form-group input:focus {
+  outline: none;
+  border-color: rgba(110, 127, 255, 0.85);
+  box-shadow: 0 0 0 3px rgba(84, 108, 255, 0.22);
+}
+
+.form-group input.input-error {
+  border-color: #ff7c98;
+  background: rgba(255, 113, 146, 0.12);
+}
+
+.form-group input.input-error:focus {
+  box-shadow: 0 0 0 3px rgba(255, 113, 146, 0.18);
+}
+
+/* ==================== FIELD HINTS & ERRORS ==================== */
+.field-hint {
+  font-size: 0.78rem;
+  color: rgba(224, 229, 255, 0.55);
+  margin-top: 2px;
+}
+
+.field-error {
+  margin: -2px 0 0 0;
+  color: #ffc0cf;
+  font-size: 0.78rem;
+  font-weight: 600;
+}
+
+/* ==================== TERMS CHECKBOX ==================== */
+.form-footer-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  margin-top: 8px;
+}
+
+.terms-checkbox {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  cursor: pointer;
+  font-size: 0.88rem;
+  color: rgba(227, 232, 255, 0.76);
+  line-height: 1.5;
+}
+
+.terms-checkbox input[type='checkbox'] {
+  margin-top: 4px;
+  width: 18px;
+  height: 18px;
+  cursor: pointer;
+  accent-color: #7e8eff;
+}
+
+.terms-checkbox:hover {
+  color: #f0f2ff;
+}
+
+/* ==================== SUBMIT BUTTON ==================== */
+.register-btn {
+  border: 0;
+  border-radius: 11px;
+  padding: 14px 20px;
+  background: linear-gradient(120deg, #6982ff 0%, #855ed2 100%);
+  color: #fff;
+  font-size: 1rem;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+  cursor: pointer;
+  transition: transform 0.15s ease, box-shadow 0.2s ease;
+  text-transform: uppercase;
+  margin-top: 6px;
+}
+
+.register-btn:hover:not(:disabled) {
+  transform: translateY(-1px);
+  box-shadow: 0 12px 24px rgba(105, 130, 255, 0.38);
+}
+
+.register-btn:disabled {
+  opacity: 0.7;
+  cursor: not-allowed;
+}
+
+/* ==================== TAB FOOTER ==================== */
+.tab-footer {
+  text-align: center;
+  margin-top: 22px;
+  padding-top: 18px;
+  border-top: 1px solid rgba(125, 132, 241, 0.18);
+  font-size: 0.88rem;
+  color: rgba(223, 230, 255, 0.72);
+}
+
+.tab-footer p {
+  margin: 0;
+}
+
+.login-link {
+  color: #8f9eff;
+  text-decoration: none;
+  font-weight: 700;
+  transition: all 0.2s ease;
+}
+
+.login-link:hover {
+  color: #b0bbff;
+  text-decoration: underline;
+}
+
+/* ==================== RESPONSIVE ==================== */
+@media (max-width: 600px) {
+  .create-account-container {
+    padding: 14px;
+  }
+
+  .create-account-card {
+    border-radius: 16px;
+  }
+
+  .tab-content {
+    padding: 24px 20px;
+  }
+
+  .tab-header h1 {
+    font-size: 1.7rem;
+  }
+
+  .form-row {
+    gap: 12px;
+  }
+
+  .register-btn {
+    padding: 12px 16px;
+    font-size: 0.9rem;
+  }
+
+  .form-group input[type='text'],
+  .form-group input[type='email'],
+  .form-group input[type='password'] {
+    padding: 11px 12px;
+    font-size: 0.92rem;
+  }
+}
