@@ -243,12 +243,12 @@ function MemberManagement({ memberStats }) {
           <p className="section-subtitle">Manage your club members and review membership requests</p>
         </div>
         <div className="section-actions">
-          <button
+          {/* <button
             className="btn btn-secondary"
             onClick={() => setView(view === 'pending' ? 'all' : 'pending')}
           >
             Member Requests{memberStats?.pending ? ` (${memberStats.pending})` : ''}
-          </button>
+          </button> */}
           <button className="btn btn-primary" onClick={() => setShowAddMemberForm(!showAddMemberForm)}>
             + Add Member
           </button>
