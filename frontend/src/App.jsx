@@ -14,6 +14,7 @@ import NoticeSummarizer from './components/NoticeSummarizer/NoticeSummarizer'
 import CommunityDetailsPage from './pages/CommunityDetailsPage'
 import CommunityMemberPage from './pages/CommunityMemberPage'
 import ChatPage from './pages/ChatPage'
+import AdminChatPage from './pages/AdminChatPage'
 import { getAuthToken } from './services/apiClient'
 
 import './App.css'
@@ -83,6 +84,22 @@ function App() {
             element={(
               <ProtectedAdminRoute>
                 <AdminDashboard />
+              </ProtectedAdminRoute>
+            )}
+          />
+          <Route
+            path="/admin-dashboard/:dashboardName/chat"
+            element={(
+              <ProtectedAdminRoute>
+                <AdminChatPage />
+              </ProtectedAdminRoute>
+            )}
+          />
+          <Route
+            path="/admin-dashboard/:dashboardName/chat/:studentId"
+            element={(
+              <ProtectedAdminRoute>
+                <AdminChatPage />
               </ProtectedAdminRoute>
             )}
           />

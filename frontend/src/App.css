@@ -236,3 +236,117 @@
     width: 100%;
   }
 }
+
+/* Student “chat with admin” FAB — anchored bottom-right + soft breathing pulse */
+@keyframes student-chat-fab-breathe {
+  0%,
+  100% {
+    transform: scale(1);
+    box-shadow:
+      0 10px 26px rgba(37, 99, 235, 0.4),
+      0 0 0 0 rgba(147, 197, 253, 0.35);
+  }
+  50% {
+    transform: scale(1.08);
+    box-shadow:
+      0 16px 38px rgba(37, 99, 235, 0.52),
+      0 0 0 12px rgba(147, 197, 253, 0);
+  }
+}
+
+.student-chat-fab {
+  position: fixed;
+  z-index: 200;
+  right: max(1.15rem, calc(env(safe-area-inset-right, 0px) + 0.65rem));
+  bottom: max(1.25rem, calc(env(safe-area-inset-bottom, 0px) + 0.85rem));
+  width: 4rem;
+  height: 4rem;
+  padding: 0;
+  margin: 0;
+  border: none;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 9999px;
+  background: linear-gradient(145deg, #2563eb 0%, #1d4ed8 55%, #1e40af 100%);
+  color: #fff;
+  box-shadow: 0 10px 26px rgba(37, 99, 235, 0.4);
+  transition: filter 0.2s ease, box-shadow 0.2s ease;
+  animation: student-chat-fab-breathe 2.75s ease-in-out infinite;
+  transform-origin: center center;
+}
+
+.student-chat-fab:hover {
+  animation-play-state: paused;
+  filter: brightness(1.12);
+  box-shadow: 0 14px 34px rgba(37, 99, 235, 0.55);
+}
+
+.student-chat-fab:focus-visible {
+  outline: 3px solid rgba(191, 219, 254, 0.95);
+  outline-offset: 3px;
+}
+
+.student-chat-fab-icon {
+  width: 1.75rem;
+  height: 1.75rem;
+  flex-shrink: 0;
+}
+
+.student-chat-fab-badge {
+  position: absolute;
+  top: -4px;
+  right: -4px;
+  min-width: 22px;
+  height: 22px;
+  padding: 0 6px;
+  border-radius: 9999px;
+  background: #ef4444;
+  color: #fff;
+  font-size: 11px;
+  font-weight: 800;
+  line-height: 22px;
+  text-align: center;
+  border: 2px solid #1e3a8a;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.22);
+  pointer-events: none;
+  z-index: 1;
+}
+
+@keyframes student-chat-fab-dot-pulse {
+  0%,
+  100% {
+    transform: scale(1);
+    opacity: 1;
+  }
+  50% {
+    transform: scale(1.2);
+    opacity: 0.88;
+  }
+}
+
+.student-chat-fab-dot {
+  position: absolute;
+  top: 7px;
+  left: 7px;
+  width: 11px;
+  height: 11px;
+  border-radius: 50%;
+  background: #ef4444;
+  border: 2px solid #ffffff;
+  box-shadow: 0 0 0 2px rgba(239, 68, 68, 0.45);
+  z-index: 2;
+  pointer-events: none;
+  animation: student-chat-fab-dot-pulse 1.35s ease-in-out infinite;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .student-chat-fab {
+    animation: none;
+  }
+
+  .student-chat-fab-dot {
+    animation: none;
+  }
+}

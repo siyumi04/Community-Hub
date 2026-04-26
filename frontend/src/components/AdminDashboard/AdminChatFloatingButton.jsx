@@ -1,14 +1,15 @@
 import { useEffect, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useParams } from 'react-router-dom';
 import { apiFetch } from '../../services/apiClient';
 
-const ChatFloatingButton = ({ communityId }) => {
+function AdminChatFloatingButton() {
+  const { dashboardName } = useParams();
   const navigate = useNavigate();
   const [unread, setUnread] = useState(0);
 
   const fetchUnread = async () => {
     try {
-      const res = await apiFetch(`/chat/unread/${communityId}`);
+      const res = await apiFetch('/chat/admin/unread-total');
       const data = await res.json();
       if (res.ok && data.success && data.data) {
         setUnread(Number(data.data.count) || 0);
@@ -21,11 +22,10 @@ const ChatFloatingButton = ({ communityId }) => {
   };
 
   useEffect(() => {
-    if (!communityId) return;
     fetchUnread();
     const t = setInterval(fetchUnread, 6000);
     const onEvt = () => fetchUnread();
-    window.addEventListener('student-chat-updated', onEvt);
+    window.addEventListener('admin-chat-updated', onEvt);
     const onVis = () => {
       if (document.visibilityState === 'visible') fetchUnread();
     };
@@ -36,8 +36,7 @@ const ChatFloatingButton = ({ communityId }) => {
     try {
       bc = new BroadcastChannel('community-hub-chat');
       bc.onmessage = (ev) => {
-        const { type, communityId: cid } = ev?.data || {};
-        if (type === 'admin-sent' && cid && cid === communityId) fetchUnread();
+        if (ev?.data?.type === 'student-sent') fetchUnread();
       };
     } catch {
       bc = null;
@@ -45,29 +44,23 @@ const ChatFloatingButton = ({ communityId }) => {
 
     return () => {
       clearInterval(t);
-      window.removeEventListener('student-chat-updated', onEvt);
+      window.removeEventListener('admin-chat-updated', onEvt);
       window.removeEventListener('focus', onEvt);
       document.removeEventListener('visibilitychange', onVis);
       bc?.close();
     };
-  }, [communityId]);
+  }, [dashboardName]);
 
   return (
     <button
       type="button"
-      onClick={() => navigate(`/chat/${communityId}`)}
-      className="student-chat-fab"
-      aria-label="Chat with admin"
+      onClick={() => navigate(`/admin-dashboard/${dashboardName}/chat`)}
+      className="admin-chat-fab"
+      aria-label="Member chats"
+      title="Member chats"
     >
-      {unread > 0 && <span className="student-chat-fab-dot" aria-hidden />}
-      <svg
-        xmlns="http://www.w3.org/2000/svg"
-        className="student-chat-fab-icon"
-        fill="none"
-        viewBox="0 0 24 24"
-        stroke="currentColor"
-        strokeWidth={2}
-      >
+      {unread > 0 && <span className="admin-chat-fab-dot" aria-hidden />}
+      <svg xmlns="http://www.w3.org/2000/svg" className="admin-chat-fab-icon" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
         <path
           strokeLinecap="round"
           strokeLinejoin="round"
@@ -75,10 +68,10 @@ const ChatFloatingButton = ({ communityId }) => {
         />
       </svg>
       {unread > 0 && (
-        <span className="student-chat-fab-badge">{unread > 99 ? '99+' : unread}</span>
+        <span className="admin-chat-fab-badge">{unread > 99 ? '99+' : unread}</span>
       )}
     </button>
   );
-};
+}
 
-export default ChatFloatingButton;
+export default AdminChatFloatingButton;

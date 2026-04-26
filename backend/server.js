@@ -10,6 +10,7 @@ import noticeRoutes from './routes/noticeRoutes.js';
 import communityRoutes from './routes/communityRoutes.js';
 import feedbackRoutes from './routes/feedbackRoutes.js';
 import chatRoutes from './routes/chatRoutes.js';
+import chatAdminRoutes from './routes/chatAdminRoutes.js';
 import recommendationRoutes from './routes/recommendationRoutes.js';
 import analyticsRoutes from './routes/analyticsRoutes.js';
 
@@ -46,6 +47,7 @@ app.use('/api/events', eventRoutes);
 app.use('/api/notices', noticeRoutes);
 app.use('/api/communities', communityRoutes);
 app.use('/api/feedback', feedbackRoutes);
+app.use('/api/chat/admin', chatAdminRoutes);
 app.use('/api/chat', chatRoutes);
 app.use('/api/recommendations', recommendationRoutes);
 app.use('/api/analytics', analyticsRoutes);

@@ -8,6 +8,7 @@ import EventManagement from './sections/EventManagement'
 import NoticeManagement from './sections/NoticeManagement'
 import AnalyticsBoard from './sections/AnalyticsBoard'
 import MemberApprovals from './sections/MemberApprovals'
+import AdminChatFloatingButton from './AdminChatFloatingButton'
 
 function AdminDashboard() {
   const { dashboardName } = useParams()
@@ -176,6 +177,8 @@ function AdminDashboard() {
           {activeTab === 'analytics' && <AnalyticsBoard admin={admin} />}
         </div>
       </main>
+
+      <AdminChatFloatingButton />
     </div>
   )
 }

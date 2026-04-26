@@ -2,7 +2,7 @@ import { useState, useEffect, useRef } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { apiFetch } from '../services/apiClient';
 import { COMMUNITIES_DATA } from '../utils/constants';
-import { showPopup } from '../utils/popup';
+import { showPopup, showConfirm } from '../utils/popup';
 
 const ChatPage = () => {
   const { communityId } = useParams();
@@ -27,6 +27,7 @@ const ChatPage = () => {
         const data = await res.json();
         if (data.success) {
           setMessages(data.data);
+          window.dispatchEvent(new Event('student-chat-updated'));
         }
       } catch (err) {
         console.error('Failed to load messages:', err);
@@ -50,17 +51,53 @@ const ChatPage = () => {
       const data = await res.json();
 
       if (data.success) {
-        setMessages(prev => [...prev, data.data]);
+        setMessages((prev) => [...prev, data.data]);
         setInput('');
+        window.dispatchEvent(new Event('student-chat-updated'))
+        try {
+          const bc = new BroadcastChannel('community-hub-chat')
+          bc.postMessage({ type: 'student-sent', communityId })
+          bc.close()
+        } catch {
+          /* ignore */
+        }
       } else if (data.toxic) {
-        showPopup('Message Blocked', data.message, 'error');
+        showPopup('error', 'Message blocked', data.message);
       } else {
-        showPopup('Error', data.message || 'Failed to send message', 'error');
+        showPopup('error', 'Error', data.message || 'Failed to send message');
       }
     } catch {
-      showPopup('Error', 'Something went wrong. Please try again.', 'error');
+      showPopup('error', 'Error', 'Something went wrong. Please try again.');
     } finally {
       setSending(false);
+    }
+  };
+
+  const handleDeleteMessage = async (msg) => {
+    if (msg.isDeleted || msg.senderRole === 'admin') return;
+    const ok = await showConfirm({
+      title: 'Delete this message?',
+      text: 'Others will see that the message was deleted.',
+      confirmText: 'Delete',
+      cancelText: 'Cancel',
+      icon: 'warning',
+    });
+    if (!ok) return;
+    try {
+      const res = await apiFetch(`/chat/message/${msg._id}`, { method: 'DELETE' });
+      const data = await res.json();
+      if (res.ok && data.success) {
+        setMessages((prev) =>
+          prev.map((m) =>
+            m._id === msg._id ? { ...m, isDeleted: true, message: '', deletedAt: new Date().toISOString() } : m
+          )
+        );
+        window.dispatchEvent(new Event('student-chat-updated'));
+      } else {
+        showPopup('error', 'Error', data.message || 'Could not delete message');
+      }
+    } catch {
+      showPopup('error', 'Error', 'Could not delete message');
     }
   };
 
@@ -166,7 +203,7 @@ const ChatPage = () => {
                       <div
                         className="relative px-3.5 py-2.5 shadow-sm"
                         style={{
-                          background: isStudent ? '#dbeafe' : '#ffffff',
+                          background: msg.isDeleted ? '#f1f5f9' : isStudent ? '#dbeafe' : '#ffffff',
                           borderRadius: isStudent
                             ? '12px 12px 4px 12px'
                             : '12px 12px 12px 4px',
@@ -174,12 +211,27 @@ const ChatPage = () => {
                           minWidth: '80px',
                         }}
                       >
-                        <p className="text-[15px] leading-relaxed text-gray-900 whitespace-pre-wrap break-words">
-                          {msg.message}
-                        </p>
-                        <p className="text-[11px] text-gray-400 mt-1 text-right">
-                          {formatDateLabel(msg.createdAt)} · {formatTime(msg.createdAt)}
-                        </p>
+                        {msg.isDeleted ? (
+                          <p className="text-[14px] italic text-gray-500">This message was deleted.</p>
+                        ) : (
+                          <p className="text-[15px] leading-relaxed text-gray-900 whitespace-pre-wrap break-words">
+                            {msg.message}
+                          </p>
+                        )}
+                        <div className="flex items-center justify-end gap-2 mt-1">
+                          <p className="text-[11px] text-gray-400">
+                            {formatDateLabel(msg.createdAt)} · {formatTime(msg.createdAt)}
+                          </p>
+                          {isStudent && !msg.isDeleted && (
+                            <button
+                              type="button"
+                              onClick={() => handleDeleteMessage(msg)}
+                              className="text-[11px] text-red-600 hover:underline"
+                            >
+                              Delete
+                            </button>
+                          )}
+                        </div>
                       </div>
                     </div>
                   );

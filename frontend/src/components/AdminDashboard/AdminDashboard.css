@@ -584,6 +584,12 @@
   border-color: rgba(255, 255, 255, 0.3);
 }
 
+/* Keep year-of-study (and other) selects on a dark surface when focused */
+.form-card select:focus {
+  background: rgba(41, 53, 72, 0.98);
+  border-color: rgba(255, 255, 255, 0.35);
+}
+
 .form-card input::placeholder,
 .form-card textarea::placeholder {
   color: rgba(255, 255, 255, 0.4);
@@ -592,6 +598,25 @@
 .form-card textarea {
   resize: vertical;
   min-height: 100px;
+}
+
+/* Native <select> lists: avoid white-on-white options (Chrome/Edge on Windows) */
+.form-card select {
+  color-scheme: dark;
+  background: rgba(30, 41, 59, 0.96);
+  color: #f1f5f9;
+}
+
+.form-card select option,
+.form-card select optgroup {
+  background-color: #1e293b;
+  color: #f1f5f9;
+}
+
+.admin-member-year-select {
+  color-scheme: dark;
+  background: rgba(30, 41, 59, 0.96);
+  color: #f1f5f9;
 }
 
 .form-row {
@@ -880,6 +905,29 @@
   background: rgba(247, 250, 255, 0.95);
   border-color: rgba(148, 163, 184, 0.35);
   color: #1e293b;
+}
+
+:root[data-theme='light'] .form-card select {
+  color-scheme: light;
+  background-color: #ffffff;
+  color: #0f172a;
+}
+
+:root[data-theme='light'] .form-card select option,
+:root[data-theme='light'] .form-card select optgroup {
+  background-color: #ffffff;
+  color: #0f172a;
+}
+
+:root[data-theme='light'] .member-management .form-card select option {
+  background-color: #ffffff;
+  color: #0f172a;
+}
+
+:root[data-theme='light'] .admin-member-year-select {
+  color-scheme: light;
+  background: #ffffff;
+  color: #0f172a;
 }
 
 :root[data-theme='light'] .form-card input::placeholder,
@@ -2251,4 +2299,86 @@
   .table-responsive {
     font-size: 0.85rem;
   }
+}
+
+/* Admin member-chat floating button (matches student chat affordance) */
+@keyframes admin-chat-fab-dot-pulse {
+  0%,
+  100% {
+    transform: scale(1);
+    opacity: 1;
+  }
+  50% {
+    transform: scale(1.2);
+    opacity: 0.88;
+  }
+}
+
+.admin-chat-fab {
+  position: fixed;
+  bottom: 2rem;
+  right: 2rem;
+  z-index: 60;
+  width: 4rem;
+  height: 4rem;
+  border-radius: 9999px;
+  border: none;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: linear-gradient(135deg, #2563eb, #1d4ed8);
+  color: #fff;
+  box-shadow: 0 10px 30px rgba(37, 99, 235, 0.45);
+  transition: transform 0.15s ease, box-shadow 0.15s ease;
+}
+
+.admin-chat-fab-dot {
+  position: absolute;
+  top: 7px;
+  left: 7px;
+  width: 11px;
+  height: 11px;
+  border-radius: 50%;
+  background: #ef4444;
+  border: 2px solid #ffffff;
+  box-shadow: 0 0 0 2px rgba(239, 68, 68, 0.45);
+  z-index: 2;
+  pointer-events: none;
+  animation: admin-chat-fab-dot-pulse 1.35s ease-in-out infinite;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .admin-chat-fab-dot {
+    animation: none;
+  }
+}
+
+.admin-chat-fab:hover {
+  transform: scale(1.04);
+  box-shadow: 0 12px 34px rgba(37, 99, 235, 0.55);
+}
+
+.admin-chat-fab-icon {
+  width: 1.65rem;
+  height: 1.65rem;
+}
+
+.admin-chat-fab-badge {
+  position: absolute;
+  top: -4px;
+  right: -4px;
+  min-width: 22px;
+  height: 22px;
+  padding: 0 6px;
+  border-radius: 9999px;
+  background: #ef4444;
+  color: #fff;
+  font-size: 11px;
+  font-weight: 800;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 2px solid #1e3a8a;
+  pointer-events: none;
 }
